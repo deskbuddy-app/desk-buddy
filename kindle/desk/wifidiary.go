@@ -231,7 +231,7 @@ var wifiRedraw = make(chan struct{}, 1)
 // pauses the software again and asks for a full redraw. Returns the seconds it took.
 func rejoinWifi(restart bool) (int, bool) {
 	t := time.Now()
-	exec.Command("killall", "-CONT", "cvm").Run()
+	exec.Command("killall", "-CONT", "cvm", "kppMainApp", "mesquite", "webreader").Run()
 	if restart {
 		reconnectWifi()
 	}
@@ -244,7 +244,7 @@ func rejoinWifi(restart bool) (int, bool) {
 			break
 		}
 	}
-	exec.Command("killall", "-STOP", "cvm").Run()
+	exec.Command("killall", "-STOP", "cvm", "kppMainApp", "mesquite", "webreader").Run()
 	select {
 	case wifiRedraw <- struct{}{}:
 	default:

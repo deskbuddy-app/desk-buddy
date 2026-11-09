@@ -119,7 +119,10 @@ func dayWidget(v *View, d *Desk, st Status, x0, x1, y int) {
 		}
 	}
 	// the timeline: from the hour before now, as many hours as fit
-	const perHour = 62
+	perHour := 62
+	if compactMode {
+		perHour = 72
+	}
 	top := y + 12
 	start := time.Date(now.Year(), now.Month(), now.Day(), max(0, now.Hour()-1), 0, 0, 0, loc)
 	n := timeline(v, d.Agenda, st, x0, x1, top, LH-20, start, perHour, func(e Event, _ int) Target {

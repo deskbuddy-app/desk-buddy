@@ -14,6 +14,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -67,14 +68,62 @@ func copyTree(src, dst string) error {
 	})
 }
 
-// runSetup opens a window (Command Prompt) running `node setup.js` in the kit.
+// runSetup opens a window (Command Prompt or Linux terminal) running `node setup.js` in the kit.
 func runSetup() error {
 	if err := prepareKit(); err != nil {
 		return err
 	}
+	dir := kitDir()
+	if runtime.GOOS != "windows" {
+		shCmd := "node setup.js; echo ''; read -p 'Press Enter to close...'"
+		for _, term := range []struct {
+			bin  string
+			args []string
+		}{
+			{"x-terminal-emulator", []string{"-e", "sh", "-c", shCmd}},
+			{"gnome-terminal", []string{"--", "sh", "-c", shCmd}},
+			{"konsole", []string{"-e", "sh", "-c", shCmd}},
+			{"xfce4-terminal", []string{"-e", "sh -c \"" + shCmd + "\""}},
+			{"kitty", []string{"sh", "-c", shCmd}},
+			{"alacritty", []string{"-e", "sh", "-c", shCmd}},
+			{"xterm", []string{"-e", "sh", "-c", shCmd}},
+		} {
+			if p, err := exec.LookPath(term.bin); err == nil {
+				cmd := exec.Command(p, term.args...)
+				cmd.Dir = dir
+				if cmd.Start() == nil {
+					return nil
+				}
+			}
+		}
+		cmd := exec.Command("node", "setup.js")
+		cmd.Dir = dir
+		return cmd.Start()
+	}
 	cmd := exec.Command("cmd.exe", "/k", "node setup.js")
-	cmd.Dir = kitDir()
+	cmd.Dir = dir
 	return cmd.Start()
+}
+
+func cloudPromptText() string {
+	if runtime.GOOS != "windows" {
+		return `I'm setting up Desk Buddy (an app that turns a Kindle into a desk display) with its own free cloud server on Cloudflare. Please help me do it on this Linux PC.
+
+The Desk Buddy app has prepared everything in this folder:
+` + kitDir() + `
+It holds setup.js (the setup script), the server's code, and a private file named "key". Don't open, print or copy the key file: setup.js reads it by itself.
+
+Steps:
+1. Check Node.js is installed (node --version). If it isn't, tell me and help me install the LTS version from nodejs.org. Ask before installing anything.
+2. Make sure I have a Cloudflare account. If I don't, I'll make a free one at https://dash.cloudflare.com/sign-up
+3. In that folder, run: node setup.js
+   It logs in to Cloudflare (my browser opens once and I click Allow), makes a database, puts the server online and locks it with my key.
+4. When it finishes it prints an address ending in .workers.dev. Give me that address: I'll paste it into Desk Buddy › Server › Your own cloud server and click Connect.
+
+Only work in that folder, and only run setup.js and the commands it needs. If something fails, explain it in plain words and suggest the fix.
+If you can't run commands on my PC, walk me through these steps one at a time and tell me exactly what to type into the terminal.`
+	}
+	return cloudPrompt
 }
 
 const cloudPrompt = `I'm setting up Desk Buddy (an app that turns a Kindle into a desk display) with its own free cloud server on Cloudflare. Please help me do it on this Windows PC.

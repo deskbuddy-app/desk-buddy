@@ -12,6 +12,8 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/skip2/go-qrcode"
@@ -58,7 +60,7 @@ func uiRoutes(mux *http.ServeMux) {
 		c := current()
 		st, last := getStatus()
 		info := map[string]any{"mode": c.Mode, "server": c.Server, "connected": connected(), "paused": c.Paused,
-			"startup": startsWithWindows(), "status": st, "last": last, "refused": keyRefused.Load(), "version": version, "pairs": pairs(), "perf": perfInfo(), "node": nodeInstalled()}
+			"startup": startsWithWindows(), "status": st, "last": last, "refused": keyRefused.Load(), "version": version, "pairs": pairs(), "perf": perfInfo(), "node": nodeInstalled(), "os": runtime.GOOS, "config_dir": configDir()}
 		if r, n, busy := updateState(); r != nil || n != "" {
 			info["update"] = map[string]any{"ready": r, "note": n, "busy": busy}
 		}
@@ -194,7 +196,7 @@ func uiRoutes(mux *http.ServeMux) {
 			}
 		case "cloudprompt":
 			prepareKit()
-			res = map[string]any{"text": cloudPrompt}
+			res = map[string]any{"text": cloudPromptText()}
 		case "ai":
 			res = map[string]any{"text": aiInstructions()}
 		case "quit":
@@ -260,13 +262,17 @@ func normalizeServer(server string) string {
 // aiInstructions: for Claude Code / Codex on this PC, like the Mac app's. They read the address
 // and key from Desk Buddy's own settings file when needed, so the key is never pasted.
 func aiInstructions() string {
+	cfgFile := `%APPDATA%\DeskBuddy\config.json`
+	if runtime.GOOS != "windows" {
+		cfgFile = filepath.Join(configDir(), "config.json")
+	}
 	return `# Desk Buddy tasks
 
 My task list lives in Desk Buddy (shown on a Kindle on my desk). When I ask to add, change, tick off, pin, reorder or remove a task, do it through Desk Buddy's API. The Kindle updates within a few seconds.
 
-- Settings: ` + "`%APPDATA%\\DeskBuddy\\config.json`" + ` (JSON): the server's address is ` + "`server`" + `, the key is ` + "`key`" + `. Send the key as an ` + "`X-Key`" + ` header. Never print, log or repeat the key.
+- Settings: ` + "`" + cfgFile + "`" + ` (JSON): the server's address is ` + "`server`" + `, the key is ` + "`key`" + `. Send the key as an ` + "`X-Key`" + ` header. Never print, log or repeat the key.
 - Always send a User-Agent (the cloud server blocks some default ones).
-- Lists ("profile"): ` + "`home`" + ` = the Windows list, ` + "`work`" + ` = the Mac list. With one list it's always ` + "`work`" + `. If it's unclear which list, ask.
+- Lists ("profile"): ` + "`home`" + ` = the ` + osLabel() + ` list, ` + "`work`" + ` = the Mac list. With one list it's always ` + "`work`" + `. If it's unclear which list, ask.
 - ` + "`GET /api/state`" + `: everything, with each task's ` + "`id`" + `.
 - ` + "`POST /api/tasks`" + ` ` + "`{\"profile\", \"text\", \"notes\"?, \"parent_id\"?}`" + `: add (` + "`parent_id`" + ` makes it a subtask).
 - ` + "`PATCH /api/tasks/<id>`" + ` ` + "`{\"text\"?, \"notes\"?}`" + `: edit.

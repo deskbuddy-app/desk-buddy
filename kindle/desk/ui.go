@@ -135,6 +135,7 @@ type UI struct {
 	Dismissed     map[string]bool // heads-ups dismissed (by eventKey)
 	HeadsUpKey    string          // the heads-up showing now
 	Refresh       int             // Screen refresh: 0 gentle, 1 normal (default), 2 clean
+	Rotation      int             // 90 (chin on the left) or 270 (chin on the right)
 	Swiped        int             // the task swiped right to left: its row shows a bin (0: none)
 	DeleteAsk     int             // "Delete this task?" for this task (0: not asking)
 	Tour          int             // the first-run tour's page (1–3), 0 when not showing
@@ -502,9 +503,10 @@ func modeDetail(d *Desk) string {
 func profileMenu(v *View, d *Desk) {
 	img := v.Img
 	v.add(Target{R: img.Rect, Act: "menu"})
+	pc := pcName(d)
 	opts := []struct{ mode, name, desc string }{ // one list per computer: which one to show
 		{"work", "Mac", "Tasks for your Mac"},
-		{"home", "Windows", "Tasks for your Windows PC"},
+		{"home", pc, "Tasks for your " + pc + " PC"},
 		{"auto", "Auto", "The computer you're using, else the last one"},
 	}
 	if oneList(d) || searching(d) {
@@ -514,7 +516,7 @@ func profileMenu(v *View, d *Desk) {
 	if searching(d) && !oneList(d) {
 		extra = 96 // "Searching for other devices…"
 	}
-	box := image.Rect(pad-8, barH-4, pad-8+400, barH-4+len(opts)*76+16+70+62+extra)
+	box := image.Rect(pad-8, barH-4, pad-8+400, barH-4+len(opts)*76+16+70+62+62+extra)
 	fillRoundRect(img, box.Inset(-3), 12, paper)
 	strokeRoundRect(img, box, 10, 3, ink)
 	tf, sf := face("serifB", 22), face("ui", 15)
@@ -544,7 +546,7 @@ func profileMenu(v *View, d *Desk) {
 			drawText(img, sf, r.Min.X+52, r.Min.Y+64+i*20, l, grey2)
 		}
 	}
-	// a separator, then Send feedback and Settings
+	// a separator, then Send feedback, Settings and Exit to Kindle
 	sy := box.Min.Y + 8 + len(opts)*76 + 8 + extra
 	if len(opts) > 0 || extra > 0 {
 		fillRect(img, image.Rect(box.Min.X+12, sy, box.Max.X-12, sy+2), ink)
@@ -562,6 +564,22 @@ func profileMenu(v *View, d *Desk) {
 	gearGlyph(img, float64(r.Min.X+26), float64(r.Min.Y+28), ink)
 	drawText(img, tf, r.Min.X+52, r.Min.Y+36, "Settings", ink)
 	v.add(Target{R: r, Show: r.Inset(2), Act: "settings"})
+	sy += 62
+	fillRect(img, image.Rect(fb.Min.X+52, sy+4, box.Max.X-20, sy+5), grey4)
+	ex := image.Rect(box.Min.X+8, sy+6, box.Max.X-8, sy+66)
+	exitGlyph(img, float64(ex.Min.X+26), float64(ex.Min.Y+28), ink)
+	drawText(img, tf, ex.Min.X+52, ex.Min.Y+30, "Exit to Kindle", ink)
+	drawText(img, sf, ex.Min.X+52, ex.Min.Y+52, "Back to your library and books", grey2)
+	v.add(Target{R: ex, Show: ex.Inset(2), Act: "quitapp"})
+}
+
+func exitGlyph(img *image.Gray, cx, cy float64, c uint8) {
+	// a door frame on the left and an arrow pointing right out of it
+	line(img, cx-2, cy-10, cx-10, cy-10, 2.5, c)
+	line(img, cx-10, cy-10, cx-10, cy+10, 2.5, c)
+	line(img, cx-10, cy+10, cx-2, cy+10, 2.5, c)
+	line(img, cx-4, cy, cx+10, cy, 2.5, c)
+	chevron(img, cx+7, cy, 5, "right", c)
 }
 
 // searchGlyph: a magnifying glass.
@@ -705,8 +723,8 @@ func lightPanel(v *View, st Status, ui *UI) {
 		sel = 1
 	}
 	segmented(v, image.Rect(x0, box.Min.Y+152, x0+240, box.Min.Y+198), []string{"Light", "Dark"}, []string{"0", "1"}, sel, "setdark")
-	vf := face("ui", 13)
-	drawRight(img, vf, x1, box.Min.Y+182, "Version "+buildVersion, grey3)
+	flip := pillAt(img, image.Rect(x0+254, box.Min.Y+152, x1, box.Min.Y+198), "Flip screen", false)
+	v.add(Target{R: flip.Inset(-4), Show: flip, Act: "fliprot"})
 }
 
 // standbyControls: a slim bar on the standby clock (brightness, light/dark, back).
@@ -1142,7 +1160,8 @@ func connecting(v *View, st Status) {
 		drawCentered(img, face("ui", 20), LW/2, 330, "Find the computer running Desk Buddy on this Wi-Fi.", grey2)
 		find := pillAt(img, image.Rect(LW/2-120, 380, LW/2+120, 426), "Find it", true)
 		v.add(Target{R: find.Inset(-6), Show: find, Act: "serverpick"})
-		drawCentered(img, face("uiBold", 16), LW/2, 560, "Press the power button to go back to the Kindle.", ink)
+		quit := pillAt(img, image.Rect(LW/2-120, 540, LW/2+120, 586), "Exit to Kindle", false)
+		v.add(Target{R: quit.Inset(-6), Show: quit, Act: "quitapp"})
 		return
 	}
 	msg := "Connecting to " + st.Server + "…"
@@ -1161,7 +1180,8 @@ func connecting(v *View, st Status) {
 		other := pillAt(img, image.Rect(LW/2-160-8, 482, LW/2+168, 528), "Use another computer…", false)
 		v.add(Target{R: other.Inset(-6), Show: other, Act: "serverpick"})
 	}
-	drawCentered(img, face("uiBold", 16), LW/2, 560, "Press the power button to go back to the Kindle.", ink)
+	quit := pillAt(img, image.Rect(LW/2-120, 550, LW/2+120, 596), "Exit to Kindle", false)
+	v.add(Target{R: quit.Inset(-6), Show: quit, Act: "quitapp"})
 }
 
 // ---------- bits ----------
@@ -1218,13 +1238,28 @@ func oneList(d *Desk) bool { v, _ := d.Settings["task_lists"].(string); return v
 // between yet ("Searching for other devices…").
 func searching(d *Desk) bool { return d != nil && d.Computers != nil && len(d.Computers) < 2 }
 
-// listName: the list on screen: "Mac" or "Windows" (one list per computer), or "" (one list).
+// pcName: "Linux" when the connected PC runs Linux, else "Windows".
+func pcName(d *Desk) string {
+	if d != nil && d.PCLabel != "" {
+		return d.PCLabel
+	}
+	if d != nil && d.Deck != nil {
+		for _, dk := range d.Deck.Decks {
+			if dk.Profile == "home" && dk.MachineLabel != "" {
+				return dk.MachineLabel
+			}
+		}
+	}
+	return "Windows"
+}
+
+// listName: the list on screen: "Mac", "Windows" or "Linux" (one list per computer), or "" (one list).
 func listName(d *Desk) string {
 	if oneList(d) {
 		return ""
 	}
 	if d.Profile == "home" {
-		return "Windows"
+		return pcName(d)
 	}
 	return "Mac"
 }

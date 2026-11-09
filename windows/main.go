@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -114,7 +115,11 @@ func onReady() {
 	systray.AddSeparator()
 	mOpen := systray.AddMenuItem("Open Desk Buddy…", "Your tasks, the Kindle's settings, and more")
 	mPause := systray.AddMenuItemCheckbox("Pause", "Stop telling the Kindle about this PC", current().Paused)
-	mLogin := systray.AddMenuItemCheckbox("Start with Windows", "", startsWithWindows())
+	loginLabel := "Start with Windows"
+	if runtime.GOOS == "linux" {
+		loginLabel = "Start at login"
+	}
+	mLogin := systray.AddMenuItemCheckbox(loginLabel, "", startsWithWindows())
 	systray.AddSeparator()
 	mQuit := systray.AddMenuItem("Quit Desk Buddy", "Stops Desk Buddy on this PC (and its server, if it runs here)")
 	if !connected() {

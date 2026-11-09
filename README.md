@@ -33,7 +33,8 @@
 |---|---|---|
 | 💻 **Mac** | [**Download Desk Buddy for Mac**](../../releases/latest/download/Desk-Buddy-for-Mac.zip) | **Move it to Applications**, open it, and allow it once ([the steps](#set-up)). macOS 13 or newer. |
 | 🪟 **Windows** | [**Download Desk Buddy for Windows**](../../releases/latest/download/Desk-Buddy-for-Windows.zip) | Early test version. Unzip and open *Desk Buddy.exe*. |
-| 📖 **Kindle** | **Nothing to download:** Desk Buddy for Mac or Windows puts it on your Kindle | Plug your jailbroken Kindle in with USB and click **Put Desk Buddy on it**. After that it updates itself over Wi-Fi. |
+| 🐧 **Linux** | [**Download Desk Buddy for Linux**](../../releases/latest/download/Desk-Buddy-for-Linux.zip) | Unzip and run `./desk-buddy` (or build with `windows/build-linux.sh`). |
+| 📖 **Kindle** | **Nothing to download:** Desk Buddy for Mac, Windows or Linux puts it on your Kindle | Plug your jailbroken Kindle in with USB and click **Put Desk Buddy on it**. After that it updates itself over Wi-Fi. |
 
 Rather copy it yourself? [Download Desk Buddy for Kindle](../../releases/latest) and follow [the steps](docs/install-kindle.md), or click **Save the files instead…** in the app.
 
@@ -102,13 +103,14 @@ From then on: everything happens on the Mac (Desk Buddy in the menu bar) or on t
 |---|---|
 | **Kindle Paperwhite 2** (6th gen, 2013), firmware 5.12.x | ✅ Tested, daily use |
 | Kindle Paperwhite 1 (5th gen, 2012) | ❓ Untested. Probably works: same screen size as the PW2. |
+| **Kindle Basic 2022 & 2024** (11th gen, 6″ 300 ppi `1072×1448`) & older **Basic Kindles** (`600×800`) | ✅ Supported via **Compact** screen size mode (auto-enabled on Basic Kindles, or toggleable under **Settings › Screen › Screen size**). |
 | Paperwhite 3 / 4 / 5, Signature Edition, Voyage, Oasis | ❓ Should work since v1.1: Desk Buddy draws at each screen's own resolution. Runs on a Signature Edition (reported); the new layout isn't confirmed on a real one yet. Tried it? Tell me on [#1](../../issues/1). |
-| Basic Kindles, Kindle Touch | ❌ Probably not: the screen is too small for the layout. |
 | Kindles without a touchscreen | ❌ No |
 | Jailbreak | The [kindlemodding.org](https://kindlemodding.org) jailbreak **with its hotfix** (it provides FBInk, the root helper and the script launcher Desk Buddy uses). KUAL isn't needed. |
 | Kindle Wi-Fi | 2.4 GHz, WPA2 (the Paperwhite 2 can't join 5 GHz-only or WPA3-only networks) |
 | **Mac** | macOS 13 Ventura or newer. Apple Silicon: tested. Intel: the download is built for it too, but nobody has tried it on an Intel Mac yet. |
 | **Windows** | Windows 10 / 11 (64-bit). Early test version: tasks, the Kindle's settings, the Deck, music, volume, calendar links and putting Desk Buddy on a Kindle. |
+| **Linux** | x86_64 / arm64 desktop Linux (systray, XDG `.desktop` apps & icons for the Deck, D-Bus MPRIS2 media & covers, PipeWire / PulseAudio volume & outputs, USB Kindle setup). |
 | Phone page | Any modern phone browser (iPhone, Android) |
 | Music | Spotify and Apple Music desktop apps on the Mac; on Windows anything that shows in Windows' media controls (Spotify, Apple Music, browsers…) |
 | Calendar | Everything in the Mac's Calendar app (iCloud, Google, Exchange, … accounts added there), plus calendar links (.ics) added on the phone page |

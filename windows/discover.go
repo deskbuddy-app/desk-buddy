@@ -164,11 +164,12 @@ func scan(auto bool) {
 }
 
 func pcName() string {
+	base := osLabel() + " PC"
 	h, _ := os.Hostname()
 	if h == "" {
-		return "Windows PC"
+		return base
 	}
-	return "Windows PC (" + h + ")"
+	return base + " (" + h + ")"
 }
 
 // join asks that computer to let this PC in and waits (up to 5 minutes) for Allow there.

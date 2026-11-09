@@ -106,6 +106,7 @@ a{color:var(--ink)}summary{cursor:pointer}
 <script>
 const T = new URLSearchParams(location.search).get("t");
 let info = {}, page = localStorage.getItem("page") || "home", list = "home", state = null, cals = null, calErrors = [], calAt = 0, calNote = "", calHelp = false, calDraft = {}, settings = {}, kset = null, kstatus = null, chime = true, offer = null, note = "", cloudNote = "", aiNote = "";
+const pcLabel = () => (state && state.pc_label) || (info.os === "linux" ? "Linux" : "Windows");
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 try { if (localStorage.getItem("folded") === "1") document.body.classList.add("folded"); } catch {}
@@ -183,11 +184,11 @@ function setupPage() {
   const j = info.joining, f = info.found || [];
   let top = "";
   if (j && j.state === "asking") top = `<div class="ask"><b>Connecting to ${esc(j.name)}…</b></div>`;
-  else if (j && j.state === "waiting") top = `<div class="ask"><b>Click Allow on ${esc(j.name)}</b><p class="sub">It asks "Windows PC wants to connect". Check it shows this code: <span class="code">${esc(j.code)}</span></p><button class="pill" onclick="act({do:'cancel'}).then(refresh)">Cancel</button></div>`;
+  else if (j && j.state === "waiting") top = `<div class="ask"><b>Click Allow on ${esc(j.name)}</b><p class="sub">It asks "${pcLabel()} PC wants to connect". Check it shows this code: <span class="code">${esc(j.code)}</span></p><button class="pill" onclick="act({do:'cancel'}).then(refresh)">Cancel</button></div>`;
   else {
     if (j && (j.state === "denied" || j.state === "failed")) top += `<p class="note">${esc(j.reason)}</p>`;
     if (info.scanning) top += `<p class="sub center">Looking for Desk Buddy on your Wi-Fi…</p>`;
-    else if (f.length) top += f.map((x) => `<div class="choice"><div><b>Join Desk Buddy on ${esc(x.name)}</b><span>Found on your Wi-Fi. Your tasks are there: this PC joins in, and gets its own Windows list.</span></div><button class="pill solid" onclick='act({do:"joinfound",name:${JSON.stringify(x.name)},addr:${JSON.stringify(x.addr)}}).then(()=>setTimeout(refresh,400))'>Join</button></div>`).join("");
+    else if (f.length) top += f.map((x) => `<div class="choice"><div><b>Join Desk Buddy on ${esc(x.name)}</b><span>Found on your Wi-Fi. Your tasks are there: this PC joins in, and gets its own ${pcLabel()} list.</span></div><button class="pill solid" onclick='act({do:"joinfound",name:${JSON.stringify(x.name)},addr:${JSON.stringify(x.addr)}}).then(()=>setTimeout(refresh,400))'>Join</button></div>`).join("");
   }
   const found = f.length > 0 && !info.scanning;
   const here = `<div class="choice"${found ? ` style="border-color:var(--line)"` : ""}><div><b>${found ? "Or run a separate Desk Buddy on this PC" : "Run Desk Buddy on this PC"}</b><span>${found ? "Starts fresh here, with its own tasks: only if you don't want to share with the computer above." : "If this is your only computer, or the first one you set up. Nothing else to set up: your Kindle finds this PC on the Wi-Fi."}</span></div><button class="pill${found ? "" : " solid"}" onclick="setupLocal()">Set up here</button></div>`;
@@ -233,9 +234,9 @@ function homePage() {
   if (kstatus && Date.now() / 1000 - kstatus.at > 600) needs.push(`<div class="needs"><b>Your Kindle hasn't been in touch for a while</b><span class="sub">Is it on the Wi-Fi, with Desk Buddy open?</span></div>`);
   let kl = "";
   if (kstatus) { const ago = Math.round(Date.now() / 1000 - kstatus.at); kl = `On the Kindle now · ${kstatus.battery}%${kstatus.charging ? " · charging" : ""} · seen ${ago < 90 ? "just now" : ago < 3600 ? Math.round(ago / 60) + " min ago" : Math.round(ago / 3600) + " h ago"}`; }
-  const sw = oneList() ? "" : seg(["Windows", "Mac"], ["home", "work"], l, fn((v) => { list = v; render(); }));
+  const sw = oneList() ? "" : seg([pcLabel(), "Mac"], ["home", "work"], l, fn((v) => { list = v; render(); }));
   fid = 0;
-  return needs.join("") + `<div style="display:flex;align-items:center;gap:14px"><h1 style="flex:1">${oneList() ? "Tasks" : {home: "Windows list", work: "Mac list"}[l]}</h1>${sw}</div>
+  return needs.join("") + `<div style="display:flex;align-items:center;gap:14px"><h1 style="flex:1">${oneList() ? "Tasks" : {home: pcLabel() + " list", work: "Mac list"}[l]}</h1>${sw}</div>
 <div class="sub" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">${esc(kl || "On the Kindle now")}${kstatus ? (Date.now() / 1000 - kstatus.at < 200 ? `<span class="badgeok" style="margin-top:0">✓ Kindle connected</span>` : `<span class="badgegrey" style="margin-top:0">Kindle offline</span>`) : ""}</div>
 <div class="add"><input type="text" id="newtask" placeholder="Add a task"><button class="pill solid" onclick="addTask()">Add</button></div>
 ${rows || `<p class="sub" style="margin-top:12px">No tasks yet. Add one above.</p>`}<div class="endzone" data-end="1"></div>
@@ -320,6 +321,8 @@ function kindlePage() {
   + L("Screen") + choice("Theme", k.theme === "auto" ? "Dark when your computer is, else sunset to sunrise" : "Light or dark", ["Light", "Dark", "Auto"], ["light", "dark", "auto"], k.theme, K("theme"), ok)
   + choice("Night brightness", "Front light while Auto is dark", ["Same", "Off", "Low", "Mid"], [-1, 0, 4, 10], k.night_light, K("night_light"), ok && k.theme === "auto")
   + choice("Font", "For tasks and headings", ["Sans", "Serif", "Inter", "Bitter"], ["sans", "serif", "inter", "bitter"], k.font, K("font"), ok)
+  + choice("Screen size", "Compact uses larger text and touch targets for 6″ Basic Kindles (2022, 2024 and older)", ["Standard", "Compact"], [false, true], k.compact ?? false, K("compact"), ok)
+  + choice("Orientation", "Flip the landscape screen 180° (which side the Kindle's bottom bezel is on)", ["Left", "Right"], [90, 270], k.rotation ?? 90, K("rotation"), ok)
   + choice("Temperature", "For the weather", ["°C", "°F"], [false, true], k.temp_f, K("temp_f"), ok)
   + choice("Screen refresh", ["Never flashes; faint ghosts may stay", "Big changes flash, only where they changed", "Every change flashes; sharpest"][Math.min(2, Math.max(0, k.refresh ?? 1))], ["Gentle", "Normal", "Clean"], [0, 1, 2], k.refresh ?? 1, K("refresh"), ok)
   + L("Standby clock") + choice("Clock", "24-hour or 12-hour", ["24h", "12h"], [false, true], k.clock_12h, K("clock_12h"), ok)
@@ -334,7 +337,7 @@ function kindlePage() {
   + L("Focus") + choice("Focus length", "Minutes per Pomodoro", ["25", "45", "50"], [25, 45, 50], s.focus_min, B("focus_min"))
   + choice("Break length", "Minutes between focuses", ["5", "10", "15"], [5, 10, 15], s.break_min, B("break_min"))
   + choice("Chime on computer", "Plays when a focus or break ends", ["On", "Off"], [true, false], chime, "setChime")
-  + L("Tasks") + choice("Separate lists", (state && (state.computers || []).length < 2) ? "Searching for other devices… connect another computer first" : "Your Mac and Windows PC each get their own tasks", ["On", "Off"], ["per_computer", "one"], s.task_lists, B("task_lists"))
+  + L("Tasks") + choice("Separate lists", (state && (state.computers || []).length < 2) ? "Searching for other devices… connect another computer first" : `Your Mac and ${pcLabel()} PC each get their own tasks`, ["On", "Off"], ["per_computer", "one"], s.task_lists, B("task_lists"))
   + choice("Auto-delete done tasks", "Ticked-off tasks go by themselves", ["On", "Off"], [true, false], s.auto_clear, B("auto_clear"))
   + choice("Delete after", "How long after you tick them off", ["Instant", "1 min", "5 min", "10 min"], [0, 1, 5, 10], s.auto_clear_min, B("auto_clear_min"), s.auto_clear === true)
   + L("Updates") + choice("Show on main screen", "An Update button at the top when a new version is ready", ["On", "Off"], [true, false], k.update_show, K("update_show"), ok)
@@ -366,10 +369,11 @@ function kindleSetupCard(k) {
 // ---- This PC ----
 function pcPage() {
   fid = 0;
-  const comps = state ? (state.computers || []) : [];
+  const comps = state ? (state.computers || []) : [], isLinux = info.os === "linux";
+  const aiPaths = isLinux ? "Claude Code: ~/.claude/CLAUDE.md, Codex: ~/.codex/AGENTS.md" : "Claude Code: %USERPROFILE%\\.claude\\CLAUDE.md, Codex: %USERPROFILE%\\.codex\\AGENTS.md";
   return `<div class="label">This PC</div><h2>${esc(info.status)}</h2>`
   + choice("Desk Buddy", "Tells the Kindle you're using this PC, opens apps from the Deck, shows your music, chimes when a focus ends", ["On", "Paused"], [false, true], info.paused, fn(async (v) => { await act({do: "pause", on: v ? "1" : "0"}); await refresh(); }))
-  + choice("Start with Windows", "Opens Desk Buddy in the taskbar when you log in", ["On", "Off"], [true, false], info.startup, fn(async (v) => { await act({do: "startup", on: v ? "1" : "0"}); await refresh(); }))
+  + choice(isLinux ? "Start at login" : "Start with Windows", "Opens Desk Buddy in the taskbar when you log in", ["On", "Off"], [true, false], info.startup, fn(async (v) => { await act({do: "startup", on: v ? "1" : "0"}); await refresh(); }))
   + (info.last ? row("Last from the Kindle", esc(info.last)) : "")
   + row("Other computers", comps.length < 2 ? "Searching for other devices… Connect another computer to Desk Buddy." : "Your Mac and this PC are both connected.", `<button class="pill" onclick="makeOffer()">Connect a computer…</button>`)
   + (offer ? (offer.error ? `<p class="note">${esc(offer.error)}</p>` : `<div class="box"><span class="sub">On the other computer, open Desk Buddy. On the same Wi-Fi it finds this one by itself; otherwise enter:</span>
@@ -377,15 +381,15 @@ function pcPage() {
 <span class="sub">The code works once, for 10 minutes. The computer then connects by itself.</span></div>`) : "")
   + calendarSection(comps.length > 1)
   + row("Tasks page", "Your tasks in a web browser, also on your phone", `<button class="pill" onclick="act({do:'openpage'})">Open</button>`)
-  + row("AI assistants", `<span id="aihint">${aiNote || "Let Claude Code or Codex on this PC add, tick and change your tasks when you ask. Copy these instructions into their instructions file (Claude Code: %USERPROFILE%\\.claude\\CLAUDE.md, Codex: %USERPROFILE%\\.codex\\AGENTS.md). Your key isn't in them."}</span>`, `<button class="pill" onclick="copyText('ai')">Copy instructions</button>`);
+  + row("AI assistants", `<span id="aihint">${aiNote || `Let Claude Code or Codex on this PC add, tick and change your tasks when you ask. Copy these instructions into their instructions file (${aiPaths}). Your key isn't in them.`}</span>`, `<button class="pill" onclick="copyText('ai')">Copy instructions</button>`);
 }
 // Calendar: Windows has no calendar Desk Buddy can read like the Mac's, so calendars come in by
 // their private link (Google, Outlook…). Your Desk Buddy server reads the links itself.
 function calendarSection(two) {
-  const where = {both: "Both lists", home: "Windows list", work: "Mac list"};
+  const where = {both: "Both lists", home: pcLabel() + " list", work: "Mac list"};
   const list = (cals || []).map((c, i) => row(esc(c.name), two ? where[c.profile] || "Both lists" : "On the Kindle",
     `<button class="pill" onclick="removeCal(${i})">Remove</button>`)).join("");
-  const opts = two ? `<select id="calshow" aria-label="Show on"><option value="both">Both lists</option><option value="home">Windows list</option><option value="work">Mac list</option></select>` : "";
+  const opts = two ? `<select id="calshow" aria-label="Show on"><option value="both">Both lists</option><option value="home">${pcLabel()} list</option><option value="work">Mac list</option></select>` : "";
   return `<div class="label" style="margin-top:22px">Calendar</div>`
   + row("Your calendar on the Kindle", "Today's events, the month, a heads-up before meetings. Add your calendar by its private link; it updates every 10 minutes.")
   + (cals === null ? `<p class="sub">Loading…</p>` : list)
@@ -448,7 +452,7 @@ ${cloudFolded ? "" : `<p class="sub" style="margin-top:10px">Lets the Kindle and
 <div class="step"><span class="n">1</span><div class="t"><b>Make a free Cloudflare account</b><span>An email and a password. The free plan is plenty.</span></div><button class="pill" onclick="act({do:'openurl',url:'https://dash.cloudflare.com/sign-up'})">Open Cloudflare</button></div>
 <div class="step"><span class="n">2</span><div class="t"><b>Install Node.js</b><span>The setup needs it. Pick the LTS version.</span></div>${info.node ? `<span class="badgeok">✓ Installed</span>` : `<button class="pill" onclick="act({do:'openurl',url:'https://nodejs.org'})">Get Node.js</button>`}</div>
 <div class="step"><span class="n">3</span><div class="t"><b>Put your server online</b><span>A window opens and does the rest; your browser opens once to log in to Cloudflare. At the end it prints the address.</span></div><button class="pill solid" onclick="cloudSetup()">Run the setup</button></div>
-<div class="code-box">cd %APPDATA%\\DeskBuddy\\cloud-setup
+<div class="code-box">cd ${info.os === "linux" && info.config_dir ? esc(info.config_dir + "/cloud-setup") : "%APPDATA%\\DeskBuddy\\cloud-setup"}
 node setup.js</div>
 <div class="step"><span class="n">4</span><div class="t"><b>Paste the address</b><span>It ends in .workers.dev. Your tasks are copied over, and the Kindle follows.</span></div></div>
 <div class="add" style="margin-left:32px"><input type="text" id="cloudurl" placeholder="https://desk-buddy.….workers.dev"><button class="pill solid" onclick="cloudConnect()">Connect</button></div>
@@ -467,10 +471,10 @@ function permissionsPage() {
 <div class="privacy"><h3>🛡 Your data stays yours</h3>
 <p class="sub" style="font-size:12.5px">${local ? "Desk Buddy runs on this PC. What the Kindle shows stays on this PC and your Wi-Fi: nothing goes to the internet except the town for the weather." : "Desk Buddy only talks to your own Desk Buddy server: on your other computer, or in your own Cloudflare account. There's no Desk Buddy company server."}</p>
 <div class="checks"><span><i>✓</i> No ads</span><span><i>✓</i> No tracking</span><span><i>✓</i> No analytics</span><span><i>✓</i> Nothing sold or shared</span></div>
-<p class="sub">Windows doesn't ask apps for these one by one like a Mac does. Here's everything Desk Buddy uses on this PC, and what it shares.</p></div>
-${perm("⌨", "When you're at this PC", "How long since you last touched the keyboard or mouse (a number of seconds, never what you typed), and light or dark mode", "\"in use\" and light / dark, with your Desk Buddy server, so the Kindle shows the Windows list", ok("Always on"))}
+<p class="sub">${info.os === "linux" ? "Linux" : "Windows"} doesn't ask apps for these one by one like a Mac does. Here's everything Desk Buddy uses on this PC, and what it shares.</p></div>
+${perm("⌨", "When you're at this PC", "How long since you last touched the keyboard or mouse (a number of seconds, never what you typed), and light or dark mode", `"in use" and light / dark, with your Desk Buddy server, so the Kindle shows the ${pcLabel()} list`, ok("Always on"))}
 ${perm("▦", "Opening apps", "Apps from your Start menu, by name, when you tap a Deck tile; meeting links from Join", "the names of your Start menu apps, so the Kindle can list them", ok("Always on"))}
-${perm("♪", "Music", "What's playing in Spotify, Apple Music or your browser (from Windows' media controls), its cover, play / pause / skip, the volume and where the sound goes", "the song playing and its cover, only while music shows on the Kindle", settings.music_sync === false ? grey("Off: Kindle › Music sync") : ok("On"))}
+${perm("♪", "Music", `What's playing in Spotify, Apple Music or your browser (from ${info.os === "linux" ? "Linux's" : "Windows'"} media controls), its cover, play / pause / skip, the volume and where the sound goes`, "the song playing and its cover, only while music shows on the Kindle", settings.music_sync === false ? grey("Off: Kindle › Music sync") : ok("On"))}
 ${perm("📅", "Calendar", "Your events on the Kindle, from the calendar links you add in This PC › Calendar", "nothing from this PC: your Desk Buddy server reads the links itself", cals && cals.length ? ok(cals.length + (cals.length === 1 ? " calendar" : " calendars")) : grey("Add one in This PC"))}
 ${local ? perm("🛜", "Incoming connections", "So the Kindle and your phone can reach Desk Buddy on this PC over your Wi-Fi (Windows asks once: allow it on private networks)", "nothing: devices only get in with your key, or when you click Allow", ok("Needed for This PC")) : ""}
 <p class="sub" style="margin-top:12px">Everything Desk Buddy does is open source on GitHub.</p>`;
@@ -533,13 +537,14 @@ function newerVersion(a, b) {
 
 // ---- About ----
 function aboutPage() {
+  const isLinux = info.os === "linux";
   return `<div class="label">About</div>
-<div style="display:flex;gap:16px;align-items:center;margin:8px 0 12px"><img class="buddy" style="width:60px" src="{{BUDDY}}" alt=""><div><h1>Hi, I'm Desk Buddy</h1><span class="sub">for Windows · ${esc(info.version)}</span></div></div>
+<div style="display:flex;gap:16px;align-items:center;margin:8px 0 12px"><img class="buddy" style="width:60px" src="{{BUDDY}}" alt=""><div><h1>Hi, I'm Desk Buddy</h1><span class="sub">for ${isLinux ? "Linux" : "Windows"} · ${esc(info.version)}</span></div></div>
 <p style="font-size:13.5px">I turn an old Kindle into a calm desk companion: your tasks, calendar, weather and music, on e-ink, next to your computer.</p>
 ${updatesSection()}
 <div class="label" style="margin-top:22px">Desk Buddy</div>
 ${row("Quit", "Stops Desk Buddy until you open it again" + (info.mode === "local" ? " (the Kindle can't update meanwhile)" : ""), `<button class="pill" onclick="act({do:'quit'})">Quit</button>`)}
-${row("Uninstall", "Removes Desk Buddy from this PC: no more starting with Windows, its settings removed. Then delete its folder. Your tasks stay saved.", `<button class="pill" onclick="if(confirm('Uninstall Desk Buddy?\\n\\nIt stops, won\\'t start with Windows any more, and its settings are removed. Its folder opens so you can delete it.'))act({do:'uninstall'})">Uninstall…</button>`)}`;
+${row("Uninstall", `Removes Desk Buddy from this PC: no more starting ${isLinux ? "at login" : "with Windows"}, its settings removed. Then delete its folder. Your tasks stay saved.`, `<button class="pill" onclick="if(confirm('Uninstall Desk Buddy?\\n\\nIt stops, won\\'t start ${isLinux ? "at login" : "with Windows"} any more, and its settings are removed. Its folder opens so you can delete it.'))act({do:'uninstall'})">Uninstall…</button>`)}`;
 }
 
 markNav();

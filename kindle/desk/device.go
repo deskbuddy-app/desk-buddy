@@ -31,8 +31,10 @@ const (
 	btnTouch            = 330
 	keyPower            = 116
 
-	eviocgrab = 0x40044590 // _IOW('E', 0x90, int)
-	eviocgabs = 0x80184540 // _IOR('E', 0x40 + abs, struct input_absinfo)
+	eviocgrab    = 0x40044590 // _IOW('E', 0x90, int)
+	eviocgabs    = 0x80184540 // _IOR('E', 0x40 + abs, struct input_absinfo)
+	eviocgbitKey = 0x80204521 // _IOC(_IOC_READ, 'E', 0x20 + EV_KEY, 32)
+	fbiogetVinfo = 0x4600     // FBIOGET_VSCREENINFO
 )
 
 // ---------- screen ----------
@@ -258,29 +260,105 @@ func (s *Screen) toLandscape(px, py int) (int, int) {
 	return py, PW - 1 - px
 }
 
-// panelSize asks FBInk for the panel's size in pixels, portrait (a Paperwhite 2: 758 × 1024);
-// the Paperwhite 2's when it can't tell.
+// isBasicKindle is true on 6" Basic Kindles (the 2022 and 2024 1072 × 1448 models and the
+// older 600 × 800 ones), so Compact mode is on by default on first run.
+var isBasicKindle bool
+
+// panelSize asks FBInk and the Linux framebuffer (/dev/fb0) for the panel's size in pixels,
+// portrait (a Paperwhite 2: 758 × 1024); the Paperwhite 2's when it can't tell.
 func panelSize() (int, int) {
-	b, err := exec.Command(fbinkBin, "-e").Output()
-	if err != nil {
-		return PW, PH
+	b, _ := exec.Command(fbinkBin, "-e").CombinedOutput()
+	w, h := parseFBInkEnv(string(b))
+	if w == PW && h == PH && !strings.Contains(string(b), "758") {
+		if fw, fh := fb0Size(); fw >= 580 && fh >= 780 {
+			w, h = fw, fh
+			if w <= 1072 && (w != 758 || h != 1024) {
+				isBasicKindle = true
+			}
+			log.Printf("panel (from fb0) %d × %d (basic=%v)", w, h, isBasicKindle)
+		}
 	}
-	var w, h int
-	for _, kv := range strings.FieldsFunc(string(b), func(r rune) bool { return r == ';' || r == ' ' || r == '\n' || r == ',' }) {
+	return w, h
+}
+
+func fb0Size() (int, int) {
+	if f, err := os.Open("/dev/fb0"); err == nil {
+		var vinfo [40]uint32
+		_, _, e := syscall.Syscall(syscall.SYS_IOCTL, f.Fd(), fbiogetVinfo, uintptr(unsafe.Pointer(&vinfo[0])))
+		f.Close()
+		if e == 0 {
+			w, h := int(vinfo[0]), int(vinfo[1])
+			if w > h {
+				w, h = h, w
+			}
+			if w >= 580 && h >= 780 {
+				return w, h
+			}
+		}
+	}
+	if b, err := os.ReadFile("/sys/class/graphics/fb0/modes"); err == nil {
+		// e.g. "U:1072x1448p-0\n"
+		s := string(b)
+		if _, after, ok := strings.Cut(s, ":"); ok {
+			s = after
+		}
+		var w, h int
+		if n, _ := fmt.Sscanf(s, "%dx%d", &w, &h); n == 2 {
+			if w > h {
+				w, h = h, w
+			}
+			if w >= 580 && h >= 780 {
+				return w, h
+			}
+		}
+	}
+	if b, err := os.ReadFile("/sys/class/graphics/fb0/virtual_size"); err == nil {
+		var w, h int
+		if n, _ := fmt.Sscanf(strings.TrimSpace(string(b)), "%d,%d", &w, &h); n == 2 {
+			if w > h {
+				w, h = h, w
+			}
+			if h >= w*2 {
+				h /= 2
+			}
+			if w >= 580 && h >= 780 {
+				return w, h
+			}
+		}
+	}
+	return 0, 0
+}
+
+func parseFBInkEnv(env string) (int, int) {
+	var w, h, sw, sh int
+	for _, kv := range strings.FieldsFunc(env, func(r rune) bool { return r == ';' || r == ' ' || r == '\n' || r == '\r' || r == ',' }) {
 		if v, ok := strings.CutPrefix(kv, "viewWidth="); ok {
-			w, _ = strconv.Atoi(v)
+			w, _ = strconv.Atoi(strings.Trim(v, "'\""))
 		}
 		if v, ok := strings.CutPrefix(kv, "viewHeight="); ok {
-			h, _ = strconv.Atoi(v)
+			h, _ = strconv.Atoi(strings.Trim(v, "'\""))
 		}
+		if v, ok := strings.CutPrefix(kv, "screenWidth="); ok {
+			sw, _ = strconv.Atoi(strings.Trim(v, "'\""))
+		}
+		if v, ok := strings.CutPrefix(kv, "screenHeight="); ok {
+			sh, _ = strconv.Atoi(strings.Trim(v, "'\""))
+		}
+	}
+	if w == 0 || h == 0 {
+		w, h = sw, sh
 	}
 	if w > h { // FBInk tells the way the panel is turned now; we want portrait
 		w, h = h, w
 	}
-	if w < 600 || h < 800 {
+	if w < 580 || h < 780 {
 		return PW, PH
 	}
-	log.Printf("panel %d × %d", w, h)
+	low := strings.ToLower(env)
+	if (w <= 1072 && (w != 758 || h != 1024)) || strings.Contains(low, "basic") || strings.Contains(low, "touch") || strings.Contains(low, "matcha") || strings.Contains(low, "bellatrix") || strings.Contains(low, "malbec") {
+		isBasicKindle = true
+	}
+	log.Printf("panel %d × %d (basic=%v)", w, h, isBasicKindle)
 	return w, h
 }
 
@@ -381,6 +459,25 @@ func setFrontLight(n int) {
 
 func clearScreen() { exec.Command(fbinkBin, "-q", "-c", "-f").Run() }
 
+// pauseKindleUI freezes the Kindle's own UI processes (both older cvm and newer 2022/2024
+// kppMainApp / mesquite / webreader) so they cannot draw over Desk Buddy.
+func pauseKindleUI() {
+	if _, err := os.Stat("/mnt/us"); err != nil {
+		return
+	}
+	exec.Command("lipc-set-prop", "com.lab126.pillow", "disableEnablePillow", "disable").Run()
+	exec.Command("killall", "-STOP", "cvm", "kppMainApp", "mesquite", "webreader").Run()
+}
+
+// resumeKindleUI wakes the Kindle's own UI processes when leaving Desk Buddy.
+func resumeKindleUI() {
+	if _, err := os.Stat("/mnt/us"); err != nil {
+		return
+	}
+	exec.Command("killall", "-CONT", "cvm", "kppMainApp", "mesquite", "webreader").Run()
+	exec.Command("lipc-set-prop", "com.lab126.pillow", "disableEnablePillow", "enable").Run()
+}
+
 // ---------- input ----------
 
 type Tap struct {
@@ -433,10 +530,37 @@ func readEvents(f *os.File, out func(inputEvent)) error {
 	}
 }
 
+func findTouchDev() string {
+	for i := 0; i < 10; i++ {
+		p := fmt.Sprintf("/dev/input/event%d", i)
+		f, err := os.Open(p)
+		if err != nil {
+			continue
+		}
+		_, okMT := getAbs(f.Fd(), absMTX)
+		_, okX := getAbs(f.Fd(), absX)
+		f.Close()
+		if okMT || okX {
+			return p
+		}
+	}
+	return touchDev
+}
+
+func hasPowerKey(fd uintptr) bool {
+	var bits [32]byte
+	_, _, e := syscall.Syscall(syscall.SYS_IOCTL, fd, uintptr(eviocgbitKey), uintptr(unsafe.Pointer(&bits[0])))
+	if e != 0 {
+		return false
+	}
+	return bits[keyPower/8]&(1<<(keyPower%8)) != 0
+}
+
 // readTouch sends one Tap per lift of the first finger, with how many fingers were down
 // at most meanwhile (the others' positions are ignored).
 func readTouch(taps chan<- Tap) {
-	f, err := openGrabbed(touchDev)
+	dev := findTouchDev()
+	f, err := openGrabbed(dev)
 	if err != nil {
 		log.Println("touch:", err)
 		return
@@ -447,7 +571,7 @@ func readTouch(taps chan<- Tap) {
 		ax, _ = getAbs(f.Fd(), absX)
 		ay, _ = getAbs(f.Fd(), absY)
 	}
-	log.Printf("touch ranges x %+v y %+v", ax, ay)
+	log.Printf("touch (%s) ranges x %+v y %+v", dev, ax, ay)
 	if sl, ok := getAbs(f.Fd(), absMTSlot); ok {
 		touchFingers = int(sl.Max) + 1
 	}
@@ -514,19 +638,47 @@ func readTouch(taps chan<- Tap) {
 	log.Println("touch:", err)
 }
 
-// readPower signals each press of the power button.
+// readPower signals each press of the power button across all input devices that report KEY_POWER.
 func readPower(press chan<- struct{}) {
-	f, err := openGrabbed(powerDev)
-	if err != nil {
-		log.Println("power button:", err)
-		return
-	}
-	err = readEvents(f, func(e inputEvent) {
-		if e.typ == evKey && e.code == keyPower && e.val == 1 {
-			press <- struct{}{}
+	tdev := findTouchDev()
+	var devs []string
+	for i := 0; i < 10; i++ {
+		p := fmt.Sprintf("/dev/input/event%d", i)
+		if p == tdev {
+			continue
 		}
-	})
-	log.Println("power button:", err)
+		f, err := os.Open(p)
+		if err != nil {
+			continue
+		}
+		ok := hasPowerKey(f.Fd())
+		f.Close()
+		if ok {
+			devs = append(devs, p)
+		}
+	}
+	if len(devs) == 0 {
+		devs = []string{powerDev}
+	}
+	for _, dev := range devs {
+		go func(d string) {
+			f, err := openGrabbed(d)
+			if err != nil {
+				log.Println("power button:", err)
+				return
+			}
+			log.Printf("power button: listening on %s", d)
+			err = readEvents(f, func(e inputEvent) {
+				if e.typ == evKey && e.code == keyPower && e.val == 1 {
+					select {
+					case press <- struct{}{}:
+					default:
+					}
+				}
+			})
+			log.Println("power button:", err)
+		}(dev)
+	}
 }
 
 // syncFS flushes writes to the Kindle's storage (after installing an update).

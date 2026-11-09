@@ -41,7 +41,7 @@ var (
 	kindlePub = func() string { return filepath.Join(exeDir(), "public", "kindle") }
 )
 
-// kindleRoots: where drives are mounted (D: … Z: on Windows, /Volumes/* elsewhere).
+// kindleRoots: where drives are mounted (D: … Z: on Windows, /run/media/*/*, /media/*, /mnt/* on Linux, /Volumes/* on macOS).
 func kindleRoots() []string {
 	if runtime.GOOS == "windows" {
 		var r []string
@@ -50,8 +50,13 @@ func kindleRoots() []string {
 		}
 		return r
 	}
-	r, _ := filepath.Glob("/Volumes/*")
-	return r
+	var out []string
+	for _, pat := range []string{"/Volumes/*", "/run/media/*/*", "/media/*/*", "/media/*", "/mnt/*"} {
+		if m, err := filepath.Glob(pat); err == nil {
+			out = append(out, m...)
+		}
+	}
+	return out
 }
 
 // findKindle: the first drive with the Kindle's own documents and system folders.

@@ -104,15 +104,21 @@ func deckView(v *View, d *Desk, ui *UI) {
 		tx = drawText(img, face("serifB", 26), x0, y+32, dk.MachineLabel, ink)
 	}
 
-	// Favourites: big tiles, 12 a page. All apps: smaller tiles, 24 a page.
+	// Favourites: big tiles, 12 a page (6 in Compact mode). All apps: smaller tiles, 24 a page (12 in Compact mode).
 	all := ui.DeckAll && !placeholder && len(dk.Apps) > 0
 	cols, rows, gap := 4, 3, 16
+	if compactMode {
+		cols, rows = 3, 2
+	}
 	names := make([]string, len(dk.Tiles))
 	for i, t := range dk.Tiles {
 		names[i] = t.Label
 	}
 	if all {
 		cols, rows, gap, names = 6, 4, 10, dk.Apps
+		if compactMode {
+			cols, rows, gap = 4, 3, 12
+		}
 	}
 	per := cols * rows
 	pages := max(1, (len(names)+per-1)/per)
@@ -387,7 +393,11 @@ func notConnected(v *View, dk *Deck) {
 	bf := face("serif", 21)
 	what := "Mac"
 	if dk.Machine == "pc" {
-		what = "Windows PC"
+		if dk.MachineLabel != "" && dk.MachineLabel != "PC" {
+			what = dk.MachineLabel + " PC"
+		} else {
+			what = "Windows PC"
+		}
 	}
 	for i, l := range []string{
 		"Install Desk Buddy on your " + what + " to open its apps from here,",
