@@ -639,6 +639,28 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate {
         }
     }
 
+    // goBack installs the version before this one (About › Updates › Go back) from its GitHub release
+    func goBack() {
+        guard model.notes.count > 1, !model.updBusy else { return }
+        let v = model.notes[1].version
+        model.updBusy = true
+        model.updStatus = "Finding version \(v)…"
+        Updater.fromTag(v) { [weak self] r in
+            DispatchQueue.main.async {
+                guard let self else { return }
+                guard let r else {
+                    self.model.updBusy = false
+                    self.model.updStatus = "Couldn't find version \(v) on GitHub. Download it from github.com/deskbuddy-app/desk-buddy/releases instead."
+                    return
+                }
+                Updater.install(r, server: self.backend.address, key: self.backend.settings.key) { [weak self] s, busy in
+                    self?.model.updStatus = s
+                    self?.model.updBusy = busy
+                }
+            }
+        }
+    }
+
     func installUpdate() {
         guard let r = offered, !model.updBusy else { return }
         Updater.install(r, server: backend.address, key: backend.settings.key) { [weak self] s, busy in
@@ -885,6 +907,7 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate {
             }
             model.onCheckUpdate = { [weak self] in self?.checkUpdate(manual: true) }
             model.onInstallUpdate = { [weak self] in self?.installUpdate() }
+            model.onGoBack = { [weak self] in self?.goBack() }
             let w = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 880, height: 660),
                              styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView], backing: .buffered, defer: false)
             w.title = "Desk Buddy"

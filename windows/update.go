@@ -83,8 +83,15 @@ func newer(a, b string) bool {
 // ({"windows": release, "mac": …}); /releases/latest/ always points at the newest full release.
 var latestURL = "https://github.com/deskbuddy-app/desk-buddy/releases/latest/download/desk-buddy-latest.json"
 
-func fromGitHub() (*release, error) {
-	req, _ := http.NewRequest("GET", latestURL, nil)
+func fromGitHub() (*release, error) { return fromURL(latestURL) }
+
+// tagURL: the same file in an older release (for "Go back"; releases have it since 1.2).
+func tagURL(version string) string {
+	return "https://github.com/deskbuddy-app/desk-buddy/releases/download/v" + version + "/desk-buddy-latest.json"
+}
+
+func fromURL(u string) (*release, error) {
+	req, _ := http.NewRequest("GET", u, nil)
 	req.Header.Set("User-Agent", userAgent)
 	resp, err := quick.Do(req)
 	if err != nil {
@@ -173,6 +180,29 @@ func applyUpdate() {
 		return
 	}
 	setUpdNote("Downloading…", true)
+	installRelease(r)
+}
+
+// goBack installs the version before this one again (About › Updates › Go back), from its
+// GitHub release. Settings and tasks stay; the newer version is offered again as usual.
+func goBack() {
+	notes := patchNotes()
+	if _, _, busy := updateState(); busy || len(notes) < 2 {
+		return
+	}
+	v := notes[1].Version
+	setUpdNote("Finding version "+v+"…", true)
+	r, err := fromURL(tagURL(v))
+	if err != nil || r.Version != v || r.SHA256 == "" {
+		setUpdNote("Couldn't find version "+v+" on GitHub. Download it from github.com/deskbuddy-app/desk-buddy/releases instead.", false)
+		return
+	}
+	setUpdNote("Downloading version "+v+"…", true)
+	installRelease(r)
+}
+
+// installRelease downloads and checks a version, swaps it in, then restarts.
+func installRelease(r *release) {
 	fail := func(msg string) { setUpdNote(msg, false); report("update: " + msg) }
 	var req *http.Request
 	if r.URL != "" {

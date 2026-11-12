@@ -87,6 +87,8 @@ final class HelperModel: ObservableObject {
     var onKindleInstall: () -> Void = {}
     var onKindleSaveFiles: () -> Void = {}
     var onInstallUpdate: () -> Void = {}
+    @Published var goBackAsk = false // "Go back to version x?" open
+    var onGoBack: () -> Void = {}
 
     var onPause: (Bool) -> Void = { _ in }
     var onMode: (String) -> Void = { _ in }
@@ -721,6 +723,21 @@ struct HelperWindow: View {
                 }
             } else {
                 Pill(title: model.updChecking ? "Checking…" : "Check for updates") { model.onCheckUpdate() }
+            }
+        }
+        if model.notes.count > 1 && !model.updBusy {
+            let prev = model.notes[1].version
+            Row(title: model.goBackAsk ? "Go back to version \(prev)?" : "Go back to version \(prev)",
+                hint: model.goBackAsk ? "Desk Buddy restarts, and the Kindle is offered the matching version. Your tasks and settings stay. You can update again any time."
+                                      : "If this version gives you trouble") {
+                if model.goBackAsk {
+                    HStack(spacing: 8) {
+                        Pill(title: "Cancel") { model.goBackAsk = false }
+                        Pill(title: "Go back", solid: true) { model.goBackAsk = false; model.onGoBack() }
+                    }
+                } else {
+                    Pill(title: "Go back…") { model.goBackAsk = true }
+                }
             }
         }
         if ready && model.whatsNew && !model.updBusy {

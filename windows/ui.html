@@ -505,7 +505,7 @@ const noteDate = (d) => { const t = new Date(d + "T12:00:00"); return isNaN(t) ?
 function updatesSection() {
   const u = info.update || {}, r = u.ready, notes = info.notes || [];
   let status, right;
-  if (r && u.busy) { status = esc(u.note); right = ""; }
+  if (u.busy) { status = esc(u.note); right = ""; }
   else if (r) {
     status = "Version " + esc(r.version) + " is ready. It installs when you click Install, then Desk Buddy restarts." + (u.note ? " " + esc(u.note) : "");
     right = `<span style="display:flex;gap:8px"><button class="pill" onclick="whatsNew=!whatsNew;render()">What's new?</button><button class="pill solid" onclick="act({do:'update'}).then(refresh)">Install</button></span>`;
@@ -515,6 +515,11 @@ function updatesSection() {
     right = `<button class="pill" onclick="this.textContent='Checking…';act({do:'checkupdate'}).then(refresh)">Check for updates</button>`;
   }
   let out = `<div class="label" style="margin-top:22px">Updates</div>` + row("Version " + esc(info.version), status, right);
+  if (notes.length > 1 && !u.busy) {
+    const prev = esc(notes[1].version);
+    out += row("Go back to version " + prev, "If this version gives you trouble. Your tasks and settings stay, and you can update again any time.",
+      `<button class="pill" onclick="if(confirm('Go back to version ${prev}?\\n\\nDesk Buddy downloads it from GitHub and restarts. Your tasks and settings stay.'))act({do:'goback'}).then(refresh)">Go back…</button>`);
+  }
   if (r && whatsNew && !u.busy) {
     const fresh = (r.patchnotes || []).filter((e) => newerVersion(e.version, info.version));
     const list = fresh.length ? fresh : [{version: r.version, items: r.notes || []}];

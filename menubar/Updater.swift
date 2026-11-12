@@ -39,6 +39,21 @@ enum Updater {
         }.resume()
     }
 
+    // fromTag: the Mac part of an older release (for "Go back"), nil when it has none (before 1.2)
+    static func fromTag(_ version: String, _ done: @escaping ([String: Any]?) -> Void) {
+        guard version.allSatisfy({ $0.isNumber || $0 == "." }),
+              let url = URL(string: "https://github.com/deskbuddy-app/desk-buddy/releases/download/v\(version)/desk-buddy-latest.json") else { return done(nil) }
+        var req = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 20)
+        req.setValue("DeskBuddy-mac/" + self.version, forHTTPHeaderField: "User-Agent")
+        URLSession.shared.dataTask(with: req) { data, resp, _ in
+            guard (resp as? HTTPURLResponse)?.statusCode == 200, let data,
+                  let all = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any],
+                  let mac = all["mac"] as? [String: Any], mac["version"] as? String == version,
+                  (mac["url"] as? String)?.hasPrefix("https://github.com/deskbuddy-app/") == true else { return done(nil) }
+            done(mac)
+        }.resume()
+    }
+
     static func entries(_ any: Any?) -> [HelperModel.NoteEntry] {
         (any as? [[String: Any]] ?? []).compactMap { e in
             guard let v = e["version"] as? String else { return nil }

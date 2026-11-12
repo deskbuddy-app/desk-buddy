@@ -161,6 +161,8 @@ func uiRoutes(mux *http.ServeMux) {
 			}
 		case "update":
 			go applyUpdate()
+		case "goback":
+			go goBack()
 		case "checkupdate":
 			if err := checkUpdate(); err != nil {
 				setUpdNote("Couldn't check just now", false)
