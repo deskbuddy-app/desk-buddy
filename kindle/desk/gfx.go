@@ -41,16 +41,28 @@ var (
 )
 
 var (
-	LH     = 758     // the layout's height in Paperwhite 2 units (setPanel)
-	sc     = 1.0     // canvas pixels per layout unit
-	cw, ch = LW, 758 // the canvas (the panel, landscape) in pixels
+	LH          = 758     // the layout's height in Paperwhite 2 units (setPanel)
+	sc          = 1.0     // canvas pixels per layout unit
+	cw, ch      = LW, 758 // the canvas (the panel, landscape) in pixels
+	compactMode bool      // Settings › Screen › Screen size: Compact (for 6" Basic Kindles)
 )
+
+// setCompact switches between the standard layout and the compact 6" Basic Kindle layout.
+func setCompact(on bool) {
+	if compactMode != on {
+		compactMode = on
+		faces = map[string]font.Face{}
+	}
+}
 
 // setPanel fits the layout to a panel of long × short pixels (landscape): the width stays LW
 // units, the height follows the panel's shape. A Paperwhite 2 (1024 × 758) changes nothing.
 func setPanel(long, short int) {
-	if long < 800 || short < 600 {
+	if long < 780 || short < 580 {
 		return
+	}
+	if long <= 800 {
+		isBasicKindle = true
 	}
 	sc = float64(long) / LW
 	LH = int(math.Round(LW * float64(short) / float64(long)))
@@ -92,13 +104,20 @@ func px(v int, s float64) int {
 }
 
 // pxRect turns a layout rectangle into pixels on img (edges round the same way everywhere, so
-// neighbouring areas still meet exactly).
+// neighbouring areas still meet exactly; 1-unit lines stay at least 1 pixel thick on smaller panels).
 func pxRect(img *image.Gray, r image.Rectangle) image.Rectangle {
 	s := scaleOf(img)
 	if s == 1 {
 		return r
 	}
-	return image.Rect(px(r.Min.X, s), px(r.Min.Y, s), px(r.Max.X, s), px(r.Max.Y, s))
+	x0, y0, x1, y1 := px(r.Min.X, s), px(r.Min.Y, s), px(r.Max.X, s), px(r.Max.Y, s)
+	if r.Dx() > 0 && x1 <= x0 {
+		x1 = x0 + 1
+	}
+	if r.Dy() > 0 && y1 <= y0 {
+		y1 = y0 + 1
+	}
+	return image.Rect(x0, y0, x1, y1)
 }
 
 // drawImage draws src filling the layout rectangle r, at the canvas's resolution: copied as it
@@ -148,6 +167,9 @@ func loadFonts() error {
 
 // face returns a cached font face; size is in screen pixels.
 func face(name string, size float64) font.Face {
+	if compactMode && size <= 23 {
+		size += 2 // larger text on 6" Basic Kindles
+	}
 	switch themeName { // two themes bring their own type, everywhere
 	case "typewriter":
 		bold := name == "uiBold" || name == "serifB" || name == "display" || name == "monoB"
@@ -225,8 +247,10 @@ func blend(img *image.Gray, x, y int, c uint8, a float64) {
 		blendPx(img, x, y, c, a)
 		return
 	}
-	for py := px(y, s); py < px(y+1, s); py++ {
-		for pxx := px(x, s); pxx < px(x+1, s); pxx++ {
+	x0, y0 := px(x, s), px(y, s)
+	x1, y1 := max(x0+1, px(x+1, s)), max(y0+1, px(y+1, s))
+	for py := y0; py < y1; py++ {
+		for pxx := x0; pxx < x1; pxx++ {
 			blendPx(img, pxx, py, c, a)
 		}
 	}

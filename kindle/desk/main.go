@@ -85,10 +85,13 @@ type Saved struct {
 	SetAt         float64 `json:"settings_at"`    // ksync.go: when the synced settings last changed (server time)
 	SetDirty      bool    `json:"settings_dirty"` // …changed here, not sent yet
 	Refresh       *int    `json:"refresh"`
+	Compact       *bool   `json:"compact_set,omitempty"`
+	Rotation      int     `json:"rotation,omitempty"`
 }
 
 func loadUI(path string) *UI {
-	ui := &UI{Tab: "tasks", Widget: "day", Collapsed: map[int]bool{}, Event: -1, CalHour: -1, ConfirmRemove: -1, NightLight: -1, DayLight: -1, Refresh: 1, Dismissed: map[string]bool{}, Icons: map[string]map[string]*image.Gray{}, IconsKey: map[string]string{}}
+	ui := &UI{Tab: "tasks", Widget: "day", Collapsed: map[int]bool{}, Event: -1, CalHour: -1, ConfirmRemove: -1, NightLight: -1, DayLight: -1, Refresh: 1, Rotation: 90, Dismissed: map[string]bool{}, Icons: map[string]map[string]*image.Gray{}, IconsKey: map[string]string{}}
+	setCompact(isBasicKindle)
 	var s Saved
 	ui.Tour = 1 // first start (no state.json yet): the tour
 	if b, err := os.ReadFile(path); err == nil && json.Unmarshal(b, &s) == nil {
@@ -109,6 +112,14 @@ func loadUI(path string) *UI {
 		}
 		if s.Refresh != nil {
 			ui.Refresh = max(0, min(2, *s.Refresh))
+		}
+		if s.Compact != nil {
+			setCompact(*s.Compact)
+		} else if isBasicKindle {
+			ui.SetDirty = true
+		}
+		if s.Rotation == 90 || s.Rotation == 270 {
+			ui.Rotation = s.Rotation
 		}
 		if s.NightLight != nil {
 			ui.NightLight = *s.NightLight
@@ -145,7 +156,8 @@ func saveUI(path string, ui *UI) {
 		}
 	}
 	ui.SetKey = settingsKey(ui)
-	s := Saved{Dark: ui.Dark, Tab: ui.Tab, Clock: ui.ClockStyle, Widget: ui.Widget, SideHidden: ui.SideHidden, Font: fontStyle, TempF: tempF, Clock12: ui.Clock12, NoQuote: ui.NoQuote, NoEvent: ui.NoEvent, CalHidden: ui.CalHidden, CalTL: ui.CalTimeline, WeatherOff: ui.WeatherHidden, AutoDark: ui.AutoDark, NightLight: &ui.NightLight, NoHeadsUp: ui.NoHeadsUp, HeadsUpMin: ui.HeadsUpMin, NoUpdShow: ui.NoUpdShow, UpdEvery: ui.UpdEvery, ServerManual: ui.ServerManual, SetAt: ui.SetAt, SetDirty: ui.SetDirty, ShowMusicLogo: ui.ShowMusicLogo, Style: themeName, TourDone: ui.Tour == 0, Refresh: &ui.Refresh}
+	comp := compactMode
+	s := Saved{Dark: ui.Dark, Tab: ui.Tab, Clock: ui.ClockStyle, Widget: ui.Widget, SideHidden: ui.SideHidden, Font: fontStyle, TempF: tempF, Clock12: ui.Clock12, NoQuote: ui.NoQuote, NoEvent: ui.NoEvent, CalHidden: ui.CalHidden, CalTL: ui.CalTimeline, WeatherOff: ui.WeatherHidden, AutoDark: ui.AutoDark, NightLight: &ui.NightLight, NoHeadsUp: ui.NoHeadsUp, HeadsUpMin: ui.HeadsUpMin, NoUpdShow: ui.NoUpdShow, UpdEvery: ui.UpdEvery, ServerManual: ui.ServerManual, SetAt: ui.SetAt, SetDirty: ui.SetDirty, ShowMusicLogo: ui.ShowMusicLogo, Style: themeName, TourDone: ui.Tour == 0, Refresh: &ui.Refresh, Compact: &comp, Rotation: ui.Rotation}
 	for id, c := range ui.Collapsed {
 		if c {
 			s.Collapsed = append(s.Collapsed, id)
@@ -154,6 +166,18 @@ func saveUI(path string, ui *UI) {
 	b, _ := json.Marshal(s)
 	if err := os.WriteFile(path, b, 0o644); err != nil {
 		log.Println("save state:", err)
+	}
+	if configPath != "" && (ui.Rotation == 90 || ui.Rotation == 270) {
+		m := map[string]any{}
+		if cb, err := os.ReadFile(configPath); err == nil {
+			json.Unmarshal(cb, &m)
+		}
+		if r, _ := m["rotation"].(float64); int(r) != ui.Rotation && len(m) > 0 {
+			m["rotation"] = ui.Rotation
+			if out, err := json.MarshalIndent(m, "", "  "); err == nil {
+				os.WriteFile(configPath, out, 0o644)
+			}
+		}
 	}
 }
 
@@ -208,6 +232,7 @@ func main() {
 	previewBattery = flag.Int("battery", -1, "with -preview: show this battery level")
 	tabs := flag.String("tabs", "", "with -preview: tab style (segmented, icons, underline)")
 	panelFlag := flag.String("panel", "", "with -preview: draw for another Kindle's screen, landscape pixels (1448x1072, 1648x1236)")
+	compactFlag := flag.Bool("compact", false, "with -preview: compact layout for 6-inch Basic Kindles")
 	flag.Parse()
 	log.SetFlags(log.Ltime)
 
@@ -228,6 +253,9 @@ func main() {
 		if w, h := panelSize(); abs(w-PW) > 16 || abs(h-PH) > 16 {
 			setPanel(h, w) // portrait → landscape
 		}
+	}
+	if *preview != "" {
+		setCompact(*compactFlag || isBasicKindle)
 	}
 	client := NewClient(cfg.Server, cfg.Key)
 	if *tabs != "" {
@@ -296,9 +324,9 @@ func main() {
 	}
 
 	debug.SetGCPercent(50) // the Kindle has ~100 MB to spare
-	go func() {            // once: how many fingers the touchscreen follows (seen in GET /api/kindle/log)
+	go func() {            // once: how many fingers the touchscreen follows and panel size (seen in GET /api/kindle/log)
 		time.Sleep(20 * time.Second)
-		client.report(fmt.Sprintf("info: touchscreen follows up to %d fingers", touchFingers))
+		client.report(fmt.Sprintf("info: panel %dx%d (compact=%v, basic=%v), touchscreen follows up to %d fingers", cw, ch, compactMode, isBasicKindle, touchFingers))
 	}()
 	dir := filepath.Dir(*confPath)
 	configPath = *confPath
@@ -422,7 +450,7 @@ func calRange(ui *UI) (int64, int64) {
 // isLocal reports whether an action only changes what the Kindle shows.
 func isLocal(act string) bool {
 	switch act {
-	case "tab", "dark", "select", "collapse", "page", "month", "day", "event", "menu", "note", "refresh", "deckfor", "deckpage", "wday", "standby", "clockstyle", "lightmenu", "light", "setdark", "standbyctl", "deckall", "favcancel", "favask", "deckedit", "focusview", "widget", "sidehide", "settings", "setfont", "checkupdate", "cover", "coverfull", "coverbare", "calevent", "clock12", "clockquote", "clockevent", "key", "kbcancel", "addnew", "calhide", "calmode", "calhour", "weatherhide", "eventnew", "placenew", "evtime", "evlen", "evallday", "evtitle", "delask", "setunit", "clearask", "outputs", "settheme", "nightlight", "headsup", "headsupmin", "dismiss", "tour", "binask", "setrefresh", "serverpick", "serverfind", "offlineinfo", "retry", "about", "settab", "showupdates", "notespage", "calpage", "updshow", "updevery", "notesmodal", "notesscroll", "volopen", "musiclogo", "settheme2", "serverauto":
+	case "tab", "dark", "select", "collapse", "page", "month", "day", "event", "menu", "note", "refresh", "deckfor", "deckpage", "wday", "standby", "clockstyle", "lightmenu", "light", "setdark", "standbyctl", "deckall", "favcancel", "favask", "deckedit", "focusview", "widget", "sidehide", "settings", "setfont", "checkupdate", "cover", "coverfull", "coverbare", "calevent", "clock12", "clockquote", "clockevent", "key", "kbcancel", "addnew", "calhide", "calmode", "calhour", "weatherhide", "eventnew", "placenew", "evtime", "evlen", "evallday", "evtitle", "delask", "setunit", "clearask", "outputs", "settheme", "nightlight", "headsup", "headsupmin", "dismiss", "tour", "binask", "setrefresh", "serverpick", "serverfind", "offlineinfo", "retry", "about", "settab", "showupdates", "notespage", "calpage", "updshow", "updevery", "notesmodal", "notesscroll", "volopen", "musiclogo", "settheme2", "serverauto", "setcompact", "setrot", "fliprot":
 		return true
 	}
 	return false
@@ -430,9 +458,15 @@ func isLocal(act string) bool {
 
 // run shows the desk until the user leaves (returns 0) or an update is ready (exitUpdate).
 func run(cfg Config, client *Client, statePath, dir string) int {
+	pauseKindleUI()
+	clearScreen()
 	go ensureLibraryItem(dir) // the library's "Desk Buddy" item and its cover (buddy.go)
 	go wifiDiary(dir, client) // why does the Wi-Fi drop? (wifidiary.go)
-	scr := NewScreen(cfg.Rotation, cfg.FullRefreshEvery)
+	ui := loadUI(statePath)
+	if ui.Rotation != 90 && ui.Rotation != 270 {
+		ui.Rotation = cfg.Rotation
+	}
+	scr := NewScreen(ui.Rotation, cfg.FullRefreshEvery)
 	taps := make(chan Tap, 8)
 	power := make(chan struct{}, 1)
 	sigs := make(chan os.Signal, 1)
@@ -443,7 +477,6 @@ func run(cfg Config, client *Client, statePath, dir string) int {
 	var (
 		desk       *Desk
 		view       *View
-		ui         = loadUI(statePath)
 		cloudURL   = cfg.Cloud
 		wifiNudged time.Time     // last time we asked the Kindle to turn Wi-Fi on
 		clockTried bool          // set the clock from the server once per run
@@ -732,6 +765,9 @@ func run(cfg Config, client *Client, statePath, dir string) int {
 		// (between the four tabs the header stays: only the page below it flashes, as the
 		// big changed area it is, and the two tab buttons redraw quietly)
 		view = v
+		if ui.Rotation == 90 || ui.Rotation == 270 {
+			scr.rot = ui.Rotation
+		}
 		scr.Dark = ui.Dark
 		scr.Quiet = (v.Kind == "standby" && !ui.StandbyCtl) || v.Kind == "focus"
 		scr.Splits, scr.SplitY, scr.Level = v.Splits, v.SplitY, ui.Refresh
@@ -987,6 +1023,30 @@ func run(cfg Config, client *Client, statePath, dir string) int {
 		case "setfont":
 			fontStyle = t.Arg
 			scr.Forget()
+			saveUI(statePath, ui)
+		case "setcompact":
+			setCompact(t.Arg == "1")
+			scr.Forget()
+			saveUI(statePath, ui)
+		case "setrot":
+			if t.Arg == "270" {
+				ui.Rotation = 270
+			} else {
+				ui.Rotation = 90
+			}
+			scr.rot = ui.Rotation
+			clearScreen()
+			scr.ForceFlash()
+			saveUI(statePath, ui)
+		case "fliprot":
+			if ui.Rotation == 270 {
+				ui.Rotation = 90
+			} else {
+				ui.Rotation = 270
+			}
+			scr.rot = ui.Rotation
+			clearScreen()
+			scr.ForceFlash()
 			saveUI(statePath, ui)
 		case "checkupdate":
 			ui.UpdateNote = "Checking…"
@@ -1586,6 +1646,11 @@ func run(cfg Config, client *Client, statePath, dir string) int {
 				continue
 			}
 			target := *tg
+			if target.Act == "quitapp" {
+				log.Println("exit to kindle: leaving")
+				leave()
+				return 0
+			}
 			if target.Act == "restartapp" { // run.sh starts the app again, as after an update
 				log.Println("restart asked for")
 				return exitUpdate
@@ -1867,7 +1932,8 @@ func abs(n int) int {
 	return n
 }
 
-// leave blanks the panel; run.sh then wakes the Kindle's own UI, which redraws itself.
+// leave blanks the panel and wakes the Kindle's own UI, which redraws itself.
 func leave() {
 	clearScreen()
+	resumeKindleUI()
 }

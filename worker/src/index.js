@@ -43,6 +43,8 @@ const KINDLE_SETTINGS = {
   update_show: (v) => typeof v === "boolean",
   update_every: (v) => [1, 12, 24].includes(v),
   music_logo: (v) => typeof v === "boolean",
+  compact: (v) => typeof v === "boolean",
+  rotation: (v) => [90, 270].includes(v),
   style: (v) => ["plain", "garden", "sketch", "classic", "retro", "notebook", "typewriter", "gameboy"].includes(v), // Settings › Themes
 };
 
@@ -244,11 +246,18 @@ async function handle(request, env, ctx) {
       const b = await body(request);
       if (!(b.machine in MACHINES)) throw new HttpError(400, "machine must be mac or pc");
       const hb = (await db.get("heartbeats")) || {};
-      const before = (await db.resolve())[0], wasDark = (hb[b.machine] || {}).dark;
-      hb[b.machine] = { at: now(), idle: Number(b.idle) || 0, ...(typeof b.dark === "boolean" ? { dark: b.dark } : {}) };
+      const before = (await db.resolve())[0], wasDark = (hb[b.machine] || {}).dark, wasOS = (hb[b.machine] || {}).os;
+      const os = b.machine === "pc" ? (b.os === "linux" ? "linux" : b.os === "windows" ? "windows" : wasOS) : undefined;
+      hb[b.machine] = {
+        at: now(),
+        idle: Number(b.idle) || 0,
+        ...(typeof b.dark === "boolean" ? { dark: b.dark } : {}),
+        ...(os ? { os } : {}),
+      };
       await db.set("heartbeats", hb);
+      if (b.machine === "pc" && os) await db.set("pc_os", os);
       const profile = (await db.resolve())[0];
-      if (profile !== before || (typeof b.dark === "boolean" && b.dark !== wasDark)) await db.changed();
+      if (profile !== before || (typeof b.dark === "boolean" && b.dark !== wasDark) || (os && os !== wasOS)) await db.changed();
       return json({ profile });
     }
     if (path === "/api/claude" && method === "POST") {
@@ -339,6 +348,9 @@ async function handle(request, env, ctx) {
     if (path === "/api/deck/icons" && method === "POST") {
       const b = await body(request);
       if (!(b.machine in MACHINES) || typeof b.icons !== "object") throw new HttpError(400, "Send {machine, icons: {label: base64 png}, apps: [names]}.");
+      if (b.machine === "pc" && (b.os === "linux" || b.os === "windows")) {
+        await db.set("pc_os", b.os);
+      }
       let seeded = false;
       // Every app on that computer (the Kindle's "All apps" view); names only, sorted.
       if (Array.isArray(b.apps)) {
@@ -1025,6 +1037,15 @@ class Store {
     return Object.keys(MACHINES).filter((m) => (kv.heartbeats || {})[m] || kv[`deck_apps_${m}`]);
   }
 
+  pcLabel(kv) {
+    const os = (kv.heartbeats || {}).pc?.os || kv.pc_os;
+    return os === "linux" ? "Linux" : "Windows";
+  }
+
+  machineLabel(machine, kv) {
+    return machine === "pc" ? this.pcLabel(kv) : MACHINES[machine][1];
+  }
+
   // With fewer than two computers connected there's nothing to switch between: the one
   // computer's list (the Mac's when none has connected yet). null when both are connected.
   onlyList(kv) {
@@ -1051,7 +1072,8 @@ class Store {
     }
     const one = ((kv.settings || {}).task_lists || SETTINGS.task_lists.def) === "one";
     if (best) {
-      const [profile, label] = MACHINES[best[0]];
+      const [profile] = MACHINES[best[0]];
+      const label = this.machineLabel(best[0], kv);
       return [one ? "work" : profile, `${label} in use`];
     }
     const l = local(t, this.tz);
@@ -1063,7 +1085,7 @@ class Store {
   idleList(kv) {
     if (((kv.settings || {}).task_lists || SETTINGS.task_lists.def) === "one") return ["work", "one list"];
     const lastUsed = Object.entries(kv.heartbeats || {}).filter(([m]) => m in MACHINES).sort((a, b) => b[1].at - a[1].at)[0];
-    return lastUsed ? [MACHINES[lastUsed[0]][0], `${MACHINES[lastUsed[0]][1]} used last`] : ["work", "default"];
+    return lastUsed ? [MACHINES[lastUsed[0]][0], `${this.machineLabel(lastUsed[0], kv)} used last`] : ["work", "default"];
   }
 
   async state() {
@@ -1073,6 +1095,7 @@ class Store {
     const all = await this.tasks();
     return {
       profile, reason,
+      pc_label: this.pcLabel(kv),
       mode: kv.override && t < kv.override.until && !this.onlyList(kv) ? kv.override.profile : "auto",
       computers: this.connectedMachines(kv), // fewer than two: no Mac / Windows choice, "Searching…"
       claude: kv.claude ?? null,
@@ -1128,7 +1151,7 @@ class Store {
       return {
         profile: p,
         machine,
-        machine_label: MACHINES[machine][1],
+        machine_label: this.machineLabel(machine, kv),
         online: !!hb && t - hb.at < 180,
         tiles: ((kv.deck || DEFAULT_DECK)[p] || []).map((x) => ({ label: x.label, app: x.app || x.win || "" })),
         icons_version: kv[`deck_icons_ver_${machine}`] || "",
@@ -1149,6 +1172,7 @@ class Store {
       screen: msg ? "message" : night ? "night" : "tasks",
       message: msg ? msg.text : null,
       profile, reason, mode,
+      pc_label: this.pcLabel(kv),
       tasks: all
         .filter((x) => x.profile === (kv.demo ? profile + "_demo" : profile))
         .map((x) => ({ id: x.id, text: x.text, done: !!x.done, pinned: !!x.pinned, tag: x.tag, parent_id: x.parent_id ?? null, notes: x.notes ?? "" })),
@@ -1312,27 +1336,29 @@ ${sub ? "" : `<form class="add" method="post" action="/do/add">${ret}<input type
   };
   const top = tasks.filter((x) => !x.parent_id);
   const done = top.filter((x) => x.done).length;
-  const name = single ? LIST_NAME[kindleList] : one ? "Tasks" : LIST_NAME[list];
+  const pcLabel = s.pc_label || "Windows";
+  const listNames = { work: "Mac", home: pcLabel };
+  const name = single ? listNames[kindleList] : one ? "Tasks" : listNames[list];
   const seen = Object.entries(s.heartbeats).filter(([m]) => m in MACHINES)
-    .map(([m, h]) => `${MACHINES[m][1]} seen ${ago(t - h.at)}`).join(" · ");
+    .map(([m, h]) => `${m === "pc" ? pcLabel : MACHINES[m][1]} seen ${ago(t - h.at)}`).join(" · ");
   const listSwitch = one ? "" : `<div class="seg" role="tablist">${PROFILES.map((p) =>
-    `<a href="/app?list=${p}" class="${p === list ? "on" : ""}" role="tab" aria-selected="${p === list}">${LIST_NAME[p]}</a>`).join("")}</div>`;
-  const kindleNow = s.profile === "night" ? "the night clock" : one ? "your tasks" : `the ${LIST_NAME[kindleList]} list`;
+    `<a href="/app?list=${p}" class="${p === list ? "on" : ""}" role="tab" aria-selected="${p === list}">${listNames[p]}</a>`).join("")}</div>`;
+  const kindleNow = s.profile === "night" ? "the night clock" : one ? "your tasks" : `the ${listNames[kindleList]} list`;
   const modes = `<div class="seg">${["work", "home", "auto"].map((m) =>
-    post(`/do/mode/${m}`, m === "auto" ? "Auto" : LIST_NAME[m], s.mode === m ? "on" : "")).join("")}</div>`;
+    post(`/do/mode/${m}`, m === "auto" ? "Auto" : listNames[m], s.mode === m ? "on" : "")).join("")}</div>`;
   // calendar links (Google and others); the Mac's Calendar app syncs by itself
   const cals = (await db.get("calendars")) || [];
   const macCal = await db.get("cal_push_mac");
   const calCache = await db.calendarCache();
   const calBox = `<details class="cal"><summary><div><b>Calendars</b><span>The Mac's calendar, and links to others</span></div></summary>
 ${macCal ? `<div class="line"><div>Mac Calendar app<div class="h">${macCal.events.length} events · synced ${new Date(macCal.at * 1000).toLocaleTimeString("en-GB", { timeZone: db.tz, hour: "2-digit", minute: "2-digit" })}</div></div></div>` : ""}
-${cals.map((c, i) => `<div class="line"><div>${esc(c.name)}<div class="h">${c.profile === "both" ? "Both lists" : LIST_NAME[c.profile] || title(c.profile)}</div></div>${post(`/do/cal-del/${i}`, "Remove")}</div>`).join("")}
+${cals.map((c, i) => `<div class="line"><div>${esc(c.name)}<div class="h">${c.profile === "both" ? "Both lists" : listNames[c.profile] || title(c.profile)}</div></div>${post(`/do/cal-del/${i}`, "Remove")}</div>`).join("")}
 ${calCache.errors?.length ? `<p class="status">Couldn't load: ${esc(calCache.errors.join("; "))}</p>` : ""}
 <form class="calform" method="post" action="/do/cal-add">${ret}
 <p class="status">Add a calendar by its private link (Google Calendar: Settings › your calendar › “Secret address in iCal format”).</p>
 <input type="text" name="name" placeholder="Name" maxlength="30" aria-label="Calendar name">
 <input type="url" name="url" placeholder="https://… .ics" required aria-label="Calendar link">
-<select name="profile" aria-label="Show on"><option value="both">Both lists</option><option value="work">Mac</option><option value="home">Windows</option></select>
+<select name="profile" aria-label="Show on"><option value="both">Both lists</option><option value="work">Mac</option><option value="home">${esc(pcLabel)}</option></select>
 <div><button class="pill solid">Add calendar</button></div></form></details>`;
   return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">

@@ -80,28 +80,41 @@ func settingsView(v *View, d *Desk, st Status, ui *UI) {
 		act         string
 		off         bool // greyed out and not tappable (what it depends on is off)
 	}
-	col := func(x0, x1, y int, heading string, rows []row) {
+	col := func(x0, x1, y int, heading string, rows []row) int {
 		label(img, x0, y, heading, grey2)
 		y += 18
+		step := 74
+		if len(rows) >= 6 {
+			step = 54
+		} else if len(rows) >= 5 {
+			step = 62
+		}
 		for _, r := range rows {
 			cw := 72 // each choice at least 72 wide, wider for longer words ("Per computer")
 			for _, l := range r.labels {
 				cw = max(cw, textW(face("uiBold", 16), l)+28)
 			}
 			w := min(320, cw*len(r.labels))
-			drawText(img, face("serifB", 20), x0, y+30, r.title, ink)
+			ty, hy, sy, bh := y+30, y+52, y+10, 44
+			if step == 54 {
+				ty, hy, sy, bh = y+23, y+41, y+5, 40
+			} else if step < 74 {
+				ty, hy, sy = y+26, y+46, y+8
+			}
+			drawText(img, face("serifB", 20), x0, ty, r.title, ink)
 			if r.hint != "" {
-				drawText(img, face("ui", 13), x0, y+52, ellipsize(face("ui", 13), r.hint, x1-x0-w-16), grey2)
+				drawText(img, face("ui", 13), x0, hy, ellipsize(face("ui", 13), r.hint, x1-x0-w-16), grey2)
 			}
 			n := len(v.Targets)
-			segmented(v, image.Rect(x1-w, y+10, x1, y+54), r.labels, r.args, r.sel, r.act)
+			segmented(v, image.Rect(x1-w, sy, x1, sy+bh), r.labels, r.args, r.sel, r.act)
 			if r.off {
-				fade(img, image.Rect(x0, y, x1, y+64))
+				fade(img, image.Rect(x0, y, x1, y+step-8))
 				v.Targets = v.Targets[:n]
 			}
-			fillRect(img, image.Rect(x0, y+68, x1, y+69), grey4)
-			y += 74
+			fillRect(img, image.Rect(x0, y+step-6, x1, y+step-5), grey4)
+			y += step
 		}
+		return y
 	}
 	dark := 0
 	if ui.Dark {
@@ -132,7 +145,7 @@ func settingsView(v *View, d *Desk, st Status, ui *UI) {
 		id, name, hint string
 		glyph          func(*image.Gray, float64, float64, uint8)
 	}{
-		{"screen", "Screen", "Theme, font, °C / °F", sunGlyph},
+		{"screen", "Screen", "Theme, size, font", sunGlyph},
 		{"focus", "Focus", "Pomodoro and breaks", focusGlyph},
 		{"music", "Music", "App, sync and covers", noteGlyph},
 		{"tasks", "Tasks", "Lists, clearing", tasksGlyph},
@@ -146,7 +159,7 @@ func settingsView(v *View, d *Desk, st Status, ui *UI) {
 	if cur == "" {
 		cur = "screen"
 	}
-	const rowH = 76
+	const rowH = 68
 	for i, sec := range sections {
 		r := image.Rect(0, barH+2+i*rowH, sideW-2, barH+2+(i+1)*rowH)
 		fg, soft := ink, grey2
@@ -157,8 +170,8 @@ func settingsView(v *View, d *Desk, st Status, ui *UI) {
 			fillRect(img, image.Rect(pad, r.Min.Y, sideW-2-pad, r.Min.Y+1), grey4)
 		}
 		sec.glyph(img, float64(pad+12), float64(r.Min.Y+rowH/2), fg)
-		drawText(img, face("serifB", 22), pad+40, r.Min.Y+36, sec.name, fg)
-		drawText(img, face("ui", 14), pad+40, r.Min.Y+58, sec.hint, soft)
+		drawText(img, face("serifB", 22), pad+40, r.Min.Y+32, sec.name, fg)
+		drawText(img, face("ui", 14), pad+40, r.Min.Y+52, sec.hint, soft)
 		if sec.id != cur {
 			chevron(img, float64(sideW-2-pad), float64(r.Min.Y+rowH/2), 5, "right", grey2)
 		}
@@ -166,15 +179,25 @@ func settingsView(v *View, d *Desk, st Status, ui *UI) {
 	}
 
 	x0, x1 := sideW+40, LW-pad
-	y := barH + 30
+	y := barH + 26
 	switch cur {
 	case "screen":
 		theme, themeHint := dark, "Dark: white on black"
 		if ui.AutoDark {
 			theme, themeHint = 2, "Dark when your Mac is, else sunset to sunrise"
 		}
+		compSel := 0
+		if compactMode {
+			compSel = 1
+		}
+		rotSel := 0
+		if ui.Rotation == 270 {
+			rotSel = 1
+		}
 		rows := []row{
 			{"Theme", themeHint, []string{"Light", "Dark", "Auto"}, []string{"light", "dark", "auto"}, theme, "settheme", false},
+			{"Screen size", "Compact: larger text and tiles for 6\" Basic Kindles", []string{"Standard", "Compact"}, []string{"0", "1"}, compSel, "setcompact", false},
+			{"Orientation", "Which side the Kindle's chin is on", []string{"Left", "Right"}, []string{"90", "270"}, rotSel, "setrot", false},
 			{"Font", "For tasks and headings", []string{"Sans", "Serif", "Inter", "Bitter"}, fontStyles, font, "setfont", false},
 			{"Temperature", "For the weather", []string{"°C", "°F"}, []string{"c", "f"}, unit, "setunit", false},
 		}
@@ -192,8 +215,8 @@ func settingsView(v *View, d *Desk, st Status, ui *UI) {
 		}
 		night := row{"Night brightness", nightHint, []string{"Same", "Off", "Low", "Mid"}, []string{"-1", "0", "4", "10"}, sel, "nightlight", !ui.AutoDark}
 		rows = append(rows[:1], append([]row{night}, rows[1:]...)...)
-		col(x0, x1, y, "SCREEN", rows)
-		refreshCards(v, ui, x0, x1, y+18+len(rows)*74)
+		ny := col(x0, x1, y, "SCREEN", rows)
+		refreshCards(v, ui, x0, x1, ny)
 	case "focus":
 		col(x0, x1, y, "FOCUS", []row{
 			{"Focus length", "Minutes per Pomodoro", []string{"25", "45", "50"}, []string{"focus_min=25", "focus_min=45", "focus_min=50"}, pick(focus, nval("focus_min", 25)), "setting", false},
@@ -208,7 +231,8 @@ func settingsView(v *View, d *Desk, st Status, ui *UI) {
 			{"Album covers", "On the music screen (Spotify, and Apple Music songs with artwork)", []string{"On", "Off"}, []string{"album_covers=true", "album_covers=false"}, onOff(bval("album_covers", true)), "setting", !bval("music_sync", true)},
 		})
 	case "tasks":
-		sep, sepHint := 0, "Your Mac and Windows PC each get their own tasks"
+		pc := pcName(d)
+		sep, sepHint := 0, "Your Mac and "+pc+" PC each get their own tasks"
 		if searching(d) {
 			sepHint = "Searching for other devices… connect another computer first"
 		}
@@ -232,7 +256,7 @@ func settingsView(v *View, d *Desk, st Status, ui *UI) {
 		v.add(Target{R: cb.Inset(-4), Show: cb, Act: "clearask"})
 		fillRect(img, image.Rect(x0, y+68, x1, y+69), grey4)
 		nf := face("ui", 15)
-		notes := []string{"Which list shows: pick Mac, Windows or Auto in the menu", "at the top left. Auto follows the computer you're using.", "", "Turning Separate lists off adds the Windows tasks", "to the Mac's, as one list."}
+		notes := []string{"Which list shows: pick Mac, " + pc + " or Auto in the menu", "at the top left. Auto follows the computer you're using.", "", "Turning Separate lists off adds the " + pc + " tasks", "to the Mac's, as one list."}
 		if oneList(d) {
 			notes = []string{"Turn Separate lists on to give each computer its own", "list again. Your tasks stay in the Mac's list."}
 		} else if searching(d) {
@@ -408,7 +432,7 @@ func refreshCards(v *View, ui *UI, x0, x1, y int) {
 	}
 	const gap = 16
 	cw := (x1 - x0 - 2*gap) / 3
-	top, bottom := y+68, LH-20
+	top, bottom := y+62, LH-18
 	for i, c := range cards {
 		r := image.Rect(x0+i*(cw+gap), top, x0+i*(cw+gap)+cw, bottom)
 		if i == ui.Refresh {
@@ -417,11 +441,12 @@ func refreshCards(v *View, ui *UI, x0, x1, y int) {
 			strokeRoundRect(img, r, 12, 2, grey4)
 		}
 		// the picture: a little screen with a list on it
-		pw, ph := 150, 96
-		p := image.Rect((r.Min.X+r.Max.X-pw)/2, r.Min.Y+18, (r.Min.X+r.Max.X+pw)/2, r.Min.Y+18+ph)
+		pw, ph := 150, min(96, max(64, (bottom-top)-136))
+		p := image.Rect((r.Min.X+r.Max.X-pw)/2, r.Min.Y+16, (r.Min.X+r.Max.X+pw)/2, r.Min.Y+16+ph)
 		fillRect(img, p, paper)
+		rowGap := max(13, (ph-20)/4)
 		for k := 0; k < 4; k++ { // the list's lines
-			ly := p.Min.Y + 16 + k*20
+			ly := p.Min.Y + 12 + k*rowGap
 			if i == 0 && k == 1 { // gentle: a faint ghost of what was there before
 				fillRect(img, image.Rect(p.Min.X+18, ly+5, p.Min.X+18+70, ly+9), grey4)
 			}
@@ -430,17 +455,17 @@ func refreshCards(v *View, ui *UI, x0, x1, y int) {
 		}
 		switch i {
 		case 1: // normal: only the changed row flashes
-			fl := image.Rect(p.Min.X+6, p.Min.Y+29, p.Max.X-6, p.Min.Y+49)
+			fl := image.Rect(p.Min.X+6, p.Min.Y+12+rowGap-4, p.Max.X-6, p.Min.Y+12+rowGap+12)
 			invertRect(img, fl)
 		case 2: // clean: every change flashes, the small ones too
-			invertRect(img, image.Rect(p.Min.X+6, p.Min.Y+29, p.Max.X-6, p.Min.Y+49))
-			invertRect(img, image.Rect(p.Min.X+8, p.Min.Y+68, p.Min.X+24, p.Min.Y+82))
-			invertRect(img, image.Rect(p.Max.X-30, p.Min.Y+8, p.Max.X-8, p.Min.Y+22))
+			invertRect(img, image.Rect(p.Min.X+6, p.Min.Y+12+rowGap-4, p.Max.X-6, p.Min.Y+12+rowGap+12))
+			invertRect(img, image.Rect(p.Min.X+8, p.Max.Y-24, p.Min.X+24, p.Max.Y-10))
+			invertRect(img, image.Rect(p.Max.X-30, p.Min.Y+6, p.Max.X-8, p.Min.Y+18))
 		}
 		strokeRoundRect(img, p.Inset(-2), 6, 2, ink)
 		// name, with a filled dot when chosen, and what it does
 		nf := face("uiBold", 18)
-		ny := p.Max.Y + 34
+		ny := p.Max.Y + 30
 		if i == ui.Refresh {
 			fillCircle(img, float64(r.Min.X+24), float64(ny-6), 6, ink)
 		} else {
@@ -464,8 +489,9 @@ func calendarList(v *View, d *Desk, ui *UI, x0, x1, y int) {
 		drawText(img, face("ui", 15), x0, y+34, "None yet. Desk Buddy brings in your computer's calendars.", grey2)
 		return
 	}
-	labels, args := []string{"Both", "Mac", "Windows", "Off"}, []string{"both", "work", "home", "off"}
-	hint := map[string]string{"both": "On both lists", "work": "Only on the Mac list", "home": "Only on the Windows list", "off": "Not shown"}
+	pc := pcName(d)
+	labels, args := []string{"Both", "Mac", pc, "Off"}, []string{"both", "work", "home", "off"}
+	hint := map[string]string{"both": "On both lists", "work": "Only on the Mac list", "home": "Only on the " + pc + " list", "off": "Not shown"}
 	if oneList(d) || searching(d) {
 		labels, args = []string{"On", "Off"}, []string{"both", "off"}
 		hint = map[string]string{"both": "Shown", "work": "Shown", "home": "Shown", "off": "Not shown"}

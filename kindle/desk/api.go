@@ -36,7 +36,8 @@ type Desk struct {
 	Message   string          `json:"message"`
 	Profile   string          `json:"profile"`
 	Reason    string          `json:"reason"`
-	Mode      string          `json:"mode"` // work, home, auto
+	Mode      string          `json:"mode"`     // work, home, auto
+	PCLabel   string          `json:"pc_label"` // "Linux" when the connected PC runs Linux, else "Windows"
 	Tasks     []Task          `json:"tasks"`
 	OpenTotal int             `json:"open_total"`
 	Claude    *Claude         `json:"claude"`

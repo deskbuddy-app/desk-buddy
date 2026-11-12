@@ -14,7 +14,7 @@ if [ -f /tmp/desk.pid ] && kill -0 "$(cat /tmp/desk.pid)" 2>/dev/null; then exit
 echo $$ > /tmp/desk.pid
 
 restore() {
-  killall -CONT cvm 2>/dev/null                                        # wake the Kindle UI
+  killall -CONT cvm kppMainApp mesquite webreader 2>/dev/null            # wake the Kindle UI
   lipc-set-prop com.lab126.pillow disableEnablePillow enable 2>/dev/null # top bar back
   lipc-set-prop com.lab126.powerd preventScreenSaver 0 2>/dev/null
   # Make the Kindle redraw its own screen: open Settings, then go Home.
@@ -38,7 +38,7 @@ sleep 3
 
 lipc-set-prop com.lab126.powerd preventScreenSaver 1      # no screensaver or sleep
 lipc-set-prop com.lab126.pillow disableEnablePillow disable # hide the top bar
-killall -STOP cvm 2>/dev/null                               # pause the Kindle UI so it can't draw over us
+killall -STOP cvm kppMainApp mesquite webreader 2>/dev/null # pause the Kindle UI so it can't draw over us
 
 # Run from /tmp so it works whether or not /mnt/us allows running programs.
 # Exit code 3: the app has installed an update over Wi-Fi (into $DIR/desk, old one kept

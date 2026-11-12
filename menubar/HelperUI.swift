@@ -864,6 +864,8 @@ struct HelperWindow: View {
         choice("Theme", (k["theme"] as? String) == "auto" ? "Dark when your Mac is, else sunset to sunrise" : "Light or dark", ["Light", "Dark", "Auto"], ["light", "dark", "auto"], k["theme"], enabled: ok) { ks("theme", $0) }
         choice("Night brightness", "Front light while Auto is dark", ["Same", "Off", "Low", "Mid"], [-1, 0, 4, 10], k["night_light"], enabled: ok && (k["theme"] as? String) == "auto") { ks("night_light", $0) }
         choice("Font", "For tasks and headings", ["Sans", "Serif", "Inter", "Bitter"], ["sans", "serif", "inter", "bitter"], k["font"], enabled: ok) { ks("font", $0) }
+        choice("Screen size", "Compact uses larger text and touch targets for 6″ Basic Kindles (2022, 2024 and older)", ["Standard", "Compact"], [false, true], (k["compact"] as? Bool) ?? false, enabled: ok) { ks("compact", $0) }
+        choice("Orientation", "Flip the landscape screen 180° (which side the Kindle's bottom bezel is on)", ["Left", "Right"], [90, 270], (k["rotation"] as? Int) ?? 90, enabled: ok) { ks("rotation", $0) }
         choice("Temperature", "For the weather", ["°C", "°F"], [false, true], k["temp_f"], enabled: ok) { ks("temp_f", $0) }
         choice("Screen refresh", ["Never flashes; faint ghosts may stay", "Big changes flash, only where they changed", "Every change flashes; sharpest"][min(2, max(0, (k["refresh"] as? Int) ?? 1))], ["Gentle", "Normal", "Clean"], [0, 1, 2], k["refresh"], enabled: ok) { ks("refresh", $0) }
         SpacedLabel(text: "Standby clock").padding(.top, 22)

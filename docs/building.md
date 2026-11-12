@@ -7,6 +7,7 @@
 | `kindle/desk/` | The Kindle app: draws the screen with FBInk, reads touch, talks to the server, updates itself | Go (static 32-bit ARM) |
 | `worker/` | The server: tasks, calendar, weather, Deck, music, settings, the phone page | JavaScript (Cloudflare Workers, or Bun on your Mac) |
 | `menubar/` | Desk Buddy for Mac: the menu bar app and its window | Swift, SwiftUI |
+| `windows/` | Desk Buddy for Windows & Linux: tray icon, local UI window, Deck apps, music, volume, USB Kindle setup | Go (`*_windows.go` and `*_linux.go`) |
 | `backend/helper.py` | The Mac app's helper: "you're at this Mac", Deck, music, chime | Python (macOS's own) |
 | `brand/` | The Desk Buddy character, app and menu bar icons | |
 
@@ -41,9 +42,21 @@ The Kindle is 32-bit: use `int64` for anything with timestamps (`GOARCH=arm go v
 go run . -config kindle-files/config.example.json -preview out.png                 # needs a running server in the config
 go run . -preview out.png -json sample.json                                        # from saved /api/desk JSON
 go run . ... -tab calendar | -dark | -settings -settab server | -standby -clock 1 -theme garden
+go run . -preview out-basic-2024.png -panel 1448x1072 -compact                     # 6" Kindle Basic (2022 / 2024) in Compact mode
+go run . -preview out-basic-800.png -panel 800x600 -compact                        # older 6" Kindle Basic (800×600) in Compact mode
 ```
 
 `main.go` lists every preview flag.
+
+## Windows & Linux app
+
+```sh
+cd worker && npm install && cd ../windows
+./build.sh            # Windows x64: dist/Desk Buddy for Windows/ and dist/Desk-Buddy-for-Windows.zip
+./build-linux.sh      # Linux x64/arm64: dist/Desk Buddy for Linux/ and dist/Desk-Buddy-for-Linux.zip
+```
+
+On Debian/Ubuntu, building the Linux systray requires `libgtk-3-dev` and `libayatana-appindicator3-dev` (or `libappindicator3-dev`).
 
 ## Server
 

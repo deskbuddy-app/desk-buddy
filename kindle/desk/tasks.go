@@ -337,6 +337,12 @@ func nowCard(v *View, d *Desk, ui *UI, t Task, kids []Task, x0, x1, y int, now i
 }
 
 func rowSize(sub bool) (h int, r float64) {
+	if compactMode {
+		if sub {
+			return 52, 12.5
+		}
+		return 62, 15.5
+	}
 	if sub {
 		return 46, 11
 	}

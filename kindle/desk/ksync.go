@@ -39,11 +39,16 @@ func kindleSettings(ui *UI) map[string]any {
 	if ue == 0 {
 		ue = 12
 	}
+	rot := ui.Rotation
+	if rot != 270 {
+		rot = 90
+	}
 	return map[string]any{
 		"theme": theme, "night_light": ui.NightLight, "font": fontStyle, "temp_f": tempF,
 		"refresh": ui.Refresh, "heads_up": !ui.NoHeadsUp, "heads_up_min": hu,
 		"clock_12h": ui.Clock12, "clock_quote": !ui.NoQuote, "clock_event": !ui.NoEvent,
 		"update_show": !ui.NoUpdShow, "update_every": ue, "music_logo": ui.ShowMusicLogo, "style": map[bool]string{true: "plain", false: themeName}[themeName == ""],
+		"compact": compactMode, "rotation": rot,
 	}
 }
 
@@ -106,6 +111,20 @@ func applyKindleSettings(ui *UI, v map[string]any) (look bool) {
 	}
 	if b, ok := flag("music_logo"); ok {
 		ui.ShowMusicLogo = b
+	}
+	if b, ok := flag("compact"); ok && b != compactMode {
+		setCompact(b)
+		look = true
+	}
+	if n, ok := num("rotation"); ok && (n == 90 || n == 270) {
+		cur := ui.Rotation
+		if cur != 270 {
+			cur = 90
+		}
+		if n != cur {
+			ui.Rotation = n
+			look = true
+		}
 	}
 	if t, ok := str("style"); ok {
 		want := map[bool]string{true: "", false: t}[t == "plain"]

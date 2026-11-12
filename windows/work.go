@@ -7,11 +7,19 @@ package main
 import (
 	"errors"
 	"regexp"
+	"runtime"
 	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
 )
+
+func osLabel() string {
+	if runtime.GOOS == "linux" {
+		return "Linux"
+	}
+	return "Windows"
+}
 
 const inUse = 240 // seconds without input before the PC counts as not in use (the server allows 300)
 
@@ -30,7 +38,7 @@ func heartbeats() {
 			dark, haveDark := darkMode()
 			used := idle < inUse
 			if !sent || time.Since(last) >= 2*time.Minute || used != wasUsed || dark != wasDark {
-				body := map[string]any{"machine": "pc", "idle": idle}
+				body := map[string]any{"machine": "pc", "os": runtime.GOOS, "idle": idle}
 				if haveDark {
 					body["dark"] = dark
 				}
@@ -45,7 +53,7 @@ func heartbeats() {
 					last = time.Now().Add(-90 * time.Second) // try again in 30 s
 				} else {
 					keyRefused.Store(false)
-					setStatus(map[string]string{"home": "Running · the Kindle shows the Windows list", "work": "Running · the Kindle shows the Mac list"}[r.Profile])
+					setStatus(map[string]string{"home": "Running · the Kindle shows the " + osLabel() + " list", "work": "Running · the Kindle shows the Mac list"}[r.Profile])
 					last, sent, wasUsed, wasDark = time.Now(), true, used, dark
 				}
 			}
@@ -202,7 +210,7 @@ func appList() {
 				})
 				made = kept
 				var r struct{ Seeded bool } // the server just picked this PC's first favourites
-				if err := call(quick, "POST", "/api/deck/icons", map[string]any{"machine": "pc", "icons": icons, "apps": names, "all_apps": true}, &r); err == nil {
+				if err := call(quick, "POST", "/api/deck/icons", map[string]any{"machine": "pc", "os": runtime.GOOS, "icons": icons, "apps": names, "all_apps": true}, &r); err == nil {
 					sent, at, again = sig, time.Now(), r.Seeded
 				} else {
 					report("apps: " + err.Error())

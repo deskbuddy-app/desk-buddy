@@ -124,7 +124,7 @@ func watchPairing() {
 				}
 				pairMu.Unlock()
 				if fresh {
-					openPage() // the page shows Allow / Don't Allow with the code
+					openWindow() // the window shows Allow / Don't Allow with the code
 				}
 			}
 		}
