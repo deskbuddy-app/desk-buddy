@@ -394,15 +394,7 @@ func decodeArt(b64 string, size int) *image.Gray {
 	}
 	g := image.NewGray(image.Rect(0, 0, size, size))
 	xdraw.CatmullRom.Scale(g, g.Rect, src, src.Bounds(), xdraw.Src, nil)
-	lo, hi := uint8(255), uint8(0) // stretch the contrast so it doesn't look flat on e-ink
-	for _, p := range g.Pix {
-		lo, hi = min(lo, p), max(hi, p)
-	}
-	if hi > lo {
-		for i, p := range g.Pix {
-			g.Pix[i] = uint8(int(p-lo) * 255 / int(hi-lo))
-		}
-	}
+	photoTone(g) // so it doesn't look flat and dark on e-ink
 	return g
 }
 
