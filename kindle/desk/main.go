@@ -370,7 +370,7 @@ func writePreview(out, sample string, client *Client, cfg Config, ui *UI) {
 	}
 	if d != nil && d.Music != nil && d.Music.ArtKey != "" && (ui.Widget == "music" || ui.Cover) {
 		if k, b64, err := client.Art(); err == nil && k == d.Music.ArtKey {
-			ui.Art, ui.ArtKey = decodeArt(b64, 320), k
+			ui.Art, ui.ArtKey = decodeArt(b64, 640), k
 		}
 	}
 	if d != nil && (ui.Tab == "weather" || ui.Widget == "weather") {
@@ -542,7 +542,7 @@ func run(cfg Config, client *Client, statePath, dir string) int {
 			k, b64, err := client.Art()
 			var img *image.Gray
 			if err == nil && k == key {
-				img = decodeArt(b64, 320)
+				img = decodeArt(b64, 640)
 			}
 			artResults <- artFetched{key, img}
 		}()

@@ -157,6 +157,8 @@ type UI struct {
 	CoverBare     bool        // …with the controls hidden
 	ArtFull       *image.Gray // the cover enlarged to the screen width (not dithered)
 	ArtFullKey    string
+	ArtSmall      *image.Gray // the cover at the Music widget's size (a Sharp cover is bigger)
+	ArtSmallKey   string
 	ConfirmRemove int // favourite tile being asked about ("Remove …?"), or -1
 	NoteAt        time.Time
 	Note          string // a short message shown in the deck after tapping a placeholder

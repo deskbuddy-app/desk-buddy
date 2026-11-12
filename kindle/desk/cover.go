@@ -220,6 +220,20 @@ func bigArt(ui *UI) *image.Gray {
 	return ui.ArtBig
 }
 
+// smallArt is the cover shrunk smoothly to n pixels for the Music widget, made once per
+// song (drawImage's quick scaling would make a big cover look grainy).
+func smallArt(ui *UI, n int) *image.Gray {
+	if ui.Art.Rect.Dx() == n {
+		return ui.Art
+	}
+	if ui.ArtSmallKey != ui.ArtKey || ui.ArtSmall == nil || ui.ArtSmall.Rect.Dx() != n {
+		g := image.NewGray(image.Rect(0, 0, n, n))
+		xdraw.CatmullRom.Scale(g, g.Rect, ui.Art, ui.Art.Rect, xdraw.Src, nil)
+		ui.ArtSmall, ui.ArtSmallKey = g, ui.ArtKey
+	}
+	return ui.ArtSmall
+}
+
 // bayer8 is the 8×8 ordered-dither threshold map (values 0–63).
 var bayer8 = [8][8]int{
 	{0, 32, 8, 40, 2, 34, 10, 42},

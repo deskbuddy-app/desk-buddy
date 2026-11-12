@@ -318,7 +318,7 @@ func musicWidget(v *View, d *Desk, ui *UI, x0, x1, y int) {
 	size := min(x1-x0, bottom-top)
 	r := image.Rect(x0+(x1-x0-size)/2, top, x0+(x1-x0-size)/2+size, top+size)
 	if art := ui.Art; art != nil && m.ArtKey != "" && m.ArtKey == ui.ArtKey {
-		drawImage(img, r, art)
+		drawImage(img, r, smallArt(ui, pxRect(img, r).Dx()))
 		if ui.Dark { // the whole screen gets inverted for dark mode: pre-invert so the cover comes out right
 			invertRect(img, r)
 		}

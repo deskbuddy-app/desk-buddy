@@ -18,6 +18,7 @@ const COOKIE = "kd";
 const SETTINGS = {
   music_sync: { def: true, ok: (v) => typeof v === "boolean" },
   album_covers: { def: true, ok: (v) => typeof v === "boolean" },
+  cover_sharp: { def: true, ok: (v) => typeof v === "boolean" }, // 640 px covers instead of 320
   music_app: { def: "auto", ok: (v) => ["auto", "spotify", "music"].includes(v) }, // which app the helper reads
   focus_min: { def: 25, ok: (v) => [15, 25, 45, 50, 60].includes(v) },
   break_min: { def: 5, ok: (v) => [5, 10, 15].includes(v) },
@@ -467,11 +468,11 @@ async function handle(request, env, ctx) {
       if (b.running === false || !b.title) await db.clearArt(); // closed, or nothing loaded: the cover goes too
       return json({ ok: true });
     }
-    // Album cover: only the current song's, one small image, overwritten each time.
+    // Album cover: only the current song's, one image (up to 640 px), overwritten each time.
     if (path === "/api/music/art" && method === "POST") {
       const b = await body(request);
       const image = String(b.image || "");
-      if (!image || image.length > 60000) throw new HttpError(400, "Send {key, image: base64} (small).");
+      if (!image || image.length > 240000) throw new HttpError(400, "Send {key, image: base64} (small).");
       await db.set("music_art", { key: String(b.key || "").slice(0, 200), image });
       await db.set("music_art_key", String(b.key || "").slice(0, 200));
       return json({ ok: true });
@@ -510,7 +511,7 @@ async function handle(request, env, ctx) {
         if (item || Date.now() >= until || request.signal?.aborted) {
           const set = await db.settings();
           const wanted = set.music_sync && ((await db.get("music_wanted")) || 0) > now();
-          return json({ ...(item || {}), pomodoro: await db.pomoInfo(), music_wanted: wanted, album_covers: set.album_covers, music_app: set.music_app });
+          return json({ ...(item || {}), pomodoro: await db.pomoInfo(), music_wanted: wanted, album_covers: set.album_covers, cover_sharp: set.cover_sharp, music_app: set.music_app });
         }
         await new Promise((r) => setTimeout(r, 300));
       }

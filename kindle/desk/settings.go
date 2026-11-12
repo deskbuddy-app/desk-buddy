@@ -229,6 +229,7 @@ func settingsView(v *View, d *Desk, st Status, ui *UI) {
 			{"Music app", map[string]string{"auto": "Whichever one is playing", "spotify": "Only Spotify", "music": "Only Apple Music"}[sval("music_app", "auto")], []string{"Auto", "Spotify", "Apple Music"}, []string{"music_app=auto", "music_app=spotify", "music_app=music"}, map[string]int{"auto": 0, "spotify": 1, "music": 2}[sval("music_app", "auto")], "setting", !bval("music_sync", true)},
 			{"Music app logo", "Shows a small Spotify or Apple Music logo next to the song", []string{"On", "Off"}, []string{"1", "0"}, map[bool]int{true: 0, false: 1}[ui.ShowMusicLogo], "musiclogo", !bval("music_sync", true)},
 			{"Album covers", "On the music screen (Spotify, and Apple Music songs with artwork)", []string{"On", "Off"}, []string{"album_covers=true", "album_covers=false"}, onOff(bval("album_covers", true)), "setting", !bval("music_sync", true)},
+			{"Cover quality", "Sharp: twice the detail on the big cover screens", []string{"Standard", "Sharp"}, []string{"cover_sharp=false", "cover_sharp=true"}, map[bool]int{false: 0, true: 1}[bval("cover_sharp", true)], "setting", !bval("music_sync", true) || !bval("album_covers", true)},
 		})
 	case "tasks":
 		pc := pcName(d)
@@ -392,6 +393,7 @@ func decodeArt(b64 string, size int) *image.Gray {
 	if err != nil {
 		return nil
 	}
+	size = min(size, max(src.Bounds().Dx(), 1)) // keep a small cover small (Standard is 320 px)
 	g := image.NewGray(image.Rect(0, 0, size, size))
 	xdraw.CatmullRom.Scale(g, g.Rect, src, src.Bounds(), xdraw.Src, nil)
 	photoTone(g) // so it doesn't look flat and dark on e-ink

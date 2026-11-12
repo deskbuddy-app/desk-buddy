@@ -19,6 +19,7 @@ import sys
 import tempfile
 import threading
 import time
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -235,10 +236,8 @@ def send_cover(a, state):
             tid = music_artwork(src)
             if not tid or not os.path.getsize(src):
                 return False
-            image = small_cover(src, out)
-            if not image:
+            if not post_cover(a, state, src, out):
                 return False
-        call(a, "POST", "/api/music/art", {"key": cover_key(state), "image": image}, timeout=15)
         _cover_sent.update(key=cover_key(state), url="music:" + tid, album=state.get("album"))
         return True
     if state.get("app") != "Spotify":
@@ -264,25 +263,41 @@ def send_cover(a, state):
         req = urllib.request.Request(url, headers={"User-Agent": "DeskBuddy-helper/1.0"})
         with urllib.request.urlopen(req, timeout=10) as r, open(src, "wb") as f:
             f.write(r.read(2_000_000))
-        image = small_cover(src, out)
-        if not image:
+        if not post_cover(a, state, src, out):
             return False
-    call(a, "POST", "/api/music/art", {"key": cover_key(state), "image": image}, timeout=15)
     _cover_sent.update(key=cover_key(state), url=url, album=state.get("album"))
     return True
 
 
-def small_cover(src, out):
-    """The cover shrunk to a small JPEG, as base64 under the server's limit (60,000
-    characters). Busy covers (e.g. Tame Impala's Currents) stay too big at quality 70, so it
-    steps down; the Kindle shows them in grey, where the difference doesn't show."""
-    for size, quality in (("320", "70"), ("320", "50"), ("320", "35"), ("240", "40")):
+def post_cover(a, state, src, out):
+    """Send the cover: Sharp (640 px) when the Kindle's "Cover quality" asks for it, else
+    Standard (320 px). An older server only takes the small one, so that's the fallback."""
+    for sharp in ([True, False] if _covers["sharp"] else [False]):
+        image = small_cover(src, out, sharp)
+        if not image:
+            continue
+        try:
+            call(a, "POST", "/api/music/art", {"key": cover_key(state), "image": image}, timeout=15)
+            return True
+        except urllib.error.HTTPError as e:
+            if e.code != 400 or not sharp:
+                raise
+    return False
+
+
+def small_cover(src, out, sharp=False):
+    """The cover shrunk to a JPEG, as base64 under the server's limit (240,000 characters;
+    60,000 before 1.3). Busy covers (e.g. Tame Impala's Currents) stay too big at the first
+    quality, so it steps down; the Kindle shows them in grey, where the difference doesn't show."""
+    steps = ((("640", "75"), ("640", "60"), ("640", "45"), ("480", "50")), 235000) if sharp else \
+        ((("320", "70"), ("320", "50"), ("320", "35"), ("240", "40")), 58000)
+    for size, quality in steps[0]:
         subprocess.run(["sips", "-Z", size, "-s", "format", "jpeg", "-s", "formatOptions", quality, src, "--out", out],
                        capture_output=True, timeout=10)
         if not os.path.exists(out):
             return ""
         image = base64.b64encode(open(out, "rb").read()).decode()
-        if len(image) <= 58000:
+        if len(image) <= steps[1]:
             return image
     return ""
 
@@ -333,7 +348,7 @@ def media(action):
 
 
 _music_wanted = threading.Event()  # set while the Kindle is showing the Music widget
-_covers = {"on": True}             # the "Album covers" setting
+_covers = {"on": True, "sharp": True}  # the "Album covers" and "Cover quality" settings
 
 
 _music_last = {"state": None, "sent_at": 0}
@@ -431,6 +446,9 @@ def check_deck(a):
     if item.get("album_covers", True) and not _covers["on"]:
         _cover_sent.clear()  # covers back on: the backend deleted the last one, so send it again
     _covers["on"] = item.get("album_covers", True)
+    if item.get("cover_sharp", True) != _covers["sharp"]:
+        _cover_sent.clear()  # quality changed: send the current cover again
+    _covers["sharp"] = item.get("cover_sharp", True)
     _music_pref["app"] = item.get("music_app") or "auto"
     if item.get("music_wanted"):
         _music_wanted.set()
