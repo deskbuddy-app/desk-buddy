@@ -1,5 +1,16 @@
 [
   {
+    "n": 3,
+    "date": "2026-11-12",
+    "items": [
+      "Thank you to ichin23 for the first community contribution: Desk Buddy should now fill the whole screen on newer Kindles (firmware 5.16 and later)",
+      "Added: Exit to Kindle in the top-left menu takes you back to your books",
+      "Added: Flip screen, in the brightness panel and Settings › Screen › Orientation, for a Kindle standing the other way up",
+      "Added: Settings › Screen › Screen size: Compact, for larger text and tiles (on by itself on the older 600 × 800 Kindles)",
+      "Album covers look much better on the Kindle: twice as sharp (Settings › Music › Cover quality) and tuned for e-ink, so dark covers aren't muddy any more (the idea comes from Kindle Photo Prep by kuslota)"
+    ]
+  },
+  {
     "n": 2,
     "date": "2026-10-13",
     "items": [

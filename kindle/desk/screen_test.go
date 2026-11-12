@@ -32,26 +32,28 @@ func TestBasicKindleDetectionAndPanels(t *testing.T) {
 		setCompact(false)
 	}()
 
-	// 1. Kindle Basic 2022 (11th gen, Bellatrix4) & 2024 (Matcha): 1072×1448 portrait
+	// 1. Kindle Basic 2022 (11th gen, Bellatrix4) & 2024 (Matcha): 1072×1448 portrait, the same
+	// as the Paperwhite 3/4 and Voyage, so Compact isn't switched on by itself
 	isBasicKindle = false
 	w, h := parseFBInkEnv("viewWidth=1072;viewHeight=1448;deviceName='Basic 4 (2022)';codename='Bellatrix4';")
-	if w != 1072 || h != 1448 || !isBasicKindle {
+	if w != 1072 || h != 1448 || isBasicKindle {
 		t.Fatalf("2022 Basic Kindle: got w=%d h=%d isBasic=%v", w, h, isBasicKindle)
 	}
 	isBasicKindle = false
 	w, h = parseFBInkEnv("viewWidth='1072';viewHeight='1448';deviceName='Kindle Basic 5 (2024)';codename='Matcha';")
-	if w != 1072 || h != 1448 || !isBasicKindle {
+	if w != 1072 || h != 1448 || isBasicKindle {
 		t.Fatalf("2024 Basic Kindle (quoted): got w=%d h=%d isBasic=%v", w, h, isBasicKindle)
 	}
 	isBasicKindle = false
 	w, h = parseFBInkEnv("screenWidth=1072;screenHeight=1448;deviceName='Unknown';")
-	if w != 1072 || h != 1448 || !isBasicKindle {
+	if w != 1072 || h != 1448 || isBasicKindle {
 		t.Fatalf("1072x1448 screenWidth fallback: got w=%d h=%d isBasic=%v", w, h, isBasicKindle)
 	}
 
 	// 2. Older Kindle Basic (167 ppi, 600×800 portrait / 800×600 landscape)
 	isBasicKindle = false
 	w, h = parseFBInkEnv("viewWidth=600;viewHeight=800;deviceName='Kindle Basic 3';")
+	setPanel(h, w)
 	if w != 600 || h != 800 || !isBasicKindle {
 		t.Fatalf("600x800 Basic Kindle: got w=%d h=%d isBasic=%v", w, h, isBasicKindle)
 	}

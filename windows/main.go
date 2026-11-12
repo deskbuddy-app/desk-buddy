@@ -18,7 +18,7 @@ import (
 	"fyne.io/systray"
 )
 
-const version = "1.2"
+const version = "1.3"
 
 //go:embed icon.ico
 var iconICO []byte

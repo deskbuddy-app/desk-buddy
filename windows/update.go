@@ -20,6 +20,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -113,8 +114,15 @@ func fromURL(u string) (*release, error) {
 	return &m.Windows, nil
 }
 
+// selfUpdate: the releases only carry a Windows download, so the Linux build doesn't update
+// itself (it would install the Windows files).
+var selfUpdate = runtime.GOOS != "linux"
+
 // checkUpdate asks GitHub and the Desk Buddy server this PC is connected to, and keeps the newest.
 func checkUpdate() error {
+	if !selfUpdate {
+		return fmt.Errorf("no self-update on %s", runtime.GOOS)
+	}
 	var best *release
 	answered := false
 	if r, err := fromGitHub(); err == nil {
@@ -176,7 +184,7 @@ func setUpdNote(s string, busy bool) {
 // applyUpdate downloads and checks the new version, swaps it in, then restarts.
 func applyUpdate() {
 	r, _, busy := updateState()
-	if r == nil || busy {
+	if r == nil || busy || !selfUpdate {
 		return
 	}
 	setUpdNote("Downloading…", true)
@@ -187,7 +195,7 @@ func applyUpdate() {
 // GitHub release. Settings and tasks stay; the newer version is offered again as usual.
 func goBack() {
 	notes := patchNotes()
-	if _, _, busy := updateState(); busy || len(notes) < 2 {
+	if _, _, busy := updateState(); busy || len(notes) < 2 || !selfUpdate {
 		return
 	}
 	v := notes[1].Version

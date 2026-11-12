@@ -260,8 +260,9 @@ func (s *Screen) toLandscape(px, py int) (int, int) {
 	return py, PW - 1 - px
 }
 
-// isBasicKindle is true on 6" Basic Kindles (the 2022 and 2024 1072 × 1448 models and the
-// older 600 × 800 ones), so Compact mode is on by default on first run.
+// isBasicKindle is true on the older Basic Kindles (600 × 800, set in setPanel), so Compact
+// mode is on by default on first run. The 2022/2024 Basics share 1072 × 1448 with the
+// Paperwhite 3/4 and Voyage, so there it stays a choice in Settings › Screen.
 var isBasicKindle bool
 
 // panelSize asks FBInk and the Linux framebuffer (/dev/fb0) for the panel's size in pixels,
@@ -272,10 +273,7 @@ func panelSize() (int, int) {
 	if w == PW && h == PH && !strings.Contains(string(b), "758") {
 		if fw, fh := fb0Size(); fw >= 580 && fh >= 780 {
 			w, h = fw, fh
-			if w <= 1072 && (w != 758 || h != 1024) {
-				isBasicKindle = true
-			}
-			log.Printf("panel (from fb0) %d × %d (basic=%v)", w, h, isBasicKindle)
+			log.Printf("panel (from fb0) %d × %d", w, h)
 		}
 	}
 	return w, h
@@ -354,11 +352,7 @@ func parseFBInkEnv(env string) (int, int) {
 	if w < 580 || h < 780 {
 		return PW, PH
 	}
-	low := strings.ToLower(env)
-	if (w <= 1072 && (w != 758 || h != 1024)) || strings.Contains(low, "basic") || strings.Contains(low, "touch") || strings.Contains(low, "matcha") || strings.Contains(low, "bellatrix") || strings.Contains(low, "malbec") {
-		isBasicKindle = true
-	}
-	log.Printf("panel %d × %d (basic=%v)", w, h, isBasicKindle)
+	log.Printf("panel %d × %d", w, h)
 	return w, h
 }
 

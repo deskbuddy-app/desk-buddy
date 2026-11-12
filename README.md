@@ -33,8 +33,7 @@
 |---|---|---|
 | 💻 **Mac** | [**Download Desk Buddy for Mac**](../../releases/latest/download/Desk-Buddy-for-Mac.zip) | **Move it to Applications**, open it, and allow it once ([the steps](#set-up)). macOS 13 or newer. |
 | 🪟 **Windows** | [**Download Desk Buddy for Windows**](../../releases/latest/download/Desk-Buddy-for-Windows.zip) | Early test version. Unzip and open *Desk Buddy.exe*. |
-| 🐧 **Linux** | [**Download Desk Buddy for Linux**](../../releases/latest/download/Desk-Buddy-for-Linux.zip) | Unzip and run `./desk-buddy` (or build with `windows/build-linux.sh`). |
-| 📖 **Kindle** | **Nothing to download:** Desk Buddy for Mac, Windows or Linux puts it on your Kindle | Plug your jailbroken Kindle in with USB and click **Put Desk Buddy on it**. After that it updates itself over Wi-Fi. |
+| 📖 **Kindle** | **Nothing to download:** Desk Buddy for Mac or Windows puts it on your Kindle | Plug your jailbroken Kindle in with USB and click **Put Desk Buddy on it**. After that it updates itself over Wi-Fi. |
 
 Rather copy it yourself? [Download Desk Buddy for Kindle](../../releases/latest) and follow [the steps](docs/install-kindle.md), or click **Save the files instead…** in the app.
 
@@ -110,7 +109,7 @@ From then on: everything happens on the Mac (Desk Buddy in the menu bar) or on t
 | Kindle Wi-Fi | 2.4 GHz, WPA2 (the Paperwhite 2 can't join 5 GHz-only or WPA3-only networks) |
 | **Mac** | macOS 13 Ventura or newer. Apple Silicon: tested. Intel: the download is built for it too, but nobody has tried it on an Intel Mac yet. |
 | **Windows** | Windows 10 / 11 (64-bit). Early test version: tasks, the Kindle's settings, the Deck, music, volume, calendar links and putting Desk Buddy on a Kindle. |
-| **Linux** | x86_64 / arm64 desktop Linux (systray, XDG `.desktop` apps & icons for the Deck, D-Bus MPRIS2 media & covers, PipeWire / PulseAudio volume & outputs, USB Kindle setup). |
+| **Linux** | Not officially supported yet and no download: build it yourself with `windows/build-linux.sh` (added by ichin23). x86_64 / arm64 desktop Linux (systray, XDG `.desktop` apps & icons for the Deck, D-Bus MPRIS2 media & covers, PipeWire / PulseAudio volume & outputs, USB Kindle setup). It doesn't update itself. |
 | Phone page | Any modern phone browser (iPhone, Android) |
 | Music | Spotify and Apple Music desktop apps on the Mac; on Windows anything that shows in Windows' media controls (Spotify, Apple Music, browsers…) |
 | Calendar | Everything in the Mac's Calendar app (iCloud, Google, Exchange, … accounts added there), plus calendar links (.ics) added on the phone page |
