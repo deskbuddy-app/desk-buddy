@@ -143,6 +143,11 @@ func TestShrinkCover(t *testing.T) {
 	if out, err := shrinkCover(encodePNG(noisy)); err != nil || len(out)*4/3 > 60000 {
 		t.Fatalf("noisy cover: %v, %d bytes", err, len(out))
 	}
+	if out, err := sharpCover(encodePNG(noisy)); err != nil || len(out)*4/3 > 240000 {
+		t.Fatalf("noisy sharp cover: %v, %d bytes", err, len(out))
+	} else if img, _ := jpeg.Decode(bytes.NewReader(out)); img.Bounds().Dx() > 640 {
+		t.Fatal("sharp cover bigger than 640")
+	}
 	// a small one isn't made bigger
 	small := image.NewRGBA(image.Rect(0, 0, 100, 100))
 	if out, err := shrinkCover(encodePNG(small)); err != nil {

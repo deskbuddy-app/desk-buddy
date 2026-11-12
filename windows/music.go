@@ -185,7 +185,13 @@ func coverKey(s musicState) string {
 // shrinkCover makes the small JPEG the Mac sends (longest side 320, quality 70) from the
 // cover Windows gives, on white where it's see-through. The server takes up to 60,000
 // characters of base64.
-func shrinkCover(raw []byte) ([]byte, error) {
+func shrinkCover(raw []byte) ([]byte, error) { return shrinkCoverTo(raw, 320, 44000) }
+
+// sharpCover: the same at 640 (Settings › Music › Cover quality: Sharp, from 1.3), under the
+// server's new limit (240,000 base64 characters).
+func sharpCover(raw []byte) ([]byte, error) { return shrinkCoverTo(raw, 640, 175000) }
+
+func shrinkCoverTo(raw []byte, side, limit int) ([]byte, error) {
 	src, _, err := image.Decode(bytes.NewReader(raw))
 	if err != nil {
 		return nil, err
@@ -199,8 +205,8 @@ func shrinkCover(raw []byte) ([]byte, error) {
 	draw.Draw(flat, flat.Rect, &image.Uniform{color.White}, image.Point{}, draw.Src)
 	draw.Draw(flat, flat.Rect, src, b.Min, draw.Over)
 	tw, th := w, h
-	if m := max(w, h); m > 320 {
-		tw, th = max(1, w*320/m), max(1, h*320/m)
+	if m := max(w, h); m > side {
+		tw, th = max(1, w*side/m), max(1, h*side/m)
 	}
 	small := flat
 	if tw != w || th != h {
@@ -211,7 +217,7 @@ func shrinkCover(raw []byte) ([]byte, error) {
 		if err := jpeg.Encode(&out, small, &jpeg.Options{Quality: q}); err != nil {
 			return nil, err
 		}
-		if out.Len() <= 44000 {
+		if out.Len() <= limit {
 			return out.Bytes(), nil
 		}
 	}
@@ -247,6 +253,7 @@ var (
 	musicMu     sync.Mutex
 	musicWanted bool     // the Kindle is showing the music widget or screen
 	coversOn    = true   // Settings › Music › Album covers
+	coversSharp = true   // Settings › Music › Cover quality: Sharp
 	musicPref   = "auto" // Settings › Music › Music app: auto, spotify or music
 	musicWake   = make(chan struct{}, 1)
 )
@@ -261,6 +268,11 @@ func musicFromDeck(it deckItem) {
 		coverSent = coverInfo{} // covers back on: the server deleted the last one, so send it again
 	}
 	coversOn = covers
+	sharp := it.CoverSharp == nil || *it.CoverSharp
+	if sharp != coversSharp {
+		coverSent = coverInfo{} // quality changed: send the current cover again
+	}
+	coversSharp = sharp
 	musicPref = it.MusicApp
 	if musicPref == "" {
 		musicPref = "auto"
@@ -388,13 +400,27 @@ func coverForSong(st musicState) {
 		again()
 		return
 	}
-	small, err := shrinkCover(raw)
-	if err != nil {
-		report("cover: " + err.Error())
-		return
+	musicMu.Lock()
+	sharp := coversSharp
+	musicMu.Unlock()
+	sent := false
+	tries := []func([]byte) ([]byte, error){shrinkCover}
+	if sharp {
+		tries = append([]func([]byte) ([]byte, error){sharpCover}, tries...)
 	}
-	img := base64.StdEncoding.EncodeToString(small)
-	if err := call(quick, "POST", "/api/music/art", map[string]string{"key": key, "image": img}, nil); err != nil {
+	for _, shrink := range tries {
+		small, err := shrink(raw)
+		if err != nil {
+			report("cover: " + err.Error())
+			continue
+		}
+		img := base64.StdEncoding.EncodeToString(small)
+		if call(quick, "POST", "/api/music/art", map[string]string{"key": key, "image": img}, nil) == nil {
+			sent = true // an older server refuses the sharp one: the standard one is next
+			break
+		}
+	}
+	if !sent {
 		again()
 		return
 	}

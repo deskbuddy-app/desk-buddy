@@ -78,6 +78,7 @@ type deckItem struct {
 	// music, in every answer: the Kindle shows it now, and Settings › Music
 	MusicWanted bool   `json:"music_wanted"`
 	AlbumCovers *bool  `json:"album_covers"`
+	CoverSharp  *bool  `json:"cover_sharp"`
 	MusicApp    string `json:"music_app"`
 }
 
