@@ -13,16 +13,16 @@ let agentPlist = FileManager.default.homeDirectoryForCurrentUser
 
 final class App: NSObject, NSApplicationDelegate, NSWindowDelegate {
     let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-    let statusLine = NSMenuItem(title: "Starting…", action: nil, keyEquivalent: "")
+    let statusLine = NSMenuItem(title: "正在启动…", action: nil, keyEquivalent: "")
     let lastLine = NSMenuItem(title: "", action: nil, keyEquivalent: "")
-    let calLine = NSMenuItem(title: "Calendar: waiting for access…", action: nil, keyEquivalent: "")
+    let calLine = NSMenuItem(title: "Calendar: 等待授权…", action: nil, keyEquivalent: "")
     let model = HelperModel()
     lazy var permissions = PermissionChecker(model: model)
     lazy var backend = Backend(bundledConfig: resource("config.json"))
     lazy var calendar = CalendarSync(server: backend.address, key: backend.settings.key)
     lazy var icons = IconSync(server: backend.address, key: backend.settings.key)
     var kindleSetup: KindleSetup?
-    let pauseItem = NSMenuItem(title: "Pause", action: #selector(togglePause), keyEquivalent: "p")
+    let pauseItem = NSMenuItem(title: "暂停", action: #selector(togglePause), keyEquivalent: "p")
     var child: Process?
     var childInput: FileHandle?
     var helperCPU = 0.0 // helper.py's CPU seconds so far, with the small programs it ran (it reports them)
@@ -77,7 +77,7 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate {
         DispatchQueue.main.asyncAfter(deadline: .now() + 60) { [weak self] in self?.checkUpdate(manual: false) }
         Timer.scheduledTimer(withTimeInterval: 6 * 3600, repeats: true) { [weak self] _ in self?.checkUpdate(manual: false) }
         let menu = NSMenu()
-        let open = NSMenuItem(title: "Open Desk Buddy…", action: #selector(openWindow), keyEquivalent: "w")
+        let open = NSMenuItem(title: "打开 Desk Buddy…", action: #selector(openWindow), keyEquivalent: "w")
         open.target = self
         menu.addItem(open)
         menu.addItem(.separator())
@@ -91,19 +91,19 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate {
         menu.addItem(.separator())
         pauseItem.target = self
         menu.addItem(pauseItem)
-        let syncCal = NSMenuItem(title: "Sync calendar now", action: #selector(syncCalendar), keyEquivalent: "s")
+        let syncCal = NSMenuItem(title: "立即同步日历", action: #selector(syncCalendar), keyEquivalent: "s")
         syncCal.target = self
         menu.addItem(syncCal)
-        let page = NSMenuItem(title: "Open tasks page", action: #selector(openPage), keyEquivalent: "o")
+        let page = NSMenuItem(title: "打开任务网页", action: #selector(openPage), keyEquivalent: "o")
         page.target = self
         menu.addItem(page)
         localItem.target = self
         menu.addItem(localItem)
         menu.addItem(.separator())
-        let quit = NSMenuItem(title: "Quit (starts again at next login)", action: #selector(quit), keyEquivalent: "q")
+        let quit = NSMenuItem(title: "退出（下次登录时启动）", action: #selector(quit), keyEquivalent: "q")
         quit.target = self
         menu.addItem(quit)
-        let uninstall = NSMenuItem(title: "Uninstall…", action: #selector(uninstall), keyEquivalent: "")
+        let uninstall = NSMenuItem(title: "卸载…", action: #selector(uninstall), keyEquivalent: "")
         uninstall.target = self
         menu.addItem(uninstall)
         item.menu = menu
@@ -157,9 +157,9 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate {
         do {
             try p.run()
             child = p
-            statusLine.title = "Running · connecting…"
+            statusLine.title = "运行中 · 正在连接…"
         } catch {
-            statusLine.title = "Couldn't start: \(error.localizedDescription)"
+            statusLine.title = "无法启动：\(error.localizedDescription)"
         }
         refresh()
     }
@@ -185,9 +185,9 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate {
                 lastLine.title = "Deck: " + line[r.upperBound...]
                 lastLine.isHidden = false
             } else if let r = line.range(of: "→ ") {
-                statusLine.title = "Running · Kindle showing \(line[r.upperBound...].capitalized)"
+                statusLine.title = "运行中 · Kindle 显示：\(line[r.upperBound...].capitalized)"
             } else if line.contains("not reachable") {
-                statusLine.title = "Running · can't reach the backend, retrying"
+                statusLine.title = "运行中 · 无法连接后端，正在重试"
             }
         }
         refresh()
@@ -196,14 +196,14 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate {
     func ended() {
         child = nil
         if quitting || paused { return }
-        statusLine.title = "Stopped unexpectedly · restarting…"
+        statusLine.title = "意外停止 · 正在重启…"
         refresh()
         restartTimer = Timer.scheduledTimer(withTimeInterval: 10, repeats: false) { [weak self] _ in self?.start() }
     }
 
     func refresh() {
-        if paused { statusLine.title = "Paused · the Kindle won't follow this Mac" }
-        pauseItem.title = paused ? "Resume" : "Pause"
+        if paused { statusLine.title = "已暂停 · Kindle 暂不跟随本机" }
+        pauseItem.title = paused ? "继续" : "暂停"
         // Desk Buddy himself in the menu bar (a template: macOS colours it), faded while paused
         item.button?.image = App.menuBarImage ?? NSImage(systemSymbolName: paused ? "book.closed" : "book", accessibilityDescription: "Desk Buddy")
         item.button?.appearsDisabled = paused
@@ -237,7 +237,7 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate {
     }
 
     @objc func syncCalendar() {
-        calLine.title = "Calendar: syncing…"
+        calLine.title = "Calendar: 正在同步…"
         refresh()
         calendar.sync(force: true)
     }
@@ -412,7 +412,7 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate {
     // MARK: Cloud / This Mac
 
     var serverLine = ""
-    let localItem = NSMenuItem(title: "Run server on this Mac", action: #selector(toggleLocal), keyEquivalent: "")
+    let localItem = NSMenuItem(title: "在本机运行服务器", action: #selector(toggleLocal), keyEquivalent: "")
 
     @objc func toggleLocal() {
         pickMode(backend.local ? "cloud" : "local")
@@ -422,21 +422,21 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate {
         guard mode != backend.settings.mode else { return }
         let a = NSAlert()
         if mode == "local" {
-            a.messageText = "Run Desk Buddy on this Mac?"
+            a.messageText = "在本机运行 Desk Buddy？"
             a.informativeText = """
-            Your tasks, calendar and settings will live on this Mac instead of Cloudflare. \
-            The Kindle and the phone page then only update while this Mac is awake, on the \
-            same Wi-Fi, with this app open. Anything changed while it's off syncs once it's back.
+            任务、日历和设置将从 Cloudflare 迁到本机。\
+            Kindle 和手机网页仅在本机唤醒、连接同一 Wi-Fi 且本应用开启时更新。\
+            离线期间的改动会在恢复连接后同步。
 
-            Copy everything from the cloud to this Mac first?
+            是否先将云端数据完整复制到本机？
             """
         } else {
-            a.messageText = "Move back to the cloud?"
-            a.informativeText = "The Kindle will work while this Mac sleeps again.\n\nCopy everything from this Mac back to the cloud first? (Otherwise the cloud keeps what it had before.)"
+            a.messageText = "迁回云端？"
+            a.informativeText = "迁回后，本机休眠时 Kindle 也能使用。\n\n是否先将本机数据完整复制回云端？否则云端保留原有数据。"
         }
-        a.addButton(withTitle: "Copy and switch")
-        a.addButton(withTitle: "Switch without copying")
-        a.addButton(withTitle: "Cancel")
+        a.addButton(withTitle: "复制并切换")
+        a.addButton(withTitle: "直接切换")
+        a.addButton(withTitle: "取消")
         NSApp.activate(ignoringOtherApps: true)
         let r = a.runModal()
         guard r != .alertThirdButtonReturn else { return refresh() }
@@ -453,7 +453,7 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate {
             if let err {
                 self.serverLine = err
                 let e = NSAlert()
-                e.messageText = "Couldn't switch"
+                e.messageText = "无法切换"
                 e.informativeText = err
                 e.runModal()
             } else {
@@ -476,14 +476,14 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate {
         NSApp.activate(ignoringOtherApps: true)
         let a = NSAlert()
         let kindle = name.lowercased().contains("kindle")
-        a.messageText = kindle ? "A Kindle wants to connect" : "\(name) wants to connect"
+        a.messageText = kindle ? "有一台 Kindle 请求连接" : "\(name) 请求连接"
         a.informativeText = """
-        Check that \(kindle ? "the Kindle" : "it") shows the code \(code).
+        请核对 \(kindle ? "Kindle" : "设备") 显示的连接码为 \(code)。
 
-        Allowing it lets \(kindle ? "the Kindle" : "that computer") show and change your tasks, calendar and the rest of Desk Buddy. Only allow \(kindle ? "a Kindle" : "a computer") you own.
+        允许后，\(kindle ? "Kindle" : "该电脑") 可以显示和修改任务、日历等 Desk Buddy 数据。请仅允许你自己的 \(kindle ? "Kindle" : "电脑")。
         """
-        a.addButton(withTitle: "Allow")
-        a.addButton(withTitle: "Don't Allow")
+        a.addButton(withTitle: "允许")
+        a.addButton(withTitle: "不允许")
         backend.answerPair(id, allow: a.runModal() == .alertFirstButtonReturn)
     }
 
@@ -498,16 +498,16 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate {
         NSApp.activate(ignoringOtherApps: true)
         let a = NSAlert()
         a.alertStyle = .warning
-        a.messageText = "Uninstall Desk Buddy?"
+        a.messageText = "卸载 Desk Buddy？"
         a.informativeText = """
-        This stops the helper, removes it from login, and deletes the app.
+        将停止助手、移除登录启动项并删除应用。
 
-        Afterwards the Kindle can't tell when you're using this Mac (Auto falls back to \
-        the time of day), and Deck tiles won't open apps here. Your tasks stay safe on \
-        the backend. You can reinstall it with menubar/install.sh.
+        此后 Kindle 无法识别你正在使用本机，自动模式将按时段选择，\
+        应用面板也无法在本机打开应用。任务仍保存在后端。\
+        可通过 menubar/install.sh 重新安装。
         """
-        a.addButton(withTitle: "Uninstall")
-        a.addButton(withTitle: "Cancel")
+        a.addButton(withTitle: "卸载")
+        a.addButton(withTitle: "取消")
         a.buttons[0].hasDestructiveAction = true
         guard a.runModal() == .alertFirstButtonReturn else { return }
 
@@ -709,10 +709,10 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate {
         model.computers = comps
         let one = (d["settings"] as? [String: Any])?["task_lists"] as? String == "one"
         if profile == "night" {
-            model.showing = "night clock"
+            model.showing = "夜间时钟"
         } else {
             currentList = profile == "home" ? "home" : "work"
-            model.showing = one ? "task list" : "\(names[currentList] ?? "Mac") list"
+            model.showing = one ? "任务列表" : "\(names[currentList] ?? "Mac") 列表"
         }
         let all = d["tasks"] as? [[String: Any]] ?? []
         func isDone(_ x: [String: Any]) -> Bool { (x["done"] as? Bool) == true || (x["done"] as? Int) == 1 }
@@ -728,11 +728,11 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate {
             [item(p, sub: false)] + all.filter { ($0["parent_id"] as? Int) == (p["id"] as? Int) }.map { item($0, sub: true) }
         }
         let done = tasks.filter(isDone).count
-        model.tasksLine = tasks.isEmpty ? "" : "\(done) of \(tasks.count) done"
+        model.tasksLine = tasks.isEmpty ? "" : "已完成 \(done) / \(tasks.count)"
         if let m = d["music"] as? [String: Any], m["running"] as? Bool != false, let t = m["title"] as? String, !t.isEmpty {
             let app = (m["app"] as? String) == "Music" ? "Apple Music" : (m["app"] as? String ?? "")
             let artist = (m["artist"] as? String ?? "")
-            model.nowPlaying = t + (artist.isEmpty ? "" : " · " + artist) + " (" + app + ((m["playing"] as? Bool) == true ? ")" : ", paused)")
+            model.nowPlaying = t + (artist.isEmpty ? "" : " · " + artist) + " (" + app + ((m["playing"] as? Bool) == true ? ")" : "，已暂停)")
         } else {
             model.nowPlaying = ""
         }
@@ -741,7 +741,7 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate {
             ($0["all_day"] as? Bool) != true && (($0["end"] as? Double) ?? 0) > now && Calendar.current.isDateInToday(Date(timeIntervalSince1970: ($0["start"] as? Double) ?? 0))
         }
         if let e = next, let st = e["start"] as? Double, let en = e["end"] as? Double {
-            model.nextEvent = (e["title"] as? String ?? "") + " · " + App.hm(st) + "–" + App.hm(en) + (st <= now ? " (now)" : "")
+            model.nextEvent = (e["title"] as? String ?? "") + " · " + App.hm(st) + "–" + App.hm(en) + (st <= now ? "（现在）" : "")
         } else {
             model.nextEvent = ""
         }
@@ -765,9 +765,9 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate {
         model.kindleSeen = ago < 600
         model.kindleOnline = ago < 200 // the server notes a quiet Kindle every 2 minutes
         var parts: [String] = []
-        if let b = k["battery"] as? Int, b >= 0 { parts.append("\(b)%" + ((k["charging"] as? Bool) == true ? " · charging" : "")) }
-        parts.append(ago < 180 ? "seen just now" : ago < 3600 ? "seen \(Int(ago / 60)) min ago" : "last seen \(App.hm(at))")
-        if let v = k["version"] as? String, !v.isEmpty { parts.append("version " + v) }
+        if let b = k["battery"] as? Int, b >= 0 { parts.append("\(b)%" + ((k["charging"] as? Bool) == true ? " · 充电中" : "")) }
+        parts.append(ago < 180 ? "刚刚在线" : ago < 3600 ? "\(Int(ago / 60)) 分钟前在线" : "最近在线：\(App.hm(at))")
+        if let v = k["version"] as? String, !v.isEmpty { parts.append("版本 " + v) }
         model.kindleLine = parts.joined(separator: " · ")
         model.kindleUpdate = (k["up_to_date"] as? Bool) == false && !((k["sha"] as? String) ?? "").isEmpty
         updateNeeds()
@@ -776,14 +776,14 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate {
     // What needs the user, at the top of Home
     func updateNeeds() {
         var n: [String] = []
-        if model.kindleUpdate { n.append("A new Desk Buddy version is ready: on the Kindle, tap Update (or Settings › Updates).") }
+        if model.kindleUpdate { n.append("Desk Buddy 新版已就绪，请在 Kindle 点击更新（或设置 › 更新）。") }
         if !model.kindleSeen, let at = kindleStatus["at"] as? Double {
-            n.append("The Kindle hasn't checked in since \(App.hm(at)). Is it on, and on the Wi-Fi?")
+            n.append("Kindle 自 \(App.hm(at)) 起未连接，请检查设备和 Wi-Fi。")
         }
         for p in model.perms where p.status.hasPrefix("Not allowed") {
-            n.append("macOS isn't allowing “\(p.title)”: see Permissions.")
+            n.append("macOS 尚未允许“\(ChineseUI.permission(p.title))”，请查看权限页面。")
         }
-        if paused { n.append("The helper is paused: the Kindle won't follow this Mac. Turn it on in This Mac.") }
+        if paused { n.append("助手已暂停，Kindle 暂不跟随本机。请在本机页面恢复。") }
         model.needs = n
     }
 

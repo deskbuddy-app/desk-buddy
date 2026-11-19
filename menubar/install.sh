@@ -22,7 +22,7 @@ pkill -f "Desk Buddy.app/Contents/MacOS/desk-buddy-server" 2>/dev/null || true
 
 rm -rf "$APP/Contents" # replace what's inside, keep the app itself (so it stays in the Dock)
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources" "$HOME/Library/LaunchAgents"
-swiftc -O -o "$APP/Contents/MacOS/DeskBuddy" main.swift Backend.swift CalendarSync.swift IconSync.swift Permissions.swift HelperUI.swift Updater.swift KindleSetup.swift MoveToApplications.swift
+swiftc -O -o "$APP/Contents/MacOS/DeskBuddy" main.swift Backend.swift CalendarSync.swift IconSync.swift Permissions.swift HelperUI.swift Localization.swift Updater.swift KindleSetup.swift MoveToApplications.swift
 swiftc -O -o "$APP/Contents/MacOS/audio-out" AudioOut.swift  # the Mac's sound outputs (Kindle music screen)
 cp ../backend/helper.py AppIcon.icns patchnotes.json "$APP/Contents/Resources/"
 # your own settings if you made backend/config.json, else the example (starts on "This Mac")
@@ -30,7 +30,8 @@ if [ -f ../backend/config.json ]; then cp ../backend/config.json "$APP/Contents/
 cp ../brand/menubar.png ../brand/menubar@2x.png "$APP/Contents/Resources/"  # Desk Buddy in the menu bar
 cp ../brand/spotify-mark-alpha.png "$APP/Contents/Resources/spotify-mark.png"                    # Permissions: Spotify's icon
 cp ../brand/buddy-kindle.png "$APP/Contents/Resources/buddy.png"          # …and in the window
-cp ../kindle/desk/fonts/AtkinsonHyperlegible-Regular.ttf ../kindle/desk/fonts/AtkinsonHyperlegible-Bold.ttf "$APP/Contents/Resources/"  # the window's font (as on the Kindle)
+cp ../kindle/desk/fonts/AtkinsonHyperlegible-Regular.ttf ../kindle/desk/fonts/AtkinsonHyperlegible-Bold.ttf "$APP/Contents/Resources/"
+cp ../kindle/desk/fonts/SourceHanSansSC-Regular.otf ../kindle/desk/fonts/OFL-*.txt ../LICENSE "$APP/Contents/Resources/"  # the window's font (as on the Kindle)
 # The local server ("This Mac" backend): the same backend code, built into one program,
 # plus the Kindle app builds it serves for updates.
 (cd ../worker && npm run --silent build:local >/dev/null)
@@ -54,10 +55,10 @@ cat > "$APP/Contents/Info.plist" <<EOF
   <key>CFBundleIconFile</key><string>AppIcon</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleShortVersionString</key><string>$VERSION</string>
-  <key>NSCalendarsFullAccessUsageDescription</key><string>Desk Buddy shows your events on the Kindle: what's on now, what's next, and a month view. It only reads them, never changes them, and they only go to your own Desk Buddy server.</string>
-  <key>NSCalendarsUsageDescription</key><string>Desk Buddy shows your events on the Kindle. It only reads them, never changes them, and they only go to your own Desk Buddy server.</string>
-  <key>NSAppleEventsUsageDescription</key><string>Desk Buddy shows what's playing in Spotify or Apple Music on the Kindle, with the cover, and makes its play, pause and skip buttons work. It only looks while music is on the Kindle's screen.</string>
-  <key>NSBluetoothAlwaysUsageDescription</key><string>Desk Buddy connects your Bluetooth headphones when you pick them on the Kindle's music screen. It never connects anything you didn't pick.</string>
+  <key>NSCalendarsFullAccessUsageDescription</key><string>Desk Buddy 在 Kindle 显示当前日程、后续安排和月历。仅只读访问日程，数据只发送到你自己的 Desk Buddy 服务器。</string>
+  <key>NSCalendarsUsageDescription</key><string>Desk Buddy 在 Kindle 显示日程。仅只读访问日程，数据只发送到你自己的 Desk Buddy 服务器。</string>
+  <key>NSAppleEventsUsageDescription</key><string>Desk Buddy 在 Kindle 显示 Spotify 或 Apple Music 的曲目和封面，并提供播放、暂停和切歌控制。仅在 Kindle 显示音乐时读取。</string>
+  <key>NSBluetoothAlwaysUsageDescription</key><string>在 Kindle 音乐页面选择耳机时，Desk Buddy 会连接对应蓝牙设备，不会连接未选择的设备。</string>
   <key>LSUIElement</key><true/>
   <key>LSMinimumSystemVersion</key><string>13.0</string>
 </dict></plist>

@@ -118,32 +118,32 @@ func editorView(v *View, d *Desk, ui *UI) {
 	card := image.Rect(pad, kbTop-178, LW-pad, kbTop-22)
 	fillRoundRect(img, card.Inset(-3), 16, paper)
 	strokeRoundRect(img, card, 14, 2, ink)
-	title := "NEW TASK"
+	title := "新建任务"
 	if n := listName(d); n != "" {
 		title += " · " + strings.ToUpper(n)
 	}
 	switch e.Mode {
 	case "sub":
-		title = "NEW SUBTASK · " + strings.ToUpper(e.Parent)
+		title = "新建子任务 · " + strings.ToUpper(e.Parent)
 	case "edit":
-		title = "EDIT TASK"
+		title = "编辑任务"
 	case "event":
-		title = "NEW EVENT · " + strings.ToUpper(e.Day.Format("Monday 2 January"))
+		title = "新建日程 · " + strings.ToUpper(displayDate(e.Day, "Monday 2 January"))
 	case "place":
-		title = "WEATHER LOCATION"
+		title = "天气地点"
 	}
 	lf := face("uiBold", 14)
 	label(img, card.Min.X+24, card.Min.Y+30, ellipsize(lf, title, card.Dx()-200), grey2)
-	cancel := pillAt(img, image.Rect(card.Max.X-20-110, card.Min.Y+14, card.Max.X-20, card.Min.Y+56), "Cancel", false)
+	cancel := pillAt(img, image.Rect(card.Max.X-20-110, card.Min.Y+14, card.Max.X-20, card.Min.Y+56), "取消", false)
 	v.add(Target{R: cancel.Inset(-6), Show: cancel, Act: "kbcancel"})
 
 	tf := face("serif", 28)
 	tw := card.Dx() - 48
 	ty := card.Min.Y + 98
 	if e.Text == "" {
-		ph := map[string]string{"sub": "A step of it…", "event": "What's happening?", "place": "Town or city"}[e.Mode]
+		ph := map[string]string{"sub": "其中一个步骤…", "event": "有什么安排？", "place": "城镇或城市"}[e.Mode]
 		if ph == "" {
-			ph = "What needs doing?"
+			ph = "需要做什么？"
 		}
 		fillRect(img, image.Rect(card.Min.X+24, ty-capHeight(tf)-4, card.Min.X+26, ty+8), ink)
 		drawText(img, tf, card.Min.X+34, ty, ph, grey3)
@@ -250,9 +250,9 @@ func editorView(v *View, d *Desk, ui *UI) {
 	x += space + gap
 	key(image.Rect(x, y, x+kw, y+kh), ".", ".", 0)
 	x += kw + gap
-	done := map[string]string{"edit": "Save", "event": "Next", "place": "Search"}[e.Mode]
+	done := map[string]string{"edit": "保存", "event": "下一步", "place": "搜索"}[e.Mode]
 	if done == "" {
-		done = "Add"
+		done = "添加"
 	}
 	dr := image.Rect(x, y, LW-kx0, y+kh)
 	if strings.TrimSpace(e.Text) == "" {

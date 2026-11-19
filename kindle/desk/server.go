@@ -214,10 +214,10 @@ func autoFind(c *Client, name, current, cloud string) (string, string, bool) {
 // "moved to" notes), so there's nothing to pick here.
 func serverRow(v *View, ui *UI, x0, x1, y int) {
 	img := v.Img
-	label(img, x0, y, "SERVER", grey2)
-	where, sub := "Cloud", "Works while your computer sleeps"
+	label(img, x0, y, "服务器", grey2)
+	where, sub := "云端", "电脑休眠时仍可使用"
 	if ui.ServerLocal {
-		where, sub = "Your computer", "Updates while it's on, on this Wi-Fi"
+		where, sub = "你的电脑", "同一 Wi-Fi 下电脑开机时更新"
 		if ui.ServerName != "" {
 			where = ui.ServerName
 		}
@@ -227,8 +227,8 @@ func serverRow(v *View, ui *UI, x0, x1, y int) {
 	fillRect(img, image.Rect(x0, y+86, x1, y+87), grey4)
 	f := face("ui", 15)
 	for i, l := range []string{
-		"To change this, use Desk Buddy on your computer.",
-		"The Kindle follows by itself, and finds it again if it moves.",
+		"请在电脑的 Desk Buddy 中更改。",
+		"Kindle 会自动跟随，并重新查找变更的地址。",
 	} {
 		drawText(img, f, x0, y+122+i*24, l, grey2)
 	}
@@ -260,25 +260,25 @@ func serverList(v *View, ui *UI, x0, x1, y int) int {
 		y += rowH
 	}
 	if !ui.NoCloud {
-		row("Cloud", "Cloudflare · works while your computer sleeps", !ui.ServerLocal, "serverset", "cloud")
+		row("云端", "Cloudflare · 电脑休眠时仍可使用", !ui.ServerLocal, "serverset", "cloud")
 	}
 	switch {
 	case ui.Finding:
-		row("Looking on this Wi-Fi…", "For a computer running Desk Buddy", false, "", "")
+		row("正在当前 Wi-Fi 上查找…", "查找正在运行 Desk Buddy 的电脑", false, "", "")
 	case len(ui.Found) == 0 && ui.MacSeen && !ui.ServerLocal: // on the cloud: ask the Mac to run it
-		row("Your Mac", "Ask it to run Desk Buddy on this Wi-Fi", false, "serverask", "local")
+		row("你的 Mac", "请在同一 Wi-Fi 的电脑上运行 Desk Buddy", false, "serverask", "local")
 	case len(ui.Found) == 0:
-		row("No computer found", "Turn on “This Mac” in Desk Buddy, then tap to look again", false, "serverfind", "")
+		row("未找到电脑", "在 Desk Buddy 中启用“本机”，然后点击重试", false, "serverfind", "")
 	default:
 		for _, s := range ui.Found {
 			host := strings.TrimPrefix(s.Addr, "http://")
-			row(s.Name, host+" · updates while it's on", ui.ServerLocal && ui.ServerAddr == s.Addr, "serverset", s.Name+"|"+s.Addr)
+			row(s.Name, host+" · 电脑开机时更新", ui.ServerLocal && ui.ServerAddr == s.Addr, "serverset", s.Name+"|"+s.Addr)
 		}
 	}
 	if ui.PairCode != "" { // waiting for Allow on the computer: the code to compare
 		cy := y + 22
-		drawText(img, face("ui", 16), x0, cy+24, "Click Allow on the computer, and check it", grey2)
-		drawText(img, face("ui", 16), x0, cy+46, "shows this code:", grey2)
+		drawText(img, face("ui", 16), x0, cy+24, "在电脑上点击允许，并核对", grey2)
+		drawText(img, face("ui", 16), x0, cy+46, "显示的代码：", grey2)
 		drawRight(img, face("uiBold", 44), x1, cy+52, ui.PairCode, ink)
 		y += 96
 	}
@@ -314,8 +314,8 @@ func serverModal(v *View, ui *UI) {
 	fillRoundRect(img, box.Inset(-3), 16, paper)
 	strokeRoundRect(img, box, 14, 2, ink)
 	x0, x1 := box.Min.X+32, box.Max.X-32
-	drawText(img, face("serifB", 28), x0, box.Min.Y+56, "Where's Desk Buddy running?", ink)
-	cancel := pillAt(img, image.Rect(x1-110, box.Min.Y+20, x1, box.Min.Y+62), "Cancel", false)
+	drawText(img, face("serifB", 28), x0, box.Min.Y+56, "Desk Buddy 在哪里运行？", ink)
+	cancel := pillAt(img, image.Rect(x1-110, box.Min.Y+20, x1, box.Min.Y+62), "取消", false)
 	v.add(Target{R: cancel.Inset(-4), Show: cancel, Act: "serverpick"})
 	serverList(v, ui, x0, x1, box.Min.Y+84)
 }
@@ -333,24 +333,24 @@ func offlineInfo(v *View, ui *UI, st Status) {
 	x0 := box.Min.X + 32
 	since := ""
 	if !st.LastOK.IsZero() {
-		since = " since " + st.LastOK.Format("15:04")
+		since = " 自 " + st.LastOK.Format("15:04")
 	}
-	title, lines := "Can't reach the cloud"+since, []string{
-		"The Kindle can't get online. Check its Wi-Fi.",
-		"It keeps trying every 15 seconds.",
-		"Task changes are kept here and sent once it's back.",
+	title, lines := "无法连接云端"+since, []string{
+		"Kindle 无法联网，请检查 Wi-Fi。",
+		"每 15 秒会自动重试。",
+		"任务改动会保存在本机，恢复连接后发送。",
 	}
 	if ui.ServerLocal {
 		name := ui.ServerName
 		if name == "" {
-			name = "your computer"
+			name = "你的电脑"
 		}
-		title = "Can't reach " + name + since
+		title = "无法连接 " + name + since
 		lines = []string{
-			"Desk Buddy runs on " + name + ". It needs to be awake,",
-			"on this Wi-Fi, with Desk Buddy open.",
-			"Task changes are kept here and sent once it's back.",
-			"If its address changed, the Kindle finds it again.",
+			"Desk Buddy 运行于 " + name + "。请保持电脑唤醒，",
+			"连接同一 Wi-Fi，并打开 Desk Buddy。",
+			"任务改动会保存在本机，恢复连接后发送。",
+			"地址变化后 Kindle 会重新查找。",
 		}
 	}
 	drawText(img, face("serifB", 26), x0, box.Min.Y+56, ellipsize(face("serifB", 26), title, box.Dx()-64), ink)
@@ -358,11 +358,11 @@ func offlineInfo(v *View, ui *UI, st Status) {
 		drawText(img, face("ui", 18), x0, box.Min.Y+100+i*28, l, grey2)
 	}
 	by0, by1 := box.Max.Y-24-46, box.Max.Y-24
-	ok := pillAt(img, image.Rect(box.Max.X-32-100, by0, box.Max.X-32, by1), "OK", true)
+	ok := pillAt(img, image.Rect(box.Max.X-32-100, by0, box.Max.X-32, by1), "确定", true)
 	v.add(Target{R: img.Rect, Show: ok, Act: "offlineinfo"}) // OK, or tap anywhere else
-	retry := pillAt(img, image.Rect(x0, by0, x0+140, by1), "Try again", false)
+	retry := pillAt(img, image.Rect(x0, by0, x0+140, by1), "重试", false)
 	v.add(Target{R: retry.Inset(-4), Show: retry, Act: "retry"})
-	restart := pillAt(img, image.Rect(retry.Max.X+10, by0, retry.Max.X+10+160, by1), "Restart app", false)
+	restart := pillAt(img, image.Rect(retry.Max.X+10, by0, retry.Max.X+10+160, by1), "重启应用", false)
 	v.add(Target{R: restart.Inset(-4), Show: restart, Act: "restartapp"})
 }
 

@@ -19,7 +19,7 @@ func focusView(v *View, d *Desk, st Status) {
 	bf := face("uiBold", 17)
 	back := image.Rect(pad-8, 16, pad+170, 60)
 	chevron(img, float64(back.Min.X+18), 38, 7, "left", ink)
-	drawText(img, bf, back.Min.X+34, 38+capHeight(bf)/2, "Back to desk", ink)
+	drawText(img, bf, back.Min.X+34, 38+capHeight(bf)/2, "返回桌面", ink)
 	v.add(Target{R: back.Inset(-6), Show: back, Act: "focusview"})
 	drawRight(img, face("serifB", 26), LW-pad, 38+capHeight(face("serifB", 26))/2, st.Now.Format("15:04"), ink)
 	if st.Battery >= 0 {
@@ -37,17 +37,17 @@ func focusView(v *View, d *Desk, st Status) {
 	arc(img, cx, cy, r-8, frac, 16, ink)
 	mins := (left + 59) / 60
 	big := itoa(int(mins))
-	unit := "min left"
+	unit := "分钟剩余"
 	if left < 60 {
-		big, unit = "<1", "min left"
+		big, unit = "<1", "分钟剩余"
 	}
 	if mins == 1 && left >= 60 {
-		unit = "min left"
+		unit = "分钟剩余"
 	}
 	nf := face("display", 150)
 	drawCentered(img, nf, int(cx), int(cy)+52, big, ink)
 	drawCentered(img, face("serif", 26), int(cx), int(cy)+100, unit, grey2)
-	state := map[string]string{"focus": "FOCUS", "break": "BREAK", "paused": "PAUSED"}[p.State]
+	state := map[string]string{"focus": "专注", "break": "休息", "paused": "已暂停"}[p.State]
 	lf := face("uiBold", 15)
 	drawSpaced(img, lf, int(cx)-spacedW(lf, state, 3)/2, int(cy)-118, state, 3, grey2)
 
@@ -69,22 +69,22 @@ func focusView(v *View, d *Desk, st Status) {
 		}
 	}
 	if p.State == "break" || (p.State == "paused" && p.Was == "break") {
-		label(img, x0, y, "BREAK", grey2)
+		label(img, x0, y, "休息", grey2)
 		f := face("serifB", 40)
-		drawText(img, f, x0, y+52, "Step away", ink)
-		drawText(img, face("serif", 22), x0, y+92, "Stretch, have some water,", grey2)
-		drawText(img, face("serif", 22), x0, y+122, "look at something far away.", grey2)
+		drawText(img, f, x0, y+52, "休息一下", ink)
+		drawText(img, face("serif", 22), x0, y+92, "伸展身体，喝点水，", grey2)
+		drawText(img, face("serif", 22), x0, y+122, "看看远处。", grey2)
 		y += 170
 		if cur != nil {
-			label(img, x0, y, "UP NEXT", grey2)
+			label(img, x0, y, "接下来", grey2)
 			for i, l := range wrap(face("serifB", 26), cur.Text, x1-x0, 2) {
 				drawText(img, face("serifB", 26), x0, y+40+i*32, l, ink)
 			}
 		}
 	} else {
-		label(img, x0, y, "WORKING ON", grey2)
+		label(img, x0, y, "正在进行", grey2)
 		f := face("serifB", 34)
-		title := "No task"
+		title := "暂无任务"
 		if cur != nil {
 			title = cur.Text
 		} else if p.Title != "" {
@@ -106,7 +106,7 @@ func focusView(v *View, d *Desk, st Status) {
 				}
 			}
 			if kids > 0 {
-				drawText(img, face("ui", 17), x0, y+18, fmt.Sprintf("%d of %d subtasks done", done, kids), grey2)
+				drawText(img, face("ui", 17), x0, y+18, fmt.Sprintf("已完成 %d / %d 个子任务", done, kids), grey2)
 				y += 28
 			}
 		}
@@ -121,7 +121,7 @@ func focusView(v *View, d *Desk, st Status) {
 	}
 	if len(upNext) > 0 {
 		y = max(y+30, 300)
-		label(img, x0, y, "UP NEXT · TAP TO SWITCH", grey2)
+		label(img, x0, y, "接下来 · 点击切换", grey2)
 		y += 14
 		rf := face("serif", 21)
 		for k, t := range upNext {
@@ -148,14 +148,14 @@ func focusView(v *View, d *Desk, st Status) {
 	}
 	var btns []btn
 	if cur != nil && p.State != "break" {
-		btns = append(btns, btn{"Done", "toggle", "", cur.ID, true})
+		btns = append(btns, btn{"完成", "toggle", "", cur.ID, true})
 	}
 	if p.State == "paused" {
-		btns = append(btns, btn{"Resume", "pomo", "resume", 0, cur == nil})
+		btns = append(btns, btn{"继续", "pomo", "resume", 0, cur == nil})
 	} else {
-		btns = append(btns, btn{"Pause", "pomo", "pause", 0, false})
+		btns = append(btns, btn{"暂停", "pomo", "pause", 0, false})
 	}
-	btns = append(btns, btn{"Stop", "pomo", "stop", 0, false})
+	btns = append(btns, btn{"停止", "pomo", "stop", 0, false})
 	bx := x0
 	for _, b := range btns {
 		w := textW(face("uiBold", 16), b.label) + 52
@@ -167,9 +167,9 @@ func focusView(v *View, d *Desk, st Status) {
 	sr := image.Rect(x0, by+80, x0+190, by+124)
 	strokeRoundRect(img, sr, 22, 2, ink)
 	speakerGlyph(img, float64(sr.Min.X+28), float64(sr.Min.Y+sr.Max.Y)/2, p.Sound, ink)
-	sl := "Sound off"
+	sl := "关闭提示音"
 	if p.Sound {
-		sl = "Sound on"
+		sl = "开启提示音"
 	}
 	sf := face("uiBold", 16)
 	drawText(img, sf, sr.Min.X+50, (sr.Min.Y+sr.Max.Y)/2+capHeight(sf)/2, sl, ink)

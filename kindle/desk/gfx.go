@@ -32,7 +32,7 @@ const (
 	paper uint8 = 255
 )
 
-//go:embed fonts/AtkinsonHyperlegible-Regular.ttf fonts/AtkinsonHyperlegible-Bold.ttf fonts/Literata-Medium.ttf fonts/Literata-Bold.ttf fonts/Literata-Display.ttf fonts/Inter-Medium.ttf fonts/Inter-Bold.ttf fonts/Bitter-Medium.ttf fonts/Bitter-Bold.ttf fonts/CourierPrime-Regular.ttf fonts/CourierPrime-Bold.ttf fonts/PressStart2P-Regular.ttf
+//go:embed fonts/AtkinsonHyperlegible-Regular.ttf fonts/AtkinsonHyperlegible-Bold.ttf fonts/Literata-Medium.ttf fonts/Literata-Bold.ttf fonts/Literata-Display.ttf fonts/Inter-Medium.ttf fonts/Inter-Bold.ttf fonts/Bitter-Medium.ttf fonts/Bitter-Bold.ttf fonts/CourierPrime-Regular.ttf fonts/CourierPrime-Bold.ttf fonts/PressStart2P-Regular.ttf fonts/SourceHanSansSC-Regular.otf
 var fontFiles embed.FS
 
 var (
@@ -139,6 +139,7 @@ type sface struct {
 
 func loadFonts() error {
 	for name, file := range map[string]string{
+		"zh":      "SourceHanSansSC-Regular.otf",
 		"ui":      "AtkinsonHyperlegible-Regular.ttf",
 		"uiBold":  "AtkinsonHyperlegible-Bold.ttf",
 		"serif":   "Literata-Medium.ttf",
@@ -197,7 +198,11 @@ func face(name string, size float64) font.Face {
 		if err != nil {
 			panic(err)
 		}
-		return f
+		zh, err := opentype.NewFace(fonts["zh"], &opentype.FaceOptions{Size: size, DPI: 72, Hinting: font.HintingFull})
+		if err != nil {
+			panic(err)
+		}
+		return &fallbackFace{Face: f, chinese: zh}
 	}
 	var f font.Face = mk(size)
 	if sc != 1 {
@@ -442,6 +447,9 @@ func ellipsize(f font.Face, s string, maxW int) string {
 
 // wrap breaks s into at most maxLines lines of maxW, ellipsizing the last one.
 func wrap(f font.Face, s string, maxW, maxLines int) []string {
+	if hasCJK(s) {
+		return wrapChinese(f, s, maxW, maxLines)
+	}
 	words := strings.Fields(s)
 	var lines []string
 	cur := ""

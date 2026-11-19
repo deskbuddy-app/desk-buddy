@@ -25,16 +25,16 @@ func aboutPane(v *View, x0, x1, y int) {
 	img := v.Img
 	// Desk Buddy himself says hello (the mascot, brand/desk-buddy.svg)
 	b := drawBuddy(img, x0+26, y-2, 64, ink)
-	drawText(img, face("serifB", 28), b.Max.X+16, y+40, "Hi, I'm Desk Buddy", ink)
+	drawText(img, face("serifB", 28), b.Max.X+16, y+40, "你好，我是 Desk Buddy", ink)
 	f := face("serif", 19)
 	ty := y + 100
 	for _, l := range []string{
-		"I'm a little hobby project, made after a",
-		"10+ year old Kindle turned up lying",
-		"around the house. Now I keep you company.",
+		"我是一个业余项目，起因是",
+		"在家里找到一台闲置了",
+		"十多年的 Kindle，如今由我陪伴你。",
 		"",
-		"Ideas, bugs, feature requests: I'd love",
-		"to hear them. Scan the code, or write to",
+		"想法、问题、功能建议，欢迎",
+		"告诉作者，扫码或写信至",
 	} {
 		drawText(img, f, x0, ty, l, ink)
 		ty += 27
@@ -53,15 +53,15 @@ func aboutPane(v *View, x0, x1, y int) {
 				}
 			}
 		}
-		drawCentered(img, face("ui", 13), qx+size/2, qy+size+22, "Scan with your phone", grey2)
+		drawCentered(img, face("ui", 13), qx+size/2, qy+size+22, "用手机扫码", grey2)
 	}
 	// the first-run tour, again
 	ty += 40
 	fillRect(img, image.Rect(x0, ty, x1, ty+1), grey4)
-	drawText(img, face("serifB", 20), x0, ty+36, "The tour", ink)
-	drawText(img, face("ui", 13), x0, ty+58, "What everything on the screen does", grey2)
+	drawText(img, face("serifB", 20), x0, ty+36, "使用导览", ink)
+	drawText(img, face("ui", 13), x0, ty+58, "了解屏幕上的各项功能", grey2)
 	tr := image.Rect(x1-180, ty+16, x1, ty+62)
-	pillAt(img, tr, "Show the tour", false)
+	pillAt(img, tr, "查看导览", false)
 	v.add(Target{R: tr.Inset(-4), Show: tr, Act: "tour", Arg: "start"})
 }
 
@@ -69,7 +69,7 @@ func aboutPane(v *View, x0, x1, y int) {
 // version. Updates only install when tapped.
 func updatesPane(v *View, ui *UI, st Status, x0, x1, y int) {
 	img := v.Img
-	label(img, x0, y, "UPDATES", grey2)
+	label(img, x0, y, "更新", grey2)
 	y += 18
 	row := func(name, hint, value string) {
 		drawText(img, face("serifB", 20), x0, y+30, name, ink)
@@ -78,13 +78,13 @@ func updatesPane(v *View, ui *UI, st Status, x0, x1, y int) {
 		fillRect(img, image.Rect(x0, y+68, x1, y+69), grey4)
 		y += 74
 	}
-	row("Version", "The Kindle app's build", buildVersion)
+	row("版本", "Kindle 应用版本", buildVersion)
 	if st.Battery >= 0 {
 		state := ""
 		if st.Charging {
 			state = " · charging"
 		}
-		row("Battery", "Plugged in, it can run all day", fmt.Sprintf("%d%%%s", st.Battery, state))
+		row("电量", "接通电源可持续运行", fmt.Sprintf("%d%%%s", st.Battery, state))
 	}
 	// Show on main screen, and how often to look (greyed out when it's off)
 	every := ui.UpdEvery
@@ -98,8 +98,8 @@ func updatesPane(v *View, ui *UI, st Status, x0, x1, y int) {
 		act          string
 		off          bool
 	}{
-		{"Show on main screen", "An Update button at the top when a new version is ready", []string{"On", "Off"}, []string{"1", "0"}, map[bool]int{false: 0, true: 1}[ui.NoUpdShow], "updshow", false},
-		{"Check every", "Downloads over Wi-Fi; installs only when you tap", []string{"1 hour", "12 hours", "24 hours"}, []string{"1", "12", "24"}, map[int]int{1: 0, 12: 1, 24: 2}[every], "updevery", ui.NoUpdShow},
+		{"在主屏幕显示", "有新版时在顶部显示更新按钮", []string{"开启", "关闭"}, []string{"1", "0"}, map[bool]int{false: 0, true: 1}[ui.NoUpdShow], "updshow", false},
+		{"检查间隔", "通过 Wi-Fi 下载，点击后才安装", []string{"1 hour", "12 hours", "24 hours"}, []string{"1", "12", "24"}, map[int]int{1: 0, 12: 1, 24: 2}[every], "updevery", ui.NoUpdShow},
 	} {
 		w := map[int]int{2: 144, 3: 300}[len(r.labels)]
 		drawText(img, face("serifB", 20), x0, y+30, r.name, ink)
@@ -115,13 +115,13 @@ func updatesPane(v *View, ui *UI, st Status, x0, x1, y int) {
 	}
 	btn := image.Rect(x0, y+20, x0+230, y+66)
 	if ui.UpdateReady { // Install, and What's new? (the update's changes, in a box)
-		upd := pillAt(img, btn, "Install update", true)
+		upd := pillAt(img, btn, "安装更新", true)
 		v.add(Target{R: upd.Inset(-4), Show: upd, Act: "update"})
-		wn := pillAt(img, image.Rect(btn.Max.X+12, btn.Min.Y, btn.Max.X+12+170, btn.Max.Y), "What's new?", false)
+		wn := pillAt(img, image.Rect(btn.Max.X+12, btn.Min.Y, btn.Max.X+12+170, btn.Max.Y), "更新内容", false)
 		v.add(Target{R: wn.Inset(-4), Show: wn, Act: "notesmodal"})
-		drawText(img, face("uiBold", 15), wn.Max.X+20, (btn.Min.Y+btn.Max.Y)/2+5, "Ready to install", ink)
+		drawText(img, face("uiBold", 15), wn.Max.X+20, (btn.Min.Y+btn.Max.Y)/2+5, "已可安装", ink)
 	} else {
-		upd := pillAt(img, btn, "Check for updates", false)
+		upd := pillAt(img, btn, "检查更新", false)
 		v.add(Target{R: upd.Inset(-4), Show: upd, Act: "checkupdate"})
 		if ui.UpdateNote != "" {
 			drawText(img, face("ui", 15), btn.Max.X+20, (btn.Min.Y+btn.Max.Y)/2+5, ui.UpdateNote, grey2)

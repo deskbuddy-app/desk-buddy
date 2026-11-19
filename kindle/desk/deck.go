@@ -127,9 +127,9 @@ func deckView(v *View, d *Desk, ui *UI) {
 	if !placeholder { // Edit / Done, bottom right
 		bottom = LH - 74
 		f := face("uiBold", 16)
-		label := "Edit"
+		label := "编辑"
 		if ui.DeckEdit {
-			label = "Done"
+			label = "完成"
 		}
 		r := image.Rect(x1-textW(f, label)-62, LH-62, x1, LH-18)
 		c := ink
@@ -163,12 +163,12 @@ func deckView(v *View, d *Desk, ui *UI) {
 
 	// Right: how the last tap went, or whether the computer is listening.
 	sf := face("uiBold", 13) // the badge is the size the LIVE badge was: 26 px, fully rounded
-	status, solid := dk.MachineLabel+" isn't listening", false
+	status, solid := dk.MachineLabel+"未响应", false
 	if dk.Online {
-		status = dk.MachineLabel + " is listening"
+		status = dk.MachineLabel + "已连接"
 	}
 	if placeholder {
-		status = "Placeholders"
+		status = "示例图标"
 		if ui.Note != "" {
 			status, solid = ui.Note, true
 		}
@@ -178,16 +178,16 @@ func deckView(v *View, d *Desk, ui *UI) {
 		solid = true
 		switch l.State {
 		case "sent":
-			status = "Sending " + l.Label + "…"
+			status = "正在发送 " + l.Label + "…"
 		case "waiting":
-			status = "Waiting for the " + dk.MachineLabel + "…"
+			status = "正在等待 " + dk.MachineLabel + "…"
 			solid = false
 		case "opening":
-			status = "Opening " + l.Label + "…"
+			status = "正在打开 " + l.Label + "…"
 		case "done":
-			status = "Opened " + l.Label
+			status = "已打开 " + l.Label
 		case "failed":
-			status = "Couldn't open " + l.Label
+			status = "无法打开 " + l.Label
 		}
 	}
 	dot := !solid && dk.Online && !placeholder // a dot in the badge while the computer is listening
@@ -197,9 +197,9 @@ func deckView(v *View, d *Desk, ui *UI) {
 	}
 	sr := image.Rect(x1-sw, y+11, x1, y+37)
 	if !placeholder && ui.DeckEdit { // how editing works
-		hint := "× removes · arrows move"
+		hint := "× 移除 · 箭头调整位置"
 		if ui.DeckAll {
-			hint = "Tap an app to add or remove it"
+			hint = "点击应用可添加或移除"
 		}
 		hf := face("ui", 13)
 		if room := sr.Min.X - 24 - (tx + 16); room > 80 {
@@ -221,7 +221,7 @@ func deckView(v *View, d *Desk, ui *UI) {
 	y += 64
 
 	if len(names) == 0 {
-		drawText(img, face("ui", 18), x0, y+40, "No apps on this deck yet.", grey2)
+		drawText(img, face("ui", 18), x0, y+40, "面板中还没有应用。", grey2)
 		return
 	}
 	tw := (x1 - x0 - (cols-1)*gap) / cols
@@ -269,7 +269,7 @@ func deckView(v *View, d *Desk, ui *UI) {
 		}
 		switch {
 		case placeholder:
-			v.add(Target{R: r, Show: r.Inset(3), Act: "note", Arg: name + " will open once the new backend is live"})
+			v.add(Target{R: r, Show: r.Inset(3), Act: "note", Arg: name + "将在新版后端上线后打开"})
 		case all:
 			v.add(Target{R: r, Show: r.Inset(3), Act: "deckapp", Arg: dk.Profile + "|" + name})
 		default:
@@ -291,9 +291,9 @@ func confirmRemove(v *View, d *Desk, ui *UI) {
 	fillRoundRect(img, box.Inset(-4), 14, paper)
 	strokeRoundRect(img, box, 12, 3, ink)
 	f := face("serifB", 26)
-	drawCentered(img, f, LW/2, box.Min.Y+62, ellipsize(f, "Remove "+dk.Tiles[i].Label+" from favourites?", box.Dx()-40), ink)
-	cancel := pillAt(img, image.Rect(LW/2-190, box.Max.Y-74, LW/2-10, box.Max.Y-26), "Cancel", false)
-	remove := pillAt(img, image.Rect(LW/2+10, box.Max.Y-74, LW/2+190, box.Max.Y-26), "Remove", true)
+	drawCentered(img, f, LW/2, box.Min.Y+62, ellipsize(f, "移除 "+dk.Tiles[i].Label+"的收藏？", box.Dx()-40), ink)
+	cancel := pillAt(img, image.Rect(LW/2-190, box.Max.Y-74, LW/2-10, box.Max.Y-26), "取消", false)
+	remove := pillAt(img, image.Rect(LW/2+10, box.Max.Y-74, LW/2+190, box.Max.Y-26), "移除", true)
 	v.add(Target{R: cancel.Inset(-4), Show: cancel, Act: "favcancel"})
 	v.add(Target{R: remove.Inset(-4), Show: remove, Act: "favremove", ID: i, Arg: dk.Profile})
 }
@@ -389,7 +389,7 @@ func notConnected(v *View, dk *Deck) {
 	name := dk.MachineLabel
 	cx := LW / 2
 	top := barH + 70
-	drawCentered(img, face("serifB", 34), cx, top+30, name+" isn't connected yet", ink)
+	drawCentered(img, face("serifB", 34), cx, top+30, name+"尚未连接", ink)
 	bf := face("serif", 21)
 	what := "Mac"
 	if dk.Machine == "pc" {
@@ -400,8 +400,8 @@ func notConnected(v *View, dk *Deck) {
 		}
 	}
 	for i, l := range []string{
-		"Install Desk Buddy on your " + what + " to open its apps from here,",
-		"show its calendar and music, and let Auto follow it.",
+		"请安装 Desk Buddy 于 " + what + "以便在这里打开应用，",
+		"显示日历和音乐，并自动跟随当前电脑。",
 	} {
 		drawCentered(img, bf, cx, top+80+i*30, l, grey2)
 	}
@@ -418,7 +418,7 @@ func notConnected(v *View, dk *Deck) {
 				}
 			}
 		}
-		drawCentered(img, face("ui", 15), cx, qy+size+30, "Scan with your phone to get it", grey2)
+		drawCentered(img, face("ui", 15), cx, qy+size+30, "用手机扫码获取", grey2)
 		drawCentered(img, face("uiBold", 15), cx, qy+size+54, strings.TrimPrefix(helperURL, "https://"), ink)
 	}
 }

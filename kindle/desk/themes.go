@@ -21,14 +21,14 @@ import (
 )
 
 var themes = []struct{ id, name, about string }{
-	{"plain", "Plain", "The usual look"},
-	{"garden", "Garden", "Vines and flowers; done tasks bloom"},
-	{"sketch", "Sketch", "Hand-drawn lines and scribbles"},
-	{"classic", "Classic", "The black-and-white desktop of 1984"},
-	{"retro", "Retro", "Grey 3D buttons of the 90s"},
-	{"notebook", "Notebook", "Ruled paper, a margin, punched holes"},
-	{"typewriter", "Typewriter", "Typed letters and [x] boxes"},
-	{"gameboy", "Game Boy", "Chunky pixels, like a handheld"},
+	{"plain", "简洁", "经典外观"},
+	{"garden", "花园", "藤蔓与花朵，完成任务时开花"},
+	{"sketch", "手绘", "手绘线条与涂鸦"},
+	{"classic", "经典", "1984 年风格的黑白桌面"},
+	{"retro", "复古", "90 年代的灰色立体按钮"},
+	{"notebook", "笔记本", "横线纸、页边距与装订孔"},
+	{"typewriter", "打字机", "打字机文字与 [x] 方框"},
+	{"gameboy", "Game Boy", "掌机风格的像素外观"},
 }
 
 // separateButtons: themes that draw a choice as a row of separate buttons.
@@ -484,7 +484,7 @@ func typewriterClock(img *image.Gray) {
 		fillRect(img, image.Rect(sheet.Min.X+4+i, sheet.Max.Y+i, sheet.Max.X+i, sheet.Max.Y+i+1), grey4)
 	}
 	f := face("monoB", 17)
-	drawText(img, f, sheet.Min.X+40, sheet.Min.Y+52, "DESK BUDDY  —  DAILY LOG", ink)
+	drawText(img, f, sheet.Min.X+40, sheet.Min.Y+52, "DESK BUDDY — 每日记录", ink)
 	for x := sheet.Min.X + 40; x < sheet.Max.X-40; x += 12 {
 		fillRect(img, image.Rect(x, sheet.Min.Y+66, x+7, sheet.Min.Y+68), ink)
 	}
@@ -555,9 +555,9 @@ func classicClock(img *image.Gray) {
 		fillRect(img, image.Rect(title.Min.X+6, y, title.Max.X-6, y+1), ink)
 	}
 	f := face("uiBold", 16)
-	tw := textW(f, "Clock")
+	tw := textW(f, "时钟")
 	fillRect(img, image.Rect(LW/2-tw/2-12, title.Min.Y+3, LW/2+tw/2+12, title.Max.Y-3), paper)
-	drawCentered(img, f, LW/2, title.Min.Y+21, "Clock", ink)
+	drawCentered(img, f, LW/2, title.Min.Y+21, "时钟", ink)
 	box := image.Rect(title.Min.X+18, title.Min.Y+8, title.Min.X+34, title.Min.Y+22) // the close box
 	fillRect(img, box.Inset(-3), paper)
 	strokeRoundRect(img, box, 0, 1.6, ink)
@@ -585,7 +585,7 @@ func retroClock(img *image.Gray) {
 	// the title bar: dark, with the name in white and _ □ ✕
 	title := image.Rect(win.Min.X, win.Min.Y, win.Max.X, win.Min.Y+30)
 	fillRect(img, title, grey2)
-	drawText(img, face("uiBold", 16), title.Min.X+12, title.Min.Y+21, "Clock", paper)
+	drawText(img, face("uiBold", 16), title.Min.X+12, title.Min.Y+21, "时钟", paper)
 	for i, g := range []string{"_", "□", "✕"} {
 		b := image.Rect(title.Max.X-30-(2-i)*28, title.Min.Y+5, title.Max.X-8-(2-i)*28, title.Max.Y-5)
 		bevel(img, b, false)
@@ -607,7 +607,7 @@ func retroClock(img *image.Gray) {
 	start := image.Rect(6, bar.Min.Y+6, 100, bar.Max.Y-6)
 	bevel(img, start, false)
 	flagGlyph(img, float64(start.Min.X+18), float64(start.Min.Y+start.Max.Y)/2)
-	drawText(img, face("uiBold", 15), start.Min.X+34, (start.Min.Y+start.Max.Y)/2+6, "Start", ink)
+	drawText(img, face("uiBold", 15), start.Min.X+34, (start.Min.Y+start.Max.Y)/2+6, "开始", ink)
 }
 
 // flagGlyph: four small squares (a plain window, not anyone's logo).
@@ -750,8 +750,8 @@ func flowerGlyph(img *image.Gray, cx, cy float64, c uint8) {
 // The standby clock's second style shows the chosen theme's decorations.
 func themesPane(v *View, x0, x1, y int) {
 	img := v.Img
-	label(img, x0, y, "THEMES", grey2)
-	drawText(img, face("ui", 13), x0, y+22, "The look of every screen. The standby clock's second style is dressed in it too.", grey2)
+	label(img, x0, y, "主题", grey2)
+	drawText(img, face("ui", 13), x0, y+22, "应用于各个页面，也用于待机时钟的第二种样式。", grey2)
 	const cols, gap = 4, 12
 	cw := (x1 - x0 - (cols-1)*gap) / cols
 	ch := (LH - 16 - (y + 40) - gap) / 2

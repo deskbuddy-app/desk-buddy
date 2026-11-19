@@ -50,25 +50,25 @@ func headsUp(v *View, e *Event, ui *UI, st Status) {
 	strokeRoundRect(img, box, 14, 3, ink)
 	x0, x1 := box.Min.X+28, box.Max.X-28
 	left := (e.Start - st.Now.Unix() + 59) / 60
-	when := fmt.Sprintf("IN %d MIN", left)
+	when := fmt.Sprintf("%d 分钟后", left)
 	switch {
 	case left <= 0 && st.Now.Unix() < e.Start+60:
-		when = "STARTING NOW"
+		when = "即将开始"
 	case left <= 0:
-		when = fmt.Sprintf("STARTED %d MIN AGO", (st.Now.Unix()-e.Start)/60)
+		when = fmt.Sprintf("已开始 %d 分钟", (st.Now.Unix()-e.Start)/60)
 	case left == 1:
-		when = "IN 1 MIN"
+		when = "1 分钟后"
 	}
 	label(img, x0, box.Min.Y+32, when, grey2)
 	// buttons on the right: Join (solid, when there's a link) and Dismiss
 	bx := x1
 	dis := image.Rect(bx-120, box.Min.Y+52, bx, box.Min.Y+98)
-	pillAt(img, dis, "Dismiss", false)
+	pillAt(img, dis, "关闭提醒", false)
 	v.add(Target{R: dis.Inset(-6), Show: dis, Act: "dismiss"})
 	bx = dis.Min.X - 12
 	if e.Join != "" {
 		jr := image.Rect(bx-120, box.Min.Y+52, bx, box.Min.Y+98)
-		pillAt(img, jr, "Join", true)
+		pillAt(img, jr, "加入会议", true)
 		v.add(Target{R: jr.Inset(-6), Show: jr, Act: "join", Arg: e.Join})
 		bx = jr.Min.X - 12
 	}
@@ -76,7 +76,7 @@ func headsUp(v *View, e *Event, ui *UI, st Status) {
 	drawText(img, tf, x0, box.Min.Y+84, ellipsize(tf, e.Title, bx-16-x0), ink)
 	sub := hm(e.Start, st) + "–" + hm(e.End, st)
 	if e.Join != "" {
-		sub += " · Join opens it on your computer"
+		sub += " · 加入会议将在电脑打开链接"
 	} else if e.Location != "" {
 		sub += " · " + e.Location
 	}

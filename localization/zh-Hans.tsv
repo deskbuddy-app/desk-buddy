@@ -1,0 +1,688 @@
+Back	返回
+Settings	设置
+Tasks	任务
+Deck	应用面板
+Calendar	日历
+Weather	天气
+Update	更新
+Updates	更新
+About	关于
+Screen	屏幕
+Focus	专注
+Music	音乐
+Server	服务器
+Themes	主题
+Cancel	取消
+Delete	删除
+Clear…	清空…
+Keep	保留
+Done	完成
+Next	下一步
+Save	保存
+Search	搜索
+Add	添加
+Edit	编辑
+Remove	移除
+Try again	重试
+Restart app	重启应用
+OK	确定
+Auto	自动
+On	开启
+Off	关闭
+Light	浅色
+Dark	深色
+Standard	标准
+Compact	紧凑
+Left	左侧
+Right	右侧
+Font	字体
+Sans	无衬线
+Serif	衬线
+Temperature	温度
+Low	低
+Mid	中
+Same	相同
+Instant	立即
+Sharp	清晰
+Normal	标准
+Gentle	柔和
+Clean	清晰
+Both	两者
+Shown	显示
+Not shown	不显示
+Cloud	云端
+Today	今天
+Tomorrow	明天
+Now	现在
+All day	全天
+List	列表
+Timeline	时间轴
+Back to desk	返回桌面
+Pause	暂停
+Resume	继续
+Stop	停止
+Paused	已暂停
+Sound off	关闭提示音
+Sound on	开启提示音
+Show again	再次显示
+Open	打开
+Connect	连接
+Copy	复制
+Welcome	欢迎
+Continue	继续
+Get started	开始使用
+Per computer	按电脑分开
+Theme, size, font	主题、尺寸、字体
+Pomodoro and breaks	番茄钟与休息
+App, sync and covers	应用、同步与封面
+Lists, clearing	列表与清空
+Calendars, heads-up	日历与会议提醒
+Cloud or local	云端或本地
+Version, battery	版本与电量
+Garden, Retro, Sketch…	花园、复古、手绘…
+Who made it, feedback	作者与反馈
+Dark: white on black	深色：黑底白字
+Dark when your Mac is, else sunset to sunrise	跟随 Mac 深色模式，否则日落后开启
+Theme	主题
+Screen size	屏幕尺寸
+Compact: larger text and tiles for 6" Basic Kindles	紧凑：适合 6 英寸入门款 Kindle
+Orientation	方向
+Which side the Kindle's chin is on	Kindle 底边所在的一侧
+For tasks and headings	用于任务与标题
+For the weather	用于天气
+Front light while Auto is dark	自动深色模式下的前光
+Pick Auto above to use this	先在上方选择自动模式
+Night brightness	夜间亮度
+SCREEN	屏幕
+FOCUS	专注
+Focus length	专注时长
+Minutes per Pomodoro	每次番茄钟的分钟数
+Break length	休息时长
+Minutes between focuses	两次专注间的休息分钟数
+Chime on computer	电脑提示音
+Plays on the computer you're using when a focus or break ends	专注或休息结束时在当前电脑播放
+MUSIC	音乐
+Music sync	音乐同步
+Show what's playing on your computer	显示电脑正在播放的音乐
+Music app	音乐应用
+Whichever one is playing	跟随正在播放的应用
+Only Spotify	仅 Spotify
+Only Apple Music	仅 Apple Music
+Music app logo	音乐应用标志
+Shows a small Spotify or Apple Music logo next to the song	在曲目旁显示音乐应用标志
+Album covers	专辑封面
+On the music screen (Spotify, and Apple Music songs with artwork)	在音乐页显示有封面的曲目
+Cover quality	封面质量
+Sharp: twice the detail on the big cover screens	清晰：大封面使用双倍细节
+Searching for other devices… connect another computer first	正在搜索其他设备…请先连接另一台电脑
+Off: one list for everything	关闭：所有设备共用一个列表
+TASKS	任务
+Separate lists	独立任务列表
+Auto-delete done tasks	自动删除已完成任务
+Ticked-off tasks go by themselves	自动清理勾选完成的任务
+Delete after	删除延迟
+How long after you tick them off	勾选完成后等待多久
+Empties your list. Asks first.	清空任务列表，操作前会确认。
+Clear tasks	清空任务
+MEETING HEADS-UP	会议提醒
+Before meetings	会议前提醒
+A card before each calendar event, with Join for Zoom / Meet links	会前显示提醒卡，可打开 Zoom / Meet 链接
+How early	提前多久
+Minutes before it starts	会议开始前的分钟数
+Delete this task?	删除此任务？
+Its subtask goes too.	子任务也会被删除。
+Its %d subtasks go too.	其 %d 个子任务也会被删除。
+%d tasks, %d of them done. Subtasks go with them.	共 %d 项任务，已完成 %d 项。子任务也会删除。
+This can't be undone.	此操作无法撤销。
+Everything (%d)	全部（%d）
+Done ones (%d)	已完成（%d）
+Screen refresh	屏幕刷新
+What flashes when the screen changes	画面变化时如何刷新
+Never flashes. Faint ghosts of old text may stay.	不闪屏，可能留下轻微残影。
+Big changes flash, only where they changed.	较大变化时，仅在变化区域闪屏。
+Every change flashes, even small ones. Sharpest.	每次变化都闪屏，显示最清晰。
+CALENDARS	日历
+None yet. Desk Buddy brings in your computer's calendars.	暂无日历，Desk Buddy 会同步电脑的日历。
+On both lists	两个列表均显示
+Only on the Mac list	仅在 Mac 列表显示
+‹ Back	‹ 返回
+More ›	更多 ›
++ Subtask	+ 子任务
+NEW TASK	新建任务
+NEW SUBTASK · 	新建子任务 ·
+EDIT TASK	编辑任务
+NEW EVENT · 	新建日程 ·
+WEATHER LOCATION	天气地点
+A step of it…	其中一个步骤…
+What's happening?	有什么安排？
+Town or city	城镇或城市
+What needs doing?	需要做什么？
+TODAY	今天
+%d more · close this task to see them	还有 %d 项，关闭当前任务可查看
+Nothing on the list	列表暂无任务
+Add tasks from your phone, Mac or Claude.	通过手机、Mac 或 Claude 添加任务。
+%d / %d done	已完成 %d / %d
+Page %d of %d	第 %d / %d 页
+NOW WORKING ON	当前任务
+ · %d/%d SUBTASKS	 · 子任务 %d/%d
+TODAY · MAC	今天 · MAC
+No description. Add one on your phone.	暂无说明，可在手机上添加。
+Subtask	子任务
+Calendar: 	日历：
+Loading…	加载中…
+MON	周一
+TUE	周二
+WED	周三
+THU	周四
+FRI	周五
+SAT	周六
+SUN	周日
+Delete this event?	删除此日程？
+Nothing on this day	当天没有安排
+Nothing in these hours	这些时段没有安排
+ isn't listening	未响应
+ is listening	已连接
+Placeholders	示例图标
+Sending 	正在发送
+Waiting for the 	正在等待
+Opening 	正在打开
+Opened 	已打开
+Couldn't open 	无法打开
+× removes · arrows move	× 移除 · 箭头调整位置
+Tap an app to add or remove it	点击应用可添加或移除
+No apps on this deck yet.	面板中还没有应用。
+ will open once the new backend is live	将在新版后端上线后打开
+Remove 	移除
+ from favourites?	的收藏？
+ isn't connected yet	尚未连接
+Install Desk Buddy on your 	请安装 Desk Buddy 于
+ to open its apps from here,	以便在这里打开应用，
+show its calendar and music, and let Auto follow it.	显示日历和音乐，并自动跟随当前电脑。
+Scan with your phone to get it	用手机扫码获取
+min left	分钟剩余
+BREAK	休息
+PAUSED	已暂停
+Step away	休息一下
+Stretch, have some water,	伸展身体，喝点水，
+look at something far away.	看看远处。
+UP NEXT	接下来
+WORKING ON	正在进行
+No task	暂无任务
+%d of %d subtasks done	已完成 %d / %d 个子任务
+UP NEXT · TAP TO SWITCH	接下来 · 点击切换
+Now working on	当前任务
+Time's up	时间到
+%d min	%d 分钟
+Paused · 	已暂停 ·
+Break · 	休息 ·
+Focus · 	专注 ·
+Break 	休息
+Nice focus. Take a breather?	专注得不错，休息一下？
+%d minutes on %s	专注了 %d 分钟，任务：%s
+5-min break	休息 5 分钟
+Another 25	再专注 25 分钟
+Break's over	休息结束
+Ready for the next one?	准备好下一轮了吗？
+Next up: 	接下来：
+Start 25 min	开始 25 分钟
+5 more minutes	再休息 5 分钟
+SERVER	服务器
+Works while your computer sleeps	电脑休眠时仍可使用
+Your computer	你的电脑
+Updates while it's on, on this Wi-Fi	同一 Wi-Fi 下电脑开机时更新
+To change this, use Desk Buddy on your computer.	请在电脑的 Desk Buddy 中更改。
+The Kindle follows by itself, and finds it again if it moves.	Kindle 会自动跟随，并重新查找变更的地址。
+Cloudflare · works while your computer sleeps	Cloudflare · 电脑休眠时仍可使用
+Looking on this Wi-Fi…	正在当前 Wi-Fi 上查找…
+For a computer running Desk Buddy	查找正在运行 Desk Buddy 的电脑
+Your Mac	你的 Mac
+Ask it to run Desk Buddy on this Wi-Fi	请在同一 Wi-Fi 的电脑上运行 Desk Buddy
+No computer found	未找到电脑
+Turn on “This Mac” in Desk Buddy, then tap to look again	在 Desk Buddy 中启用“本机”，然后点击重试
+ · updates while it's on	 · 电脑开机时更新
+Click Allow on the computer, and check it	在电脑上点击允许，并核对
+shows this code:	显示的代码：
+Where's Desk Buddy running?	Desk Buddy 在哪里运行？
+ since 	 自
+Can't reach the cloud	无法连接云端
+The Kindle can't get online. Check its Wi-Fi.	Kindle 无法联网，请检查 Wi-Fi。
+It keeps trying every 15 seconds.	每 15 秒会自动重试。
+Task changes are kept here and sent once it's back.	任务改动会保存在本机，恢复连接后发送。
+your computer	你的电脑
+Can't reach 	无法连接
+Desk Buddy runs on 	Desk Buddy 运行于
+. It needs to be awake,	。请保持电脑唤醒，
+on this Wi-Fi, with Desk Buddy open.	连接同一 Wi-Fi，并打开 Desk Buddy。
+If its address changed, the Kindle finds it again.	地址变化后 Kindle 会重新查找。
+Send feedback	发送反馈
+Hi, I'm Desk Buddy	你好，我是 Desk Buddy
+I'm a little hobby project, made after a	我是一个业余项目，起因是
+10+ year old Kindle turned up lying	在家里找到一台闲置了
+around the house. Now I keep you company.	十多年的 Kindle，如今由我陪伴你。
+Ideas, bugs, feature requests: I'd love	想法、问题、功能建议，欢迎
+ to hear them. Scan the code, or write to	告诉作者，扫码或写信至
+Scan with your phone	用手机扫码
+The tour	使用导览
+What everything on the screen does	了解屏幕上的各项功能
+Show the tour	查看导览
+UPDATES	更新
+Version	版本
+The Kindle app's build	Kindle 应用版本
+Battery	电量
+Plugged in, it can run all day	接通电源可持续运行
+Show on main screen	在主屏幕显示
+An Update button at the top when a new version is ready	有新版时在顶部显示更新按钮
+Check every	检查间隔
+Downloads over Wi-Fi; installs only when you tap	通过 Wi-Fi 下载，点击后才安装
+Install update	安装更新
+What's new?	更新内容
+Ready to install	已可安装
+Check for updates	检查更新
+Today, the next hours and the week	查看今天、未来几小时和本周天气
+Your month; add events with +	查看月历，点击 + 添加日程
+Tiles that open apps on your computer	点击图块打开电脑上的应用
+Your tasks, with today's calendar beside it	查看任务和今天的日历
+Menu	菜单
+The computer to follow; feedback and Settings	选择跟随的电脑，查看反馈与设置
+Tap: brightness, light or dark	点击：调整亮度、浅色或深色
+Volume	音量
+Shows while music plays; tap to change it	播放音乐时显示，点击调整
+Refresh	刷新
+Redraw the screen and update now	立即刷新画面和数据
+Light / dark	浅色 / 深色
+Swap black and white (Auto is in Settings)	切换黑白，自动模式在设置中
+Clock	时钟
+Tap: standby clock. Hold 3 s: leave the app	点击：待机时钟。长按 3 秒：退出应用
+Add a task	添加任务
+Then type it on the keyboard	然后通过键盘输入
+A task	一项任务
+Tap: open it. Hold: edit it. Circle: tick it off. Swipe left: delete	点击打开，长按编辑，圆圈标记完成，左滑删除
+Side panel	侧边面板
+Day, weather, music, info	日程、天气、音乐和信息
+Hide it	隐藏面板
+More room for tasks	留出更多任务空间
+Swipes	滑动操作
+Up / down: more tasks. Three fingers sideways: the next tab. In Settings, swipe right to go back	上下滑查看更多任务，三指横滑切换页面，设置中右滑返回
+On your computer	在电脑上
+Install Desk Buddy on your computer: it connects the two.	在电脑上安装 Desk Buddy，以连接两台设备。
+your computer's calendar shows here	电脑上的日历会显示在这里
+what's playing, and the play / skip buttons	查看播放中的音乐并控制播放和切歌
+tiles open apps on your computer	点击图块打开电脑上的应用
+with more than one computer connected, it follows the one you use	连接多台电脑时，自动跟随正在使用的电脑
+Tap “	点击左上角的“
+” at the top left, then Settings. You can also	”，然后选择设置，也可以
+change them from your computer, in Desk Buddy.	在电脑上的 Desk Buddy 中调整。
+To see this tour again: Settings › About.	再次查看导览：设置 › 关于。
+WELCOME TO DESK BUDDY	欢迎使用 DESK BUDDY
+Skip	跳过
+Clear	晴
+Mainly clear	大部晴朗
+Partly cloudy	局部多云
+Overcast	阴
+Fog	雾
+Drizzle	毛毛雨
+Heavy rain	大雨
+Rain	雨
+Snow	雪
+Showers	阵雨
+Thunderstorm	雷暴
+Cloudy	多云
+Loading the weather…	正在加载天气…
+Weather: 	天气：
+Sunrise 	日出
+ · Sunset 	 · 日落
+NEXT %d HOURS	未来 %d 小时
+ · UPDATED 	 · 更新于
+Feels %s · Wind %d mph · Humidity %d%%	体感 %s · 风速 %d mph · 湿度 %d%%
+%d%% chance of rain · high %s, low %s	降雨概率 %d%% · 最高 %s，最低 %s
+THROUGH THE DAY	全天天气
+Bars show the chance of rain · tap a day on the right to see it	柱形表示降雨概率 · 点击右侧日期查看
+Bars show the chance of rain · « shows the week	柱形表示降雨概率 · « 查看本周
+THIS WEEK	本周
+%d%% rain	降雨 %d%%
+No calendar yet	暂无日历
+Add one on your phone page	请在手机网页上添加
+Nothing on for the next few hours	未来几小时没有安排
+High %s · low %s · feels %s	最高 %s · 最低 %s · 体感 %s
+Dry for the next 12 hours	未来 12 小时无雨
+Rain likely around 	预计降雨时间：
+Rain likely overnight, around 	预计夜间降雨时间：
+ · sunset 	 · 日落
+Open Spotify or Apple Music on your 	请打开 Spotify 或 Apple Music 于
+ is open, but not playing on this 	已打开，但未在此电脑播放：
+Nothing playing	暂无播放
+PLAYING	播放中
+No sessions running	暂无运行中的会话
+CLAUDE · NEEDS YOU	CLAUDE · 等待你处理
+Waiting for your input	等待你的输入
+Working: 	正在处理：
+started 	开始于
+Finished: 	已完成：
+Nothing open in Work or Home	工作与家庭列表均无待办
+1 task open across Work and Home	工作与家庭列表共 1 项待办
+%d tasks open across Work and Home	工作与家庭列表共 %d 项待办
+Hold the clock 3 s, or press power, to leave	长按时钟 3 秒或按电源键退出
+CALENDAR	日历
+All day · 	全天 ·
+NOW · UNTIL 	现在 · 至
+Nothing else today	今天没有其他安排
+Nothing on today	今天没有安排
+NEXT UP	接下来
+Tomorrow 	明天
+in 25 min	25 分钟后
+in 1 h 10 min	1 小时 10 分钟后
+in %d min	%d 分钟后
+in %d h	%d 小时后
+in %d h %d min	%d 小时 %d 分钟后
+just now	刚刚
+%d min ago	%d 分钟前
+%d h %d min ago	%d 小时 %d 分钟前
+IN %d MIN	%d 分钟后
+STARTING NOW	即将开始
+STARTED %d MIN AGO	已开始 %d 分钟
+IN 1 MIN	1 分钟后
+Dismiss	关闭提醒
+Join	加入会议
+ · Join opens it on your computer	 · 加入会议将在电脑打开链接
+Connected to cloud	已连接云端
+to local	转至本地
+Auto · 	自动 ·
+Connected to local	已连接本地
+Offline · retrying	离线 · 正在重试
+Offline since 	离线自
+ · 1 change waiting	 · 1 项改动待同步
+ · %d changes waiting	 · %d 项改动待同步
+Chosen by you · back to Auto at 4am	手动选择 · 凌晨 4 点恢复自动
+Now: 	当前：
+The computer you're using, else the last one	跟随当前电脑，否则使用上一台
+Tasks for your Mac	Mac 的任务
+Tasks for your 	任务所属：
+Searching for other devices…	正在搜索其他设备…
+Install Desk Buddy on another computer to connect it	在另一台电脑上安装 Desk Buddy 以连接
+Ideas, bugs, feature requests	想法、问题与功能建议
+Exit to Kindle	返回 Kindle
+Back to your library and books	返回书库与图书
+BRIGHTNESS	亮度
+Flip screen	翻转屏幕
+Quote	引言
+Next event	下个日程
+Nothing waiting for tomorrow	明天暂无待办
+1 task waiting	1 项待办
+ tasks waiting	 项待办
+TAP TO WAKE	点击唤醒
+Claude needs your input · 	Claude 等待输入 ·
+Claude finished · 	Claude 已完成 ·
+Battery 	电量
+Find the computer running Desk Buddy on this Wi-Fi.	在当前 Wi-Fi 查找运行 Desk Buddy 的电脑。
+Find it	查找
+Connecting to 	正在连接
+. Retrying every 15 seconds.	，每 15 秒重试一次。
+Use another computer…	使用其他电脑…
+One for everything	全部共用一个列表
+Plain	简洁
+The usual look	经典外观
+Garden	花园
+Vines and flowers; done tasks bloom	藤蔓与花朵，完成任务时开花
+Sketch	手绘
+Hand-drawn lines and scribbles	手绘线条与涂鸦
+Classic	经典
+The black-and-white desktop of 1984	1984 年风格的黑白桌面
+Retro	复古
+Grey 3D buttons of the 90s	90 年代的灰色立体按钮
+Notebook	笔记本
+Ruled paper, a margin, punched holes	横线纸、页边距与装订孔
+Typewriter	打字机
+Typed letters and [x] boxes	打字机文字与 [x] 方框
+Game Boy	Game Boy
+Chunky pixels, like a handheld	掌机风格的像素外观
+DESK BUDDY  —  DAILY LOG	DESK BUDDY — 每日记录
+Start	开始
+THEMES	主题
+The look of every screen. The standby clock's second style is dressed in it too.	应用于各个页面，也用于待机时钟的第二种样式。
+Home	主页
+Your tasks	你的任务
+Kindle	Kindle
+Its settings	设备设置
+This Mac	本机
+Helper, calendar	助手与日历
+Cloud or this Mac	云端或本机
+Permissions	权限
+What macOS allows	macOS 授权
+Performance	性能
+How much it uses	资源占用
+Version, quit	版本与退出
+Show the sidebar	显示侧栏
+Hide the sidebar	隐藏侧栏
+Your own cloud server	你自己的云服务器
+Optional · free on Cloudflare · about 10 minutes	可选 · Cloudflare 免费方案 · 约 10 分钟
+Show the steps	显示步骤
+Hide the steps	隐藏步骤
+Lets the Kindle and your phone work while this Mac sleeps, and from anywhere. It runs in your own Cloudflare account: nobody else's server is involved.	让 Kindle 和手机在本机休眠时也能随处使用。服务运行在你自己的 Cloudflare 账号中。
+Make a free Cloudflare account	创建免费 Cloudflare 账号
+An email and a password. The free plan is plenty.	使用邮箱和密码注册，免费方案即可。
+Open Cloudflare	打开 Cloudflare
+Install Node.js	安装 Node.js
+The setup needs it. Pick the LTS version.	设置过程需要 Node.js，请选择 LTS 版本。
+Installed	已安装
+Get Node.js	获取 Node.js
+Put your server online	部署服务器
+Terminal opens and does the rest; your browser opens once to log in to Cloudflare. At the end the address is copied.	终端会完成后续操作，浏览器会打开以登录 Cloudflare，完成后自动复制地址。
+Run in Terminal	在终端中运行
+Paste the address	粘贴地址
+It ends in .workers.dev. Your tasks are copied over, and the Kindle follows.	地址以 .workers.dev 结尾，任务会复制过去，Kindle 也会随之连接。
+Rather let an AI do it?	想让 AI 帮忙？
+Paste the prompt into Claude Code or Codex: they can run every step for you. ChatGPT or Claude in the browser can walk you through it, but you run the commands. Your key is never in the prompt.	将提示词粘贴到 Claude Code 或 Codex，可协助执行各个步骤。浏览器中的 ChatGPT 或 Claude 可逐步指导你运行命令。提示词不包含密钥。
+Copy prompt	复制提示词
+What runs in Terminal:	终端将运行：
+Inside, setup.sh gets Cloudflare's own tool (Wrangler) and runs:	setup.sh 会获取 Cloudflare 的 Wrangler 工具并运行：
+Open the script	打开脚本
+Kindle found	已找到 Kindle
+Desk Buddy is on it already. This puts the newest version on, set up to connect to this Mac.	设备已装有 Desk Buddy，将安装新版并设置为连接本机。
+Ready to put Desk Buddy on it, set up to connect to this Mac. It needs the jailbreak with the hotfix (kindlemodding.org).	准备安装 Desk Buddy 并设置为连接本机。设备需已越狱并安装 hotfix（kindlemodding.org）。
+Copying onto the Kindle…	正在复制到 Kindle…
+Don't unplug it. About half a minute.	请勿拔出设备，大约需要半分钟。
+Checking every file landed…	正在核对复制的文件…
+USB with Kindles sometimes drops files, so it reads them back.	Kindle 的 USB 传输有时会丢失文件，因此需要读回核验。
+Ejecting…	正在推出设备…
+Nearly there.	即将完成。
+Done: unplug the Kindle	已完成，可以拔出 Kindle
+Then open Desk Buddy in the Kindle's library. With the Kindle on your Wi-Fi, it connects to this Mac by itself.	然后在 Kindle 书库中打开 Desk Buddy。连接同一 Wi-Fi 后会自动连接本机。
+That didn't work	操作未成功
+Put Desk Buddy on a Kindle	将 Desk Buddy 安装到 Kindle
+Plug your jailbroken Kindle into this Mac with USB (jailbreak with the hotfix: kindlemodding.org). Desk Buddy copies itself onto it and sets it up to connect here.	用 USB 将已越狱并安装 hotfix 的 Kindle 连接到本机（kindlemodding.org），Desk Buddy 会复制程序并配置连接。
+Put Desk Buddy on it	安装到此设备
+Save the files instead…	另存安装文件…
+Shares: your upcoming events (title, time, place, notes) with your Desk Buddy server.	共享到你的 Desk Buddy 服务器：即将发生的日程，包括标题、时间、地点与备注。
+Shares: the song playing and its cover, only while music shows on the Kindle.	仅在 Kindle 显示音乐时共享曲目和封面。
+macOS often can't check this one: the music app doesn't always answer it. If your song shows on the Kindle, it's allowed.	音乐应用可能不响应 macOS 的权限查询。若 Kindle 能显示曲目，即已获得授权。
+Shares: the names of your speakers and headphones, so the Kindle can list them.	共享音箱与耳机名称，以便 Kindle 列出设备。
+Your data stays yours	数据始终属于你
+Desk Buddy runs on this Mac. What the Kindle shows stays on this Mac and your Wi-Fi: nothing goes to the internet except the town for the weather.	Desk Buddy 运行在本机。Kindle 显示的数据保存在本机及你的 Wi-Fi 内；只有查询天气的城市名会发送到互联网。
+What the Kindle shows goes only to your own Desk Buddy server, wherever you run it: your Cloudflare account, this Mac or another computer of yours. There's no Desk Buddy company server, and only someone with your key can read it.	Kindle 显示的数据只发送到你自己的 Desk Buddy 服务器，无论它运行在 Cloudflare、本机还是另一台电脑上。没有 Desk Buddy 官方数据服务器，持有密钥才能读取。
+No ads	无广告
+No tracking	不追踪
+No analytics	无统计分析
+Nothing sold or shared	不出售或共享数据
+Only what the Kindle needs to show is shared, and macOS asks you first. You can turn any of these off in System Settings at any time.	只共享 Kindle 显示所需的数据，并先经 macOS 询问授权。你随时可以在系统设置中撤销权限。
+Your Kindle, on your desk, keeping you company.	让桌上的 Kindle 陪伴你。
+The first-open guide: what it does, permissions, connecting the Kindle	首次使用导览：功能、权限与连接 Kindle
+Start at login	登录时启动
+Opens by itself when you log in to this Mac, so the Kindle always has it	登录本机后自动启动，方便 Kindle 随时连接
+Quit	退出
+Stops until you open it again, or log in next time	停止运行，直到重新打开或下次登录
+Stops until you open it again	停止运行，直到重新打开
+Uninstall	卸载
+Removes the helper from this Mac. Asks first.	从本机移除助手，操作前会确认。
+Uninstall…	卸载…
+Helper	助手
+Tells the Kindle you're using this Mac, opens apps from the Deck, reads your music	报告本机使用状态、打开面板应用并读取音乐
+Sync now	立即同步
+Last from the Kindle	Kindle 最近操作
+Other computers	其他电脑
+Searching for other devices… Install Desk Buddy on another computer to connect it.	正在搜索其他设备…请在另一台电脑安装 Desk Buddy。
+Your Windows PC is connected too.	你的 Windows 电脑也已连接。
+Connect a computer…	连接电脑…
+On the other computer, open Desk Buddy and enter:	在另一台电脑打开 Desk Buddy 并输入：
+Code	连接码
+The code works once, for 10 minutes. The computer then connects by itself.	连接码一次有效，有效期 10 分钟，输入后电脑会自动连接。
+Tasks page	任务网页
+Your tasks in a web browser, also on your phone	在浏览器或手机中查看任务
+AI assistants	AI 助手
+Let Claude Code or Codex add, tick and change your tasks when you ask. Copy these instructions into their instructions file (Claude Code: ~/.claude/CLAUDE.md, Codex: ~/.codex/AGENTS.md). Your key isn't in them.	让 Claude Code 或 Codex 按你的要求添加、完成和修改任务。将说明复制到各自的指令文件（Claude Code：~/.claude/CLAUDE.md，Codex：~/.codex/AGENTS.md），其中不包含密钥。
+Copy instructions	复制说明
+before this task	放在此任务之前
+into its group	放入其分组
+Desk Buddy connects your Mac to the Kindle on your desk.	Desk Buddy 将 Mac 与桌上的 Kindle 连接起来。
+Your calendar on the Kindle	在 Kindle 上查看日历
+Today's events, the month, a heads-up before meetings	今日安排、月历与会前提醒
+What's playing	正在播放
+Spotify or Apple Music, with play, skip and volume	Spotify 或 Apple Music，支持播放、切歌与音量控制
+Open apps from the Kindle	从 Kindle 打开应用
+Tap a tile on the Deck and it opens here	点击应用面板图块，即可在电脑打开
+It knows you're at this Mac	识别你正在使用本机
+So the Kindle shows the right things	让 Kindle 显示对应的信息
+It runs quietly in the menu bar (look for Desk Buddy up there). Next: a few permissions macOS asks for.	它会在菜单栏中运行。接下来需要处理几项 macOS 权限。
+Updated	已更新
+Desk Buddy was updated. Please allow these again.	Desk Buddy 已更新，请重新允许以下权限。
+Please allow these so it can fully work	请授予以下权限以启用完整功能
+Click Allow and macOS asks once. Each one only adds what it says; everything else works without it.	点击允许后 macOS 会询问授权。每项权限仅启用所述功能，其他功能不受影响。
+After each update of Desk Buddy, macOS may ask for these again: it sees the updated app as new. If something stops working after an update, come back here (Permissions in the sidebar).	应用更新后 macOS 可能重新询问权限。如有功能停止工作，请回到侧栏的权限页面检查。
+Your Kindle	你的 Kindle
+Your Kindle is connected	Kindle 已连接
+Let's connect your Kindle	连接你的 Kindle
+Connected	已连接
+Changes show within about 10 seconds	改动约 10 秒内显示
+Tasks, settings and themes, both ways	任务、设置与主题双向同步
+Change the Kindle from here	在这里调整 Kindle
+Its settings and theme are in the Kindle section	设置和主题位于 Kindle 页面
+Desk Buddy already on your Kindle? With it running there:	Kindle 已有 Desk Buddy？请打开应用，然后：
+On the Kindle, tap Find it	在 Kindle 上点击查找
+It finds this Mac on the Wi-Fi	在 Wi-Fi 中查找本机
+Pick this Mac, then click Allow here	选中本机，然后在这里点击允许
+The Kindle shows a code: check it matches	核对 Kindle 显示的连接码
+That's it	连接完成
+This window shows it as connected	本窗口将显示已连接
+Connect the Kindle to the same Wi-Fi	将 Kindle 接入同一 Wi-Fi
+Its own Settings › Wi-Fi	设备的设置 › Wi-Fi
+Open Desk Buddy in the Kindle's library	在 Kindle 书库中打开 Desk Buddy
+It connects to your Desk Buddy server by itself	设备会自动连接 Desk Buddy 服务器
+Not connecting?	无法连接？
+Server in the sidebar: switch to This Mac and pair the Kindle there	在侧栏服务器页面切换到本机，然后配对 Kindle
+Got a Windows PC too?	还有 Windows 电脑？
+Install Desk Buddy for Windows on it (from the same download page). It finds this Mac on the Wi-Fi by itself: click Allow here when it asks. Then the Kindle shows whichever computer you're using.	从同一下载页面获取 Windows 版并安装。它会在 Wi-Fi 中找到本机，出现提示时点击允许；Kindle 随后会跟随你正在使用的电脑。
+Everything else is in this window: your tasks on Home, the Kindle's settings, and more. Open it any time from Desk Buddy in the menu bar.	其他功能均在此窗口中，包括主页任务和 Kindle 设置，可随时从菜单栏的 Desk Buddy 打开。
+Another Kindle	另一台 Kindle
+On the Kindle now	Kindle 当前显示
+On the Kindle now · 	Kindle 当前显示 ·
+Kindle connected	Kindle 已连接
+Kindle offline	Kindle 离线
+No tasks yet. Add one above.	暂无任务，在上方添加。
+Click a task to edit it. To move one, drag the handle ≡ that shows on its left: onto another task to put it in that group, or between tasks. Right-click for more.	点击任务可编辑。拖动左侧的 ≡ 可排序，拖至另一任务可加入其分组。右键查看更多操作。
+Add a subtask	添加子任务
+Drag to move	拖动以移动
+Mark not done	标记为未完成
+Mark done	标记为已完成
+Click to edit	点击编辑
+Pinned: “Now working on” on the Kindle	已置顶为 Kindle 当前任务
+Unpin	取消置顶
+Pin to the Kindle	在 Kindle 置顶
+Rename	重命名
+Move out of the group	移出分组
+Move up	上移
+Move down	下移
+Where Desk Buddy runs	Desk Buddy 运行位置
+On this Mac: works while it's awake and this app is open	本机：电脑唤醒且应用开启时可用
+In the cloud: works while this Mac sleeps	云端：本机休眠时仍可用
+On the Kindle	Kindle 上
+It follows by itself when you switch here. A new Kindle finds this Mac on the Wi-Fi: click Allow when this app asks.	在这里切换后 Kindle 会自动跟随。新设备会在 Wi-Fi 中查找本机，出现提示时点击允许。
+It follows by itself when you switch here.	在这里切换后 Kindle 会自动跟随。
+Phone page	手机网页
+Scan with your phone's camera to see and change your tasks there. Works on this Wi-Fi while this Mac is on. Your phone remembers it after that.	用手机相机扫码查看和修改任务。本机开启且处于同一 Wi-Fi 时可用，手机会记住登录状态。
+Scan with your phone's camera to see and change your tasks there, from anywhere. Your phone remembers it after that.	用手机相机扫码，即可随处查看和修改任务，手机会记住登录状态。
+Opens Desk Buddy on your phone, already signed in. Only show it to your own phone.	在手机打开并登录 Desk Buddy，请只向你自己的手机展示。
+What Desk Buddy needs from macOS. Each one only adds what it says; everything else works without them. After an update, macOS may ask for them again.	Desk Buddy 所需的 macOS 权限。每项仅启用对应功能，其他功能不受影响。更新后 macOS 可能重新询问。
+Can't check (a music app quirk)	无法确认（音乐应用的限制）
+On the music screen	在音乐页面显示
+Plays when a focus or break ends	专注或休息结束时播放
+Your Mac and Windows PC each get their own tasks	Mac 与 Windows 电脑分别使用独立任务列表
+Connect this Mac to the Kindle again	重新连接本机与 Kindle
+Stop this Mac talking to the Kindle: no Deck, music, calendar or \"in use\" until you resume	暂停本机与 Kindle 通信；恢复前不提供应用面板、音乐、日历或使用状态
+Version \(model.updVersion) is ready. It installs when you click Install, then Desk Buddy restarts.	版本 \(model.updVersion) 已就绪。点击安装后，Desk Buddy 将重新启动。
+Version \(model.updVersion) is out. Download it from github.com/deskbuddy-app/desk-buddy.	版本 \(model.updVersion) 已发布，可从 github.com/deskbuddy-app/desk-buddy 下载。
+You're up to date (checked at \(model.updChecked)).	已是最新版本（检查于 \(model.updChecked)）。
+Checked every 6 hours from your Desk Buddy server. It installs only when you click.	每 6 小时向你的 Desk Buddy 服务器检查一次，仅在点击后安装。
+Version \(model.version)	版本 \(model.version)
+Install	安装
+Checking…	正在检查…
+Go back to version \(prev)?	退回版本 \(prev)？
+Go back to version \(prev)	退回版本 \(prev)
+Desk Buddy restarts, and the Kindle is offered the matching version. Your tasks and settings stay. You can update again any time.	Desk Buddy 将重新启动，并向 Kindle 提供配套版本。任务与设置会保留，之后可再次更新。
+If this version gives you trouble	当前版本出现问题时使用
+Go back	退回
+Go back…	退回…
+Version \(e.version)	版本 \(e.version)
+What's new in this version	此版本的更新内容
+What came in version \(e.version)	版本 \(e.version) 的更新内容
+Very light	极低
+Moderate	中等
+Heavy	高
+You won't notice it: less than a clock in the menu bar.	占用很低，低于菜单栏时钟。
+Barely noticeable, like a small menu bar app.	占用较低，类似小型菜单栏应用。
+Noticeable on battery. Pausing and resuming it in This Mac can settle it.	使用电池时可能有影响，可在本机页面暂停并恢复。
+Heavier than it should be. Pausing and resuming it in This Mac usually settles it.	占用偏高，可在本机页面尝试暂停并恢复。
+Warming up…	正在初始化…
+All good	运行正常
+It's busy for a minute after it starts (calendar, app icons and music sync). Measuring…	启动后约一分钟内会同步日历、应用图标和音乐，正在测量…
+%.0f MB of it is the server on this Mac: normal when it runs here	其中 %.0f MB 来自本机服务器，属于正常占用
+about one browser tab's worth	约等于一个浏览器标签页
+more than a browser tab	超过一个浏览器标签页
+of one core, over the last minute	最近一分钟，单个核心的占比
+Energy	能耗
+Activity Monitor's Energy Impact, over the last minute	最近一分钟的活动监视器能耗影响
+Memory	内存
+Update the Kindle app (Settings › Updates on the Kindle) to change its screen, clock and heads-up settings here. Music, focus and tasks work already.	更新 Kindle 应用（设置 › 更新）后，可在这里调整屏幕、时钟与会议提醒。音乐、专注和任务已可使用。
+The look of every screen on the Kindle	Kindle 各个页面的外观
+Light or dark	浅色或深色
+Compact uses larger text and touch targets for 6″ Basic Kindles (2022, 2024 and older)	紧凑模式使用更大的文字和触摸区域，适用于 6 英寸入门款 Kindle（2022、2024 及更早型号）
+Flip the landscape screen 180° (which side the Kindle's bottom bezel is on)	将横屏旋转 180°，选择 Kindle 底边所在的一侧
+Never flashes; faint ghosts may stay	不闪屏，可能有轻微残影
+Big changes flash, only where they changed	较大变化时，仅在变化区域闪屏
+Every change flashes; sharpest	每次变化都闪屏，显示最清晰
+Standby clock	待机时钟
+24-hour or 12-hour	24 小时制或 12 小时制
+A line under the clock	时钟下方的一行引言
+What's on next, under the clock	在时钟下方显示下个日程
+Meeting heads-up	会议提醒
+A card before each event, with Join for Zoom / Meet links	会前显示提醒卡，可打开 Zoom / Meet 链接
+Auto: whichever one is playing	自动：跟随正在播放的应用
+Starting…	正在启动…
+Calendar: waiting for access…	日历：等待授权…
+Open Desk Buddy…	打开 Desk Buddy…
+Sync calendar now	立即同步日历
+Open tasks page	打开任务网页
+Quit (starts again at next login)	退出（下次登录时启动）
+Running · connecting…	运行中 · 正在连接…
+Running · can't reach the backend, retrying	运行中 · 无法连接后端，正在重试
+Stopped unexpectedly · restarting…	意外停止 · 正在重启…
+Paused · the Kindle won't follow this Mac	已暂停 · Kindle 暂不跟随本机
+Calendar: syncing…	日历：正在同步…
+Run server on this Mac	在本机运行服务器
+Run Desk Buddy on this Mac?	在本机运行 Desk Buddy？
+Move back to the cloud?	迁回云端？
+Copy and switch	复制并切换
+Switch without copying	直接切换
+Couldn't switch	无法切换
+A Kindle wants to connect	有一台 Kindle 请求连接
+Allow	允许
+Don't Allow	不允许
+Uninstall Desk Buddy?	卸载 Desk Buddy？
+Open Spotify on your 	请在以下电脑打开 Spotify：
+Spotify is open, but not playing on this 	Spotify 已打开，但未在此电脑播放：
+VOLUME	音量
+Close	关闭
+Keep Desk Buddy on your computers up to date too, or some things may not work.	请同时更新电脑上的 Desk Buddy，以免部分功能无法使用。
+WHAT WAS NEW IN THIS VERSION	此版本的更新内容
+WHAT WAS NEW BEFORE	此前的更新内容
+ · this version	 · 当前版本
+What's new in the update	更新内容
+Fixes and small improvements.	修复与小幅改进。

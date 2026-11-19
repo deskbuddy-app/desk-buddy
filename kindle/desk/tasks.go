@@ -48,7 +48,7 @@ func tasksColumn(v *View, d *Desk, ui *UI, now int64) {
 		y = nowCard(v, d, ui, *pinned, kids[pinned.ID], x0, x1, y, now) + 16
 	}
 
-	today := "TODAY"
+	today := "今天"
 	if n := listName(d); n != "" {
 		today += " · " + strings.ToUpper(n)
 	}
@@ -142,16 +142,16 @@ func tasksColumn(v *View, d *Desk, ui *UI, now int64) {
 		}
 	}
 	if hidden > 0 {
-		drawText(img, face("ui", 14), x0+4, y+22, fmt.Sprintf("%d more · close this task to see them", hidden), grey3)
+		drawText(img, face("ui", 14), x0+4, y+22, fmt.Sprintf("还有 %d 项，关闭当前任务可查看", hidden), grey3)
 	}
 	if len(top) == 0 {
-		drawText(img, face("serif", 23), x0+4, y+36, "Nothing on the list", grey2)
-		drawText(img, face("ui", 15), x0+4, y+64, "Add tasks from your phone, Mac or Claude.", grey2)
+		drawText(img, face("serif", 23), x0+4, y+36, "列表暂无任务", grey2)
+		drawText(img, face("ui", 15), x0+4, y+64, "通过手机、Mac 或 Claude 添加任务。", grey2)
 	}
 
 	// Footer: page buttons, progress bar, count.
 	cf := face("serifB", 18)
-	cx := drawRight(img, cf, x1, footY, fmt.Sprintf("%d / %d done", done, len(top)), ink)
+	cx := drawRight(img, cf, x1, footY, fmt.Sprintf("已完成 %d / %d", done, len(top)), ink)
 	mid := footY - capHeight(cf)/2
 	left := x0
 	if len(pages) > 1 {
@@ -166,7 +166,7 @@ func tasksColumn(v *View, d *Desk, ui *UI, now int64) {
 			v.add(Target{R: next.Inset(-6), Show: next, Act: "page", Arg: "1"})
 		}
 		pf := face("ui", 15)
-		left = drawText(img, pf, next.Max.X+12, mid+capHeight(pf)/2, fmt.Sprintf("Page %d of %d", ui.Page+1, len(pages)), grey2) + 16
+		left = drawText(img, pf, next.Max.X+12, mid+capHeight(pf)/2, fmt.Sprintf("第 %d / %d 页", ui.Page+1, len(pages)), grey2) + 16
 	}
 	bar := image.Rect(left, mid-6, cx-18, mid+6)
 	if len(top) > 0 && done > 0 {
@@ -189,7 +189,7 @@ func nowCard(v *View, d *Desk, ui *UI, t Task, kids []Task, x0, x1, y int, now i
 	}
 	btns := []btn{{"", "unpin", d.Profile, "unpin", false}} // done: the round box before the title, as in the list
 	if d.Pomodoro != nil {                                  // the backend has the timer
-		btns = append(btns, btn{"Focus", "pomo", "start", "", false})
+		btns = append(btns, btn{"专注", "pomo", "start", "", false})
 	}
 	if timer {
 		pr := btn{"", "pomo", "pause", "pause", false}
@@ -242,7 +242,7 @@ func nowCard(v *View, d *Desk, ui *UI, t Task, kids []Task, x0, x1, y int, now i
 	if timer {
 		h += 26 // room for the progress bar
 	}
-	lbl := "NOW WORKING ON"
+	lbl := "当前任务"
 	if timer {
 		lbl = pomoCardLine(p, now)
 	}
@@ -253,7 +253,7 @@ func nowCard(v *View, d *Desk, ui *UI, t Task, kids []Task, x0, x1, y int, now i
 				n++
 			}
 		}
-		lbl += fmt.Sprintf(" · %d/%d SUBTASKS", n, len(kids))
+		lbl += fmt.Sprintf(" · 子任务 %d/%d", n, len(kids))
 	}
 	label(img, x0, y+12, lbl, grey2) // above the card, like "TODAY · MAC"
 	y += 24                          // the card starts under it
@@ -352,7 +352,7 @@ func rowSize(sub bool) (h int, r float64) {
 // descLines is the opened task's description, wrapped.
 func descLines(t Task, w int) []string {
 	if t.Notes == "" {
-		return []string{"No description. Add one on your phone."}
+		return []string{"暂无说明，可在手机上添加。"}
 	}
 	return wrap(face("ui", 16), t.Notes, w, 4)
 }
@@ -501,7 +501,7 @@ func taskLine(v *View, l entry, ui *UI, x0, x1, y int) int {
 		// or another one, to close it.
 		bx := tx
 		if ui.Full && !t.Done && !l.sub {
-			br := pillAt(img, image.Rect(bx, dy+4, bx+textW(face("uiBold", 16), "Focus")+32, dy+50), "Focus", false)
+			br := pillAt(img, image.Rect(bx, dy+4, bx+textW(face("uiBold", 16), "专注")+32, dy+50), "专注", false)
 			v.add(Target{R: br.Inset(-4), Show: br, Act: "pomo", ID: t.ID, Arg: "start"})
 			bx = br.Max.X + 10
 		}
@@ -514,9 +514,9 @@ func taskLine(v *View, l entry, ui *UI, x0, x1, y int) int {
 			}
 			if !l.sub { // add a subtask
 				f := face("uiBold", 16)
-				br := pillAt(img, image.Rect(bx, dy+4, bx+textW(f, "Subtask")+58, dy+50), "", false)
+				br := pillAt(img, image.Rect(bx, dy+4, bx+textW(f, "子任务")+58, dy+50), "", false)
 				plusGlyph(img, float64(br.Min.X+22), float64(br.Min.Y+br.Max.Y)/2, 7, ink)
-				drawText(img, f, br.Min.X+38, (br.Min.Y+br.Max.Y)/2+capHeight(f)/2, "Subtask", ink)
+				drawText(img, f, br.Min.X+38, (br.Min.Y+br.Max.Y)/2+capHeight(f)/2, "子任务", ink)
 				v.add(Target{R: br.Inset(-4), Show: br, Act: "addnew", ID: t.ID, Arg: "sub"})
 			}
 		}
