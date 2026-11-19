@@ -15,12 +15,12 @@ enum MoveToApplications {
 
         NSApp.activate(ignoringOtherApps: true)
         let a = NSAlert()
-        a.messageText = "Move Desk Buddy to your Applications folder?"
-        a.informativeText = "It works best from there, and starts by itself when you log in. It opens again straight after."
-        a.addButton(withTitle: "Move to Applications")
-        a.addButton(withTitle: "Not now")
+        a.messageText = "将 Desk Buddy 移到应用程序文件夹？"
+        a.informativeText = "建议从应用程序文件夹运行，并在登录时自动启动。移动后会立即重新打开。"
+        a.addButton(withTitle: "移到应用程序")
+        a.addButton(withTitle: "暂不移动")
         a.showsSuppressionButton = true
-        a.suppressionButton?.title = "Don't ask again"
+        a.suppressionButton?.title = "不再询问"
         let answer = a.runModal()
         if a.suppressionButton?.state == .on { UserDefaults.standard.set(true, forKey: "noMoveOffer") }
         guard answer == .alertFirstButtonReturn else { return false }

@@ -57,11 +57,11 @@ func tourOverlay(v *View, d *Desk, ui *UI) {
 			act, arg string
 			n        note
 		}{
-			{"tab", "weather", note{"Weather", "Today, the next hours and the week"}},
-			{"tab", "calendar", note{"Calendar", "Your month; add events with +"}},
-			{"tab", "deck", note{"Deck", "Tiles that open apps on your computer"}},
-			{"tab", "tasks", note{"Tasks", "Your tasks, with today's calendar beside it"}},
-			{"menu", "", note{"Menu", "The computer to follow; feedback and Settings"}},
+			{"tab", "weather", note{"天气", "查看今天、未来几小时和本周天气"}},
+			{"tab", "calendar", note{"日历", "查看月历，点击 + 添加日程"}},
+			{"tab", "deck", note{"应用面板", "点击图块打开电脑上的应用"}},
+			{"tab", "tasks", note{"任务", "查看任务和今天的日历"}},
+			{"menu", "", note{"菜单", "选择跟随的电脑，查看反馈与设置"}},
 		}
 		for i, it := range left {
 			r, ok := find(it.act, it.arg)
@@ -81,11 +81,11 @@ func tourOverlay(v *View, d *Desk, ui *UI) {
 			act string
 			n   note
 		}{
-			{"lightmenu", note{"Battery", "Tap: brightness, light or dark"}},
-			{"volopen", note{"Volume", "Shows while music plays; tap to change it"}},
-			{"refresh", note{"Refresh", "Redraw the screen and update now"}},
-			{"dark", note{"Light / dark", "Swap black and white (Auto is in Settings)"}},
-			{"standby", note{"Clock", "Tap: standby clock. Hold 3 s: leave the app"}},
+			{"lightmenu", note{"电量", "点击：调整亮度、浅色或深色"}},
+			{"volopen", note{"音量", "播放音乐时显示，点击调整"}},
+			{"refresh", note{"刷新", "立即刷新画面和数据"}},
+			{"dark", note{"浅色 / 深色", "切换黑白，自动模式在设置中"}},
+			{"standby", note{"时钟", "点击：待机时钟。长按 3 秒：退出应用"}},
 		}
 		i := 0
 		for _, it := range right {
@@ -110,20 +110,20 @@ func tourOverlay(v *View, d *Desk, ui *UI) {
 			labelAt(box.X, box.Y, n, align)
 		}
 		if r, ok := find("addnew", "add"); ok {
-			callout(r, image.Pt(r.Max.X, r.Max.Y+300), note{"Add a task", "Then type it on the keyboard"}, "right")
+			callout(r, image.Pt(r.Max.X, r.Max.Y+300), note{"添加任务", "然后通过键盘输入"}, "right")
 		}
 		if r, ok := firstTask(targets); ok {
-			callout(r, image.Pt(40, min(r.Max.Y+130, 560)), note{"A task", "Tap: open it. Hold: edit it. Circle: tick it off. Swipe left: delete"}, "left")
+			callout(r, image.Pt(40, min(r.Max.Y+130, 560)), note{"一项任务", "点击打开，长按编辑，圆圈标记完成，左滑删除"}, "left")
 		}
 		if r, ok := find("widget", "day"); ok {
 			r2, _ := find("widget", "info")
 			all := r.Union(r2)
-			callout(all, image.Pt(690, 330), note{"Side panel", "Day, weather, music, info"}, "left")
+			callout(all, image.Pt(690, 330), note{"侧边面板", "日程、天气、音乐和信息"}, "left")
 		}
 		if r, ok := find("sidehide", ""); ok {
-			callout(r, image.Pt(r.Max.X, 230), note{"Hide it", "More room for tasks"}, "right")
+			callout(r, image.Pt(r.Max.X, 230), note{"隐藏面板", "留出更多任务空间"}, "right")
 		}
-		labelAt(40, 630, note{"Swipes", "Up / down: more tasks. Three fingers sideways: the next tab. In Settings, swipe right to go back"}, "left")
+		labelAt(40, 630, note{"滑动操作", "上下滑查看更多任务，三指横滑切换页面，设置中右滑返回"}, "left")
 	case 3: // your computer and Settings
 		box := image.Rect(LW/2-360, barH+40, LW/2+360, barH+40+410)
 		fillRoundRect(img, box.Inset(-3), 16, paper)
@@ -131,16 +131,16 @@ func tourOverlay(v *View, d *Desk, ui *UI) {
 		x := box.Min.X + 36
 		y := box.Min.Y + 52
 		hf, bf, kf := face("serifB", 28), face("serif", 19), face("uiBold", 17)
-		drawText(img, hf, x, y, "On your computer", ink)
+		drawText(img, hf, x, y, "在电脑上", ink)
 		// TODO before release: a QR code to the helper download (helperURL) here.
 		y += 30
-		drawText(img, bf, x, y, "Install Desk Buddy on your computer: it connects the two.", ink)
+		drawText(img, bf, x, y, "在电脑上安装 Desk Buddy，以连接两台设备。", ink)
 		y += 12
 		for _, it := range [][2]string{
-			{"Calendar", "your computer's calendar shows here"},
-			{"Music", "what's playing, and the play / skip buttons"},
-			{"Deck", "tiles open apps on your computer"},
-			{"Auto", "with more than one computer connected, it follows the one you use"},
+			{"日历", "电脑上的日历会显示在这里"},
+			{"音乐", "查看播放中的音乐并控制播放和切歌"},
+			{"应用面板", "点击图块打开电脑上的应用"},
+			{"自动", "连接多台电脑时，自动跟随正在使用的电脑"},
 		} {
 			y += 30
 			nx := drawText(img, kf, x+20, y, it[0], ink)
@@ -148,15 +148,15 @@ func tourOverlay(v *View, d *Desk, ui *UI) {
 			fillCircle(img, float64(x+7), float64(y-capHeight(kf)/2), 3, ink)
 		}
 		y += 58
-		drawText(img, hf, x, y, "Settings", ink)
+		drawText(img, hf, x, y, "设置", ink)
 		name := listName(d)
 		if name == "" {
-			name = "Tasks"
+			name = "任务"
 		}
 		for _, l := range []string{
-			"Tap “" + name + "” at the top left, then Settings. You can also",
-			"change them from your computer, in Desk Buddy.",
-			"To see this tour again: Settings › About.",
+			"点击左上角的“" + name + "”，然后选择设置，也可以",
+			"在电脑上的 Desk Buddy 中调整。",
+			"再次查看导览：设置 › 关于。",
 		} {
 			y += 30
 			drawText(img, bf, x, y, l, ink)
@@ -177,23 +177,23 @@ func tourOverlay(v *View, d *Desk, ui *UI) {
 	fillRect(img, image.Rect(0, LH-72, LW, LH-70), ink)
 	by := LH - 60
 	drawBuddy(img, pad+14, by+6, 34, ink)
-	label(img, pad+38, by+30, "WELCOME TO DESK BUDDY", grey2)
+	label(img, pad+38, by+30, "欢迎使用 DESK BUDDY", grey2)
 	for i := 0; i < tourPages; i++ {
-		cx := float64(pad + 38 + spacedW(face("uiBold", 13), "WELCOME TO DESK BUDDY", 2) + 24 + i*18) // after the label (it starts 38 in, past Desk Buddy)
+		cx := float64(pad + 38 + spacedW(face("uiBold", 13), "欢迎使用 DESK BUDDY", 2) + 24 + i*18) // after the label (it starts 38 in, past Desk Buddy)
 		if i+1 == ui.Tour {
 			fillCircle(img, cx, float64(by+25), 5, ink)
 		} else {
 			ringCircle(img, cx, float64(by+25), 5, 1.5, grey2)
 		}
 	}
-	next := "Next"
+	next := "下一步"
 	if ui.Tour == tourPages {
-		next = "Done"
+		next = "完成"
 	}
 	nr := pillAt(img, image.Rect(LW-pad-130, by, LW-pad, by+48), next, true)
 	v.add(Target{R: nr.Inset(-6), Show: nr, Act: "tour", Arg: "next"})
 	if ui.Tour < tourPages {
-		sr := pillAt(img, image.Rect(nr.Min.X-12-110, by, nr.Min.X-12, by+48), "Skip", false)
+		sr := pillAt(img, image.Rect(nr.Min.X-12-110, by, nr.Min.X-12, by+48), "跳过", false)
 		v.add(Target{R: sr.Inset(-6), Show: sr, Act: "tour", Arg: "skip"})
 	}
 }

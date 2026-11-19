@@ -34,7 +34,7 @@ PY
 cp ../worker/local/dist/desk-buddy-server-arm64 ../worker/local/dist/desk-buddy-server-x64 "$APP/Contents/MacOS/"
 
 # the app and audio-out, for both chips, joined into one
-SRC="main.swift Backend.swift CalendarSync.swift IconSync.swift Permissions.swift HelperUI.swift Updater.swift KindleSetup.swift MoveToApplications.swift"
+SRC="main.swift Backend.swift CalendarSync.swift IconSync.swift Permissions.swift HelperUI.swift Localization.swift Updater.swift KindleSetup.swift MoveToApplications.swift"
 for a in arm64 x86_64; do
   swiftc -O -target $a-apple-macos13 -o "$OUT/DeskBuddy-$a" $SRC
   swiftc -O -target $a-apple-macos13 -o "$OUT/audio-out-$a" AudioOut.swift
@@ -50,6 +50,7 @@ cp ../brand/menubar.png ../brand/menubar@2x.png "$APP/Contents/Resources/"
 cp ../brand/spotify-mark-alpha.png "$APP/Contents/Resources/spotify-mark.png"
 cp ../brand/buddy-kindle.png "$APP/Contents/Resources/buddy.png"
 cp ../kindle/desk/fonts/AtkinsonHyperlegible-Regular.ttf ../kindle/desk/fonts/AtkinsonHyperlegible-Bold.ttf "$APP/Contents/Resources/"
+cp ../kindle/desk/fonts/SourceHanSansSC-Regular.otf ../kindle/desk/fonts/OFL-*.txt ../LICENSE "$APP/Contents/Resources/"
 cp -R ../worker/public "$APP/Contents/Resources/public"
 rm -rf "$APP/Contents/Resources/public/mac" "$APP/Contents/Resources/public/windows"
 mkdir -p "$APP/Contents/Resources/kindle-setup" && cp ../kindle/desk/kindle-files/launcher.sh "$APP/Contents/Resources/kindle-setup/"

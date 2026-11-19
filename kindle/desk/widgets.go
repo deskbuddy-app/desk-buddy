@@ -100,11 +100,11 @@ func dayWidget(v *View, d *Desk, st Status, x0, x1, y int) {
 	loc := st.Now.Location()
 	now := st.Now
 	today := now.Format("2006-01-02")
-	label(img, x0, y+12, strings.ToUpper(now.Format("Monday 2 January")), grey2)
+	label(img, x0, y+12, strings.ToUpper(displayDate(now, "Monday 2 January")), grey2)
 	y += 26
 	if d.Calendars == 0 && len(d.Agenda) == 0 {
-		drawText(img, face("serifB", 21), x0, y+30, "No calendar yet", ink)
-		drawText(img, face("ui", 14), x0, y+54, "Add one on your phone page", grey2)
+		drawText(img, face("serifB", 21), x0, y+30, "暂无日历", ink)
+		drawText(img, face("ui", 14), x0, y+54, "请在手机网页上添加", grey2)
 		return
 	}
 	// all-day events on top
@@ -129,7 +129,7 @@ func dayWidget(v *View, d *Desk, st Status, x0, x1, y int) {
 		return Target{Act: "calevent", Arg: eventKey(e)} // tap: open it on the Calendar tab
 	})
 	if n == 0 {
-		drawText(img, face("ui", 15), x0+56, top+perHour/2+6, "Nothing on for the next few hours", grey2)
+		drawText(img, face("ui", 15), x0+56, top+perHour/2+6, "未来几小时没有安排", grey2)
 	}
 }
 
@@ -212,9 +212,9 @@ func weatherWidget(v *View, st Status, ui *UI, x0, x1, y int) {
 	img := v.Img
 	w := ui.Weather
 	if w == nil || len(w.Hours) == 0 {
-		msg := "Loading the weather…"
+		msg := "正在加载天气…"
 		if ui.WeatherErr != "" {
-			msg = "Weather: " + ui.WeatherErr
+			msg = "天气：" + ui.WeatherErr
 		}
 		drawText(img, face("ui", 16), x0, y+30, msg, grey2)
 		return
@@ -228,19 +228,19 @@ func weatherWidget(v *View, st Status, ui *UI, x0, x1, y int) {
 	drawText(img, face("serifB", 21), x0, y+180, words, ink)
 	if len(w.Days) > 0 {
 		dd := w.Days[0]
-		drawText(img, face("ui", 15), x0, y+204, fmt.Sprintf("High %s · low %s · feels %s", deg(dd.Max), deg(dd.Min), deg(c.Feels)), grey2)
+		drawText(img, face("ui", 15), x0, y+204, fmt.Sprintf("最高 %s · 最低 %s · 体感 %s", deg(dd.Max), deg(dd.Min), deg(c.Feels)), grey2)
 	}
 	// rain nudge
-	note := "Dry for the next 12 hours"
+	note := "未来 12 小时无雨"
 	for i, h := range w.Hours {
 		if i >= 12 {
 			break
 		}
 		if h.Rain >= 50 {
 			at := time.Unix(h.T, 0).In(loc)
-			note = "Rain likely around " + at.Format("15:04")
+			note = "预计降雨时间：" + at.Format("15:04")
 			if at.Day() != st.Now.Day() {
-				note = "Rain likely overnight, around " + at.Format("15:04")
+				note = "预计夜间降雨时间：" + at.Format("15:04")
 			}
 			break
 		}
@@ -256,7 +256,7 @@ func weatherWidget(v *View, st Status, ui *UI, x0, x1, y int) {
 		cx := x0 + i*colW + colW/2
 		lab := time.Unix(h.T, 0).In(loc).Format("15")
 		if i == 0 {
-			lab = "Now"
+			lab = "现在"
 		}
 		drawCentered(img, face("uiBold", 13), cx, yy+26, lab, grey2)
 		drawWeather(img, h.Code, h.Day, float64(cx), float64(yy+58), 34)
@@ -267,7 +267,7 @@ func weatherWidget(v *View, st Status, ui *UI, x0, x1, y int) {
 	}
 	if len(w.Days) > 0 {
 		dd := w.Days[0]
-		drawText(img, face("ui", 14), x0, yy+160, "Sunrise "+time.Unix(dd.Sunrise, 0).In(loc).Format("15:04")+" · sunset "+time.Unix(dd.Sunset, 0).In(loc).Format("15:04"), grey3)
+		drawText(img, face("ui", 14), x0, yy+160, "日出 "+time.Unix(dd.Sunrise, 0).In(loc).Format("15:04")+" · 日落 "+time.Unix(dd.Sunset, 0).In(loc).Format("15:04"), grey3)
 	}
 	v.add(Target{R: image.Rect(x0, y, x1, yy), Act: "tab", Arg: "weather"}) // tap: the full forecast
 }
@@ -277,24 +277,24 @@ func musicWidget(v *View, d *Desk, ui *UI, x0, x1, y int) {
 	img := v.Img
 	m := d.Music
 	if m == nil || !m.Running || m.Title == "" {
-		hint := "Open Spotify or Apple Music on your " + musicComputer(m)
+		hint := "请打开 Spotify 或 Apple Music 于 " + musicComputer(m)
 		if m != nil && m.Running { // open, but nothing loaded here (or playing on another device)
 			hint = map[string]string{"Music": "Apple Music"}[m.App]
 			if hint == "" {
 				hint = m.App
 			}
-			hint += " is open, but not playing on this " + musicComputer(m)
+			hint += "已打开，但未在此电脑播放：" + musicComputer(m)
 		}
-		label(img, x0, y+12, "MUSIC", grey2)
-		drawText(img, face("serifB", 22), x0, y+50, "Nothing playing", ink)
+		label(img, x0, y+12, "音乐", grey2)
+		drawText(img, face("serifB", 22), x0, y+50, "暂无播放", ink)
 		for i, l := range wrap(face("ui", 15), hint, x1-x0, 2) {
 			drawText(img, face("ui", 15), x0, y+76+i*21, l, grey2)
 		}
 		return
 	}
-	state := "PAUSED"
+	state := "已暂停"
 	if m.Playing {
-		state = "PLAYING"
+		state = "播放中"
 	}
 	top := y + 30                               // gap under the label
 	if m.App == "Spotify" || m.App == "Music" { // the app's mark goes small, by the artist (below)
@@ -356,22 +356,22 @@ func infoWidget(v *View, d *Desk, st Status, x0, x1, y int) {
 	}
 	switch {
 	case c == nil || c.State == "idle":
-		y = card(img, x0, y, w, "CLAUDE", "No sessions running", "", false)
+		y = card(img, x0, y, w, "CLAUDE", "暂无运行中的会话", "", false)
 	case c.State == "input":
-		y = card(img, x0, y, w, "CLAUDE · NEEDS YOU", "Waiting for your input", c.Text+" · "+ago, true)
+		y = card(img, x0, y, w, "CLAUDE · 等待你处理", "等待你的输入", c.Text+" · "+ago, true)
 	case c.State == "working":
-		y = card(img, x0, y, w, "CLAUDE", "Working: "+c.Text, "started "+ago, false)
+		y = card(img, x0, y, w, "CLAUDE", "正在处理："+c.Text, "开始于 "+ago, false)
 	default:
-		y = card(img, x0, y, w, "CLAUDE", "Finished: "+c.Text, ago, false)
+		y = card(img, x0, y, w, "CLAUDE", "已完成："+c.Text, ago, false)
 	}
-	open := "Nothing open in Work or Home"
+	open := "工作与家庭列表均无待办"
 	if d.OpenTotal == 1 {
-		open = "1 task open across Work and Home"
+		open = "工作与家庭列表共 1 项待办"
 	} else if d.OpenTotal > 1 {
-		open = fmt.Sprintf("%d tasks open across Work and Home", d.OpenTotal)
+		open = fmt.Sprintf("工作与家庭列表共 %d 项待办", d.OpenTotal)
 	}
-	card(img, x0, y, w, "TODAY", st.Now.Format("Monday 2 January"), open, false)
-	drawText(img, face("ui", 13), x0, LH-22, "Hold the clock 3 s, or press power, to leave", grey3)
+	card(img, x0, y, w, "今天", displayDate(st.Now, "Monday 2 January"), open, false)
+	drawText(img, face("ui", 13), x0, LH-22, "长按时钟 3 秒或按电源键退出", grey3)
 }
 
 // musicTabGlyph: the Music tab is a plain note (the app's mark sits above the cover).

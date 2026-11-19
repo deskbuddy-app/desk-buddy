@@ -71,13 +71,13 @@ func calendarView(v *View, d *Desk, st Status, ui *UI) {
 	y := barH + 2 + 16
 
 	// Month title and navigation
-	drawText(img, face("serifB", 28), x0, y+32, ui.Month.Format("January 2006"), ink)
+	drawText(img, face("serifB", 28), x0, y+32, displayDate(ui.Month, "January 2006"), ink)
 	navR := x1
 	if ui.CalHidden { // « brings the day panel back
 		collapseButton(v, true, image.Rect(x1-44, y+9, x1, y+43), "calhide")
 		navR = x1 - 44 - 16
 	}
-	today := pillAt(img, image.Rect(navR-textW(face("uiBold", 16), "Today")-32, y+4, navR, y+48), "Today", false)
+	today := pillAt(img, image.Rect(navR-textW(face("uiBold", 16), "今天")-32, y+4, navR, y+48), "今天", false)
 	next := image.Rect(today.Min.X-10-48, y+4, today.Min.X-10, y+48)
 	prev := image.Rect(next.Min.X-8-48, y+4, next.Min.X-8, y+48)
 	iconButton(img, prev, "left", true)
@@ -86,16 +86,16 @@ func calendarView(v *View, d *Desk, st Status, ui *UI) {
 	v.add(Target{R: next.Inset(-4), Show: next, Act: "month", Arg: "1"})
 	v.add(Target{R: today.Inset(-4), Show: today, Act: "month", Arg: "0"})
 	if ui.CalErr != "" {
-		drawText(img, face("uiBold", 13), x0, y+56, ellipsize(face("uiBold", 13), "Calendar: "+ui.CalErr, prev.Min.X-x0-10), ink)
+		drawText(img, face("uiBold", 13), x0, y+56, ellipsize(face("uiBold", 13), "日历："+ui.CalErr, prev.Min.X-x0-10), ink)
 	} else if ui.CalKey == "" {
-		drawText(img, face("ui", 13), x0, y+56, "Loading…", grey2)
+		drawText(img, face("ui", 13), x0, y+56, "加载中…", grey2)
 	}
 	y += 66
 
 	// Weekday names
 	cw := (x1 - x0) / 7
 	wf := face("uiBold", 12)
-	for i, n := range []string{"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"} {
+	for i, n := range []string{"周一", "周二", "周三", "周四", "周五", "周六", "周日"} {
 		drawSpaced(img, wf, x0+i*cw+8, y+14, n, 1, grey2)
 	}
 	y += 24
@@ -169,7 +169,7 @@ func dayPanel(v *View, st Status, ui *UI) {
 
 	when := func(e Event) string {
 		if e.AllDay {
-			return "All day"
+			return "全天"
 		}
 		return hm(e.Start, st) + "–" + hm(e.End, st)
 	}
@@ -183,12 +183,12 @@ func dayPanel(v *View, st Status, ui *UI) {
 	}
 	if ui.Event >= 0 && ui.Event < len(evs) {
 		e := evs[ui.Event]
-		back := pillAt(img, image.Rect(x0, y, x0+textW(face("uiBold", 16), "Back")+52, y+bh), "", false)
+		back := pillAt(img, image.Rect(x0, y, x0+textW(face("uiBold", 16), "返回")+52, y+bh), "", false)
 		chevron(img, float64(back.Min.X+18), float64(back.Min.Y+bh/2), 6, "left", ink)
-		drawText(img, face("uiBold", 16), back.Min.X+30, back.Min.Y+bh/2+capHeight(face("uiBold", 16))/2, "Back", ink)
+		drawText(img, face("uiBold", 16), back.Min.X+30, back.Min.Y+bh/2+capHeight(face("uiBold", 16))/2, "返回", ink)
 		v.add(Target{R: back.Inset(-6), Show: back, Act: "event", ID: -1})
 		y += bh + gap + 8
-		label(img, x0, y+12, strings.ToUpper(ui.Day.Format("Monday 2 January")), grey2)
+		label(img, x0, y+12, strings.ToUpper(displayDate(ui.Day, "Monday 2 January")), grey2)
 		y += 26
 		tf := face("serifB", 24)
 		for _, l := range wrap(tf, e.Title, w, 3) {
@@ -212,14 +212,14 @@ func dayPanel(v *View, st Status, ui *UI) {
 		if e.ID > 0 { // added on the Kindle: it can be deleted here
 			y += 16
 			if ui.ConfirmEvent == e.ID {
-				drawText(img, face("uiBold", 16), x0, y+16, "Delete this event?", ink)
+				drawText(img, face("uiBold", 16), x0, y+16, "删除此日程？", ink)
 				y += 30
-				del := pillAt(img, image.Rect(x0, y, x0+110, y+bh), "Delete", true)
-				keep := pillAt(img, image.Rect(del.Max.X+10, y, del.Max.X+10+100, y+bh), "Keep", false)
+				del := pillAt(img, image.Rect(x0, y, x0+110, y+bh), "删除", true)
+				keep := pillAt(img, image.Rect(del.Max.X+10, y, del.Max.X+10+100, y+bh), "保留", false)
 				v.add(Target{R: del.Inset(-4), Show: del, Act: "delevent", ID: e.ID})
 				v.add(Target{R: keep.Inset(-4), Show: keep, Act: "delask", ID: 0})
 			} else {
-				del := pillAt(img, image.Rect(x0, y, x0+110, y+bh), "Delete", false)
+				del := pillAt(img, image.Rect(x0, y, x0+110, y+bh), "删除", false)
 				v.add(Target{R: del.Inset(-4), Show: del, Act: "delask", ID: e.ID})
 			}
 			y += bh
@@ -248,14 +248,14 @@ func dayPanel(v *View, st Status, ui *UI) {
 	}
 
 	lf := face("uiBold", 13)
-	label(img, x0, y+bh/2+capHeight(lf)/2, strings.ToUpper(ui.Day.Format("Monday 2 January")), grey2) // centred on »
+	label(img, x0, y+bh/2+capHeight(lf)/2, strings.ToUpper(displayDate(ui.Day, "Monday 2 January")), grey2) // centred on »
 	y += bh + gap
 	// List | Timeline (remembered), and earlier / later for the timeline
 	mode := 0
 	if ui.CalTimeline {
 		mode = 1
 	}
-	segmented(v, image.Rect(x0, y, x0+190, y+bh), []string{"List", "Timeline"}, []string{"0", "1"}, mode, "calmode")
+	segmented(v, image.Rect(x0, y, x0+190, y+bh), []string{"列表", "时间轴"}, []string{"0", "1"}, mode, "calmode")
 	if ui.CalTimeline {
 		dn := image.Rect(x1-48, y, x1, y+bh)
 		up := image.Rect(dn.Min.X-8-48, y, dn.Min.X-8, y+bh)
@@ -270,7 +270,7 @@ func dayPanel(v *View, st Status, ui *UI) {
 		return
 	}
 	if len(evs) == 0 {
-		drawText(img, face("serif", 21), x0, y+28, "Nothing on this day", grey2)
+		drawText(img, face("serif", 21), x0, y+28, "当天没有安排", grey2)
 		return
 	}
 	tf, sf := face("serif", 20), face("uiBold", 15)
@@ -342,6 +342,6 @@ func dayTimeline(v *View, st Status, ui *UI, evs []Event, x0, x1, y int) {
 		return Target{Act: "event", ID: i}
 	})
 	if n == 0 {
-		drawText(img, face("ui", 15), x0+56, top+perHour/2+6, "Nothing in these hours", grey2)
+		drawText(img, face("ui", 15), x0+56, top+perHour/2+6, "这些时段没有安排", grey2)
 	}
 }

@@ -1,0 +1,97 @@
+{
+  "rev": "fixture-zh-001",
+  "screen": "tasks",
+  "profile": "work",
+  "reason": "manual",
+  "mode": "work",
+  "tasks": [
+    {
+      "id": 1,
+      "text": "准备项目评审材料，核对预算与交付清单。",
+      "done": false,
+      "pinned": true,
+      "tag": null,
+      "parent_id": null,
+      "notes": "虚构数据：下午 14:30 开会。\nAI 项目 Review 2026。"
+    },
+    {
+      "id": 2,
+      "text": "连续中文任务没有空格用来验证换行和标点是否正常显示。",
+      "done": false,
+      "pinned": false,
+      "tag": null,
+      "parent_id": null,
+      "notes": ""
+    },
+    {
+      "id": 3,
+      "text": "检查中文子任务与 English 混排",
+      "done": false,
+      "pinned": false,
+      "tag": null,
+      "parent_id": 1,
+      "notes": ""
+    }
+  ],
+  "open_total": 2,
+  "agenda": [
+    {
+      "title": "虚构项目评审",
+      "start": 1794814200,
+      "end": 1794817800,
+      "all_day": false,
+      "location": "测试会议室",
+      "description": "仅供测试，不含真实会议链接。",
+      "cal": "测试日历",
+      "id": 101,
+      "join": ""
+    }
+  ],
+  "calendar_list": [
+    {
+      "name": "测试日历",
+      "show": "both"
+    }
+  ],
+  "computers": [
+    "mac"
+  ],
+  "calendars": 1,
+  "deck": {
+    "profile": "work",
+    "machine": "mac",
+    "machine_label": "Mac",
+    "connected": true,
+    "tiles": [
+      {
+        "label": "Calendar",
+        "app": "Calendar"
+      }
+    ],
+    "apps": [],
+    "decks": [
+      {
+        "profile": "work",
+        "machine": "mac",
+        "machine_label": "Mac",
+        "connected": true,
+        "tiles": [
+          {
+            "label": "Calendar",
+            "app": "Calendar"
+          }
+        ],
+        "apps": []
+      }
+    ]
+  },
+  "pomodoro": null,
+  "music": null,
+  "settings": {
+    "music_sync": false,
+    "task_lists": "one"
+  },
+  "appearance": "light",
+  "now": 1794810600,
+  "utc_offset": 28800
+}

@@ -308,9 +308,9 @@ func header(v *View, d *Desk, st Status, ui *UI) {
 	// or "Offline since 18:40" in bold.
 	rf, rc, reason := face("ui", 14), grey2, reasonText(d)
 	if !st.OnSince.IsZero() { // where it's connected: the cloud, or a computer at home
-		on := "Connected to cloud"
+		on := "已连接云端"
 		if isLocalServer(st.Server) {
-			on = "Connected to local"
+			on = "已连接本地"
 		}
 		if reason != "" {
 			on = reason + " · " + on
@@ -318,14 +318,14 @@ func header(v *View, d *Desk, st Status, ui *UI) {
 		reason = on
 	}
 	if st.Offline {
-		rf, rc, reason = face("uiBold", 14), ink, "Offline · retrying"
+		rf, rc, reason = face("uiBold", 14), ink, "离线 · 正在重试"
 		if !st.LastOK.IsZero() {
-			reason = "Offline since " + st.LastOK.In(st.Now.Location()).Format("15:04")
+			reason = "离线自 " + st.LastOK.In(st.Now.Location()).Format("15:04")
 		}
 		if st.Waiting == 1 {
-			reason += " · 1 change waiting"
+			reason += " · 1 项改动待同步"
 		} else if st.Waiting > 1 {
-			reason += fmt.Sprintf(" · %d changes waiting", st.Waiting)
+			reason += fmt.Sprintf(" · %d 项改动待同步", st.Waiting)
 		}
 	}
 	// The name, with a small line under it ("Auto", "Offline since 18:20"); with nothing
@@ -336,7 +336,7 @@ func header(v *View, d *Desk, st Status, ui *UI) {
 	}
 	name := listName(d)
 	if name == "" {
-		name = "Tasks"
+		name = "任务"
 	}
 	nx := drawText(img, pf, pad, ny, name, ink)
 	chevron(img, float64(nx+14), float64(ny-capHeight(pf)/2), 5, "down", ink)
@@ -392,9 +392,9 @@ func header(v *View, d *Desk, st Status, ui *UI) {
 	bx = pomoHeader(v, d.Pomodoro, st.Now.Unix(), bx-100) + 100
 	if ui.UpdateReady && !ui.NoUpdShow {
 		f := face("uiBold", 15)
-		r := image.Rect(bx-100-textW(f, "Update")-28, 18, bx-100, 54)
+		r := image.Rect(bx-100-textW(f, "更新")-28, 18, bx-100, 54)
 		fillRoundRect(img, r, 18, ink)
-		drawCentered(img, f, (r.Min.X+r.Max.X)/2, 36+capHeight(f)/2, "Update", paper)
+		drawCentered(img, f, (r.Min.X+r.Max.X)/2, 36+capHeight(f)/2, "更新", paper)
 		v.add(Target{R: r.Inset(-6), Show: r, Act: "showupdates"})
 	}
 
@@ -408,7 +408,7 @@ func tabBar(v *View, ui *UI) {
 	tabs := []struct {
 		id, name string
 		glyph    func(img *image.Gray, cx, cy float64, c uint8)
-	}{{"tasks", "Tasks", tasksGlyph}, {"deck", "Deck", deckGlyph}, {"calendar", "Calendar", calendarGlyph}, {"weather", "Weather", weatherGlyph}}
+	}{{"tasks", "任务", tasksGlyph}, {"deck", "应用面板", deckGlyph}, {"calendar", "日历", calendarGlyph}, {"weather", "天气", weatherGlyph}}
 	tf := face("uiBold", 16)
 	switch tabStyle {
 	case "icons": // three square icon buttons, current one filled
@@ -484,7 +484,7 @@ func calendarGlyph(img *image.Gray, cx, cy float64, c uint8) {
 // reasonText is the small line under the profile name: "Auto" when it switches by itself.
 func reasonText(d *Desk) string {
 	if d.Mode == "auto" && !searching(d) { // one computer: nothing switches, so no "Auto"
-		return "Auto"
+		return "自动"
 	}
 	return ""
 }
@@ -493,11 +493,11 @@ func reasonText(d *Desk) string {
 func modeDetail(d *Desk) string {
 	switch {
 	case d.Mode != "auto":
-		return "Chosen by you · back to Auto at 4am"
+		return "手动选择 · 凌晨 4 点恢复自动"
 	case strings.HasPrefix(d.Reason, "auto · "):
-		return "Now: " + strings.TrimPrefix(d.Reason, "auto · ")
+		return "当前：" + strings.TrimPrefix(d.Reason, "auto · ")
 	}
-	return "The computer you're using, else the last one"
+	return "跟随当前电脑，否则使用上一台"
 }
 
 // profileMenu: Mac / Windows / Auto (with one list: just Send feedback and Settings), dropped down from the profile name. Tapping anywhere
@@ -507,9 +507,9 @@ func profileMenu(v *View, d *Desk) {
 	v.add(Target{R: img.Rect, Act: "menu"})
 	pc := pcName(d)
 	opts := []struct{ mode, name, desc string }{ // one list per computer: which one to show
-		{"work", "Mac", "Tasks for your Mac"},
-		{"home", pc, "Tasks for your " + pc + " PC"},
-		{"auto", "Auto", "The computer you're using, else the last one"},
+		{"work", "Mac", "Mac 的任务"},
+		{"home", pc, "任务所属：" + pc + " PC"},
+		{"auto", "自动", "跟随当前电脑，否则使用上一台"},
 	}
 	if oneList(d) || searching(d) {
 		opts = nil // one list, or one computer: nothing to pick
@@ -543,8 +543,8 @@ func profileMenu(v *View, d *Desk) {
 	if extra > 0 { // only this computer so far: say we're looking, and how to add another
 		r := image.Rect(box.Min.X+8, box.Min.Y+8, box.Max.X-8, box.Min.Y+8+extra)
 		searchGlyph(img, float64(r.Min.X+26), float64(r.Min.Y+34), ink)
-		drawText(img, tf, r.Min.X+52, r.Min.Y+40, "Searching for other devices…", ink)
-		for i, l := range wrap(sf, "Install Desk Buddy on another computer to connect it", r.Max.X-r.Min.X-64, 2) {
+		drawText(img, tf, r.Min.X+52, r.Min.Y+40, "正在搜索其他设备…", ink)
+		for i, l := range wrap(sf, "在另一台电脑上安装 Desk Buddy 以连接", r.Max.X-r.Min.X-64, 2) {
 			drawText(img, sf, r.Min.X+52, r.Min.Y+64+i*20, l, grey2)
 		}
 	}
@@ -557,21 +557,21 @@ func profileMenu(v *View, d *Desk) {
 	}
 	fb := image.Rect(box.Min.X+8, sy+6, box.Max.X-8, sy+66)
 	feedbackGlyph(img, float64(fb.Min.X+26), float64(fb.Min.Y+28), ink)
-	drawText(img, tf, fb.Min.X+52, fb.Min.Y+30, "Send feedback", ink)
-	drawText(img, sf, fb.Min.X+52, fb.Min.Y+52, "Ideas, bugs, feature requests", grey2)
+	drawText(img, tf, fb.Min.X+52, fb.Min.Y+30, "发送反馈", ink)
+	drawText(img, sf, fb.Min.X+52, fb.Min.Y+52, "想法、问题与功能建议", grey2)
 	v.add(Target{R: fb, Show: fb.Inset(2), Act: "about"}) // opens Settings › About
 	sy += 62
 	fillRect(img, image.Rect(fb.Min.X+52, sy+4, box.Max.X-20, sy+5), grey4)
 	r := image.Rect(box.Min.X+8, sy+6, box.Max.X-8, sy+62)
 	gearGlyph(img, float64(r.Min.X+26), float64(r.Min.Y+28), ink)
-	drawText(img, tf, r.Min.X+52, r.Min.Y+36, "Settings", ink)
+	drawText(img, tf, r.Min.X+52, r.Min.Y+36, "设置", ink)
 	v.add(Target{R: r, Show: r.Inset(2), Act: "settings"})
 	sy += 62
 	fillRect(img, image.Rect(fb.Min.X+52, sy+4, box.Max.X-20, sy+5), grey4)
 	ex := image.Rect(box.Min.X+8, sy+6, box.Max.X-8, sy+66)
 	exitGlyph(img, float64(ex.Min.X+26), float64(ex.Min.Y+28), ink)
-	drawText(img, tf, ex.Min.X+52, ex.Min.Y+30, "Exit to Kindle", ink)
-	drawText(img, sf, ex.Min.X+52, ex.Min.Y+52, "Back to your library and books", grey2)
+	drawText(img, tf, ex.Min.X+52, ex.Min.Y+30, "返回 Kindle", ink)
+	drawText(img, sf, ex.Min.X+52, ex.Min.Y+52, "返回书库与图书", grey2)
 	v.add(Target{R: ex, Show: ex.Inset(2), Act: "quitapp"})
 }
 
@@ -694,7 +694,7 @@ func lightChoice(level int) int {
 }
 
 func lightButtons() (labels, args []string) {
-	labels = []string{"Off", "1", "2", "3", "4", "5"}
+	labels = []string{"关闭", "1", "2", "3", "4", "5"}
 	for _, l := range lightLevels {
 		args = append(args, itoa(l))
 	}
@@ -709,7 +709,7 @@ func lightPanel(v *View, st Status, ui *UI) {
 	fillRoundRect(img, box.Inset(-3), 12, paper)
 	strokeRoundRect(img, box, 10, 3, ink)
 	x0, x1 := box.Min.X+20, box.Max.X-20
-	label(img, x0, box.Min.Y+34, "BRIGHTNESS", grey2)
+	label(img, x0, box.Min.Y+34, "亮度", grey2)
 	if st.Battery >= 0 {
 		s := itoa(st.Battery) + "% battery"
 		if st.Charging {
@@ -719,13 +719,13 @@ func lightPanel(v *View, st Status, ui *UI) {
 	}
 	labels, args := lightButtons()
 	segmented(v, image.Rect(x0, box.Min.Y+48, x1, box.Min.Y+96), labels, args, lightChoice(st.Light), "light")
-	label(img, x0, box.Min.Y+138, "SCREEN", grey2)
+	label(img, x0, box.Min.Y+138, "屏幕", grey2)
 	sel := 0
 	if ui.Dark {
 		sel = 1
 	}
-	segmented(v, image.Rect(x0, box.Min.Y+152, x0+240, box.Min.Y+198), []string{"Light", "Dark"}, []string{"0", "1"}, sel, "setdark")
-	flip := pillAt(img, image.Rect(x0+254, box.Min.Y+152, x1, box.Min.Y+198), "Flip screen", false)
+	segmented(v, image.Rect(x0, box.Min.Y+152, x0+240, box.Min.Y+198), []string{"浅色", "深色"}, []string{"0", "1"}, sel, "setdark")
+	flip := pillAt(img, image.Rect(x0+254, box.Min.Y+152, x1, box.Min.Y+198), "翻转屏幕", false)
 	v.add(Target{R: flip.Inset(-4), Show: flip, Act: "fliprot"})
 }
 
@@ -746,10 +746,10 @@ func standbyControls(v *View, st Status, ui *UI) {
 	}
 	var opts []opt
 	if style == "classic" || style == "dressed" || style == "day" {
-		opts = append(opts, opt{"Quote", "clockquote", ui.NoQuote})
+		opts = append(opts, opt{"引言", "clockquote", ui.NoQuote})
 	}
 	if style != "stacked" {
-		opts = append(opts, opt{"Next event", "clockevent", ui.NoEvent})
+		opts = append(opts, opt{"下个日程", "clockevent", ui.NoEvent})
 	}
 	hours := style != "analog"
 	const segW, onW, gap = 180, 130, 40
@@ -778,7 +778,7 @@ func standbyControls(v *View, st Status, ui *UI) {
 		if o.off {
 			sel = 1
 		}
-		segmented(v, image.Rect(x, y0, x+onW, y1), []string{"On", "Off"}, []string{"1", "0"}, sel, o.act)
+		segmented(v, image.Rect(x, y0, x+onW, y1), []string{"开启", "关闭"}, []string{"1", "0"}, sel, o.act)
 		x += onW + gap
 	}
 	// second row: light, light/dark, back
@@ -789,8 +789,8 @@ func standbyControls(v *View, st Status, ui *UI) {
 	if ui.Dark {
 		sel = 1
 	}
-	segmented(v, image.Rect(box.Min.X+430, y0, box.Min.X+430+200, y1), []string{"Light", "Dark"}, []string{"0", "1"}, sel, "setdark")
-	back := pillAt(img, image.Rect(box.Max.X-20-150, y0, box.Max.X-20, y1), "Back to desk", true)
+	segmented(v, image.Rect(box.Min.X+430, y0, box.Min.X+430+200, y1), []string{"浅色", "深色"}, []string{"0", "1"}, sel, "setdark")
+	back := pillAt(img, image.Rect(box.Max.X-20-150, y0, box.Max.X-20, y1), "返回桌面", true)
 	v.add(Target{R: back.Inset(-4), Show: back, Act: "standby"})
 }
 
@@ -847,7 +847,7 @@ func bigTime(img *image.Gray, f font.Face, cx, y int, t time.Time, h12 bool, c u
 	s := t.Format("3:04")
 	drawCentered(img, f, cx, y, s, c)
 	sf := face("uiBold", float64(max(14, capHeight(f)/4)))
-	drawText(img, sf, cx+textW(f, s)/2+max(8, capHeight(f)/14), y, t.Format("PM"), grey2)
+	drawText(img, sf, cx+textW(f, s)/2+max(8, capHeight(f)/14), y, displayDate(t, "PM"), grey2)
 }
 
 // nextEvent: "Now · Standup until 10:30", or the next event within 24 hours
@@ -903,16 +903,16 @@ func contrastIcon(img *image.Gray, cx, cy, r float64) {
 func night(v *View, d *Desk, st Status, ui *UI) {
 	img := v.Img
 	bigTime(img, face("display", 190), LW/2, 360, st.Now, ui.Clock12, ink)
-	drawCentered(img, face("serif", 26), LW/2, 425, st.Now.Format("Monday 2 January"), grey2)
-	waiting := "Nothing waiting for tomorrow"
+	drawCentered(img, face("serif", 26), LW/2, 425, displayDate(st.Now, "Monday 2 January"), grey2)
+	waiting := "明天暂无待办"
 	if d.OpenTotal == 1 {
-		waiting = "1 task waiting"
+		waiting = "1 项待办"
 	} else if d.OpenTotal > 1 {
-		waiting = itoa(d.OpenTotal) + " tasks waiting"
+		waiting = itoa(d.OpenTotal) + " 项待办"
 	}
 	drawCentered(img, face("ui", 18), LW/2, 490, waiting, grey2)
 	lf := face("uiBold", 14)
-	drawSpaced(img, lf, LW/2-spacedW(lf, "TAP TO WAKE", 2)/2, 560, "TAP TO WAKE", 2, grey3)
+	drawSpaced(img, lf, LW/2-spacedW(lf, "点击唤醒", 2)/2, 560, "点击唤醒", 2, grey3)
 	v.add(Target{R: img.Rect, Show: image.Rect(LW/2-140, 538, LW/2+140, 572), Act: "wake"})
 }
 
@@ -938,7 +938,7 @@ func standby(v *View, d *Desk, st Status, ui *UI) {
 	switch clockStyles[style%len(clockStyles)] {
 	case "analog":
 		analogClock(img, LW/2, 330, 250, now)
-		drawCentered(img, face("serif", 24), LW/2, 640, now.Format("Monday 2 January"), grey2)
+		drawCentered(img, face("serif", 24), LW/2, 640, displayDate(now, "Monday 2 January"), grey2)
 		notesY = 680
 	case "stacked":
 		f := face("display", 330)
@@ -948,7 +948,7 @@ func standby(v *View, d *Desk, st Status, ui *UI) {
 		}
 		drawCentered(img, f, LW/2, 330, hour, ink)
 		drawCentered(img, f, LW/2, 640, now.Format("04"), ink)
-		label(img, LW/2-spacedW(face("uiBold", 13), strings.ToUpper(now.Format("Mon 2 Jan")), 2)/2, 700, strings.ToUpper(now.Format("Mon 2 Jan")), grey2)
+		label(img, LW/2-spacedW(face("uiBold", 13), strings.ToUpper(displayDate(now, "Mon 2 Jan")), 2)/2, 700, strings.ToUpper(displayDate(now, "Mon 2 Jan")), grey2)
 		notesY = 9999 // no room: the stacked clock is only the time
 	case "words":
 		f := face("serifB", 76)
@@ -958,11 +958,11 @@ func standby(v *View, d *Desk, st Status, ui *UI) {
 			drawCentered(img, f, LW/2, top+i*92, l, ink)
 		}
 		y := top + (len(lines)-1)*92 + 70
-		drawCentered(img, face("serif", 26), LW/2, y, clockText(now, h12)+" · "+now.Format("Monday 2 January"), grey2)
+		drawCentered(img, face("serif", 26), LW/2, y, clockText(now, h12)+" · "+displayDate(now, "Monday 2 January"), grey2)
 		notesY = y + 70
 	case "quote":
 		bigTime(img, face("serifB", 44), LW/2, 120, now, h12, ink)
-		drawCentered(img, face("ui", 18), LW/2, 156, now.Format("Monday 2 January"), grey2)
+		drawCentered(img, face("ui", 18), LW/2, 156, displayDate(now, "Monday 2 January"), grey2)
 		text, who := quoteFor(now)
 		f := face("serif", 50)
 		lines := wrap(f, "“"+text+"”", LW-220, 4)
@@ -977,7 +977,7 @@ func standby(v *View, d *Desk, st Status, ui *UI) {
 		notesY = y + 120
 	case "day":
 		bigTime(img, face("display", 200), LW/2, 330, now, h12, ink)
-		drawCentered(img, face("serif", 26), LW/2, 395, now.Format("Monday 2 January"), grey2)
+		drawCentered(img, face("serif", 26), LW/2, 395, displayDate(now, "Monday 2 January"), grey2)
 		// how much of the day has gone
 		bar := image.Rect(140, 450, LW-140, 466)
 		strokeRoundRect(img, bar, 8, 2, ink)
@@ -994,7 +994,7 @@ func standby(v *View, d *Desk, st Status, ui *UI) {
 		notesY = quote(540)
 	default: // classic
 		bigTime(img, face("display", 220), LW/2, 380, now, h12, ink)
-		drawCentered(img, face("serif", 30), LW/2, 450, now.Format("Monday 2 January"), grey2)
+		drawCentered(img, face("serif", 30), LW/2, 450, displayDate(now, "Monday 2 January"), grey2)
 		notesY = quote(510)
 	}
 
@@ -1011,9 +1011,9 @@ func standby(v *View, d *Desk, st Status, ui *UI) {
 		ago := now.Sub(time.Unix(int64(c.At), 0))
 		switch {
 		case c.State == "input":
-			notes = append(notes, "Claude needs your input · "+c.Text)
+			notes = append(notes, "Claude 等待输入 · "+c.Text)
 		case c.State == "done" && ago < 30*time.Minute:
-			notes = append(notes, "Claude finished · "+c.Text)
+			notes = append(notes, "Claude 已完成 · "+c.Text)
 		}
 	}
 	if !ui.NoEvent { // the event on now, or the next one in the coming 24 hours
@@ -1034,7 +1034,7 @@ func standby(v *View, d *Desk, st Status, ui *UI) {
 		clockDecor(img)
 	}
 	if st.Battery >= 0 && st.Battery <= 20 && !st.Charging {
-		drawText(img, face("ui", 15), pad, LH-24, "Battery "+itoa(st.Battery)+"%", grey3)
+		drawText(img, face("ui", 15), pad, LH-24, "电量 "+itoa(st.Battery)+"%", grey3)
 	}
 	// which style: small dots at the bottom
 	n := len(clockStyles)
@@ -1159,30 +1159,30 @@ func connecting(v *View, st Status) {
 	drawBuddy(img, LW/2, 90, 130, ink)
 	drawCentered(img, face("serifB", 40), LW/2, 270, "Desk Buddy", ink)
 	if st.Server == "" { // a new Kindle: find the computer running Desk Buddy
-		drawCentered(img, face("ui", 20), LW/2, 330, "Find the computer running Desk Buddy on this Wi-Fi.", grey2)
-		find := pillAt(img, image.Rect(LW/2-120, 380, LW/2+120, 426), "Find it", true)
+		drawCentered(img, face("ui", 20), LW/2, 330, "在当前 Wi-Fi 查找运行 Desk Buddy 的电脑。", grey2)
+		find := pillAt(img, image.Rect(LW/2-120, 380, LW/2+120, 426), "查找", true)
 		v.add(Target{R: find.Inset(-6), Show: find, Act: "serverpick"})
-		quit := pillAt(img, image.Rect(LW/2-120, 540, LW/2+120, 586), "Exit to Kindle", false)
+		quit := pillAt(img, image.Rect(LW/2-120, 540, LW/2+120, 586), "返回 Kindle", false)
 		v.add(Target{R: quit.Inset(-6), Show: quit, Act: "quitapp"})
 		return
 	}
-	msg := "Connecting to " + st.Server + "…"
+	msg := "正在连接 " + st.Server + "…"
 	if st.Offline {
-		msg = "Can't reach " + st.Server + ". Retrying every 15 seconds."
+		msg = "无法连接 " + st.Server + "，每 15 秒重试一次。"
 	}
 	drawCentered(img, face("ui", 20), LW/2, 330, ellipsize(face("ui", 20), msg, LW-120), grey2)
 	if st.Why != "" {
 		drawCentered(img, face("uiBold", 18), LW/2, 372, ellipsize(face("uiBold", 18), st.Why, LW-120), ink)
 	}
 	if st.Offline {
-		retry := pillAt(img, image.Rect(LW/2-160-8, 420, LW/2-8, 466), "Try again", false)
+		retry := pillAt(img, image.Rect(LW/2-160-8, 420, LW/2-8, 466), "重试", false)
 		v.add(Target{R: retry.Inset(-6), Show: retry, Act: "retry"})
-		restart := pillAt(img, image.Rect(LW/2+8, 420, LW/2+168, 466), "Restart app", false)
+		restart := pillAt(img, image.Rect(LW/2+8, 420, LW/2+168, 466), "重启应用", false)
 		v.add(Target{R: restart.Inset(-6), Show: restart, Act: "restartapp"})
-		other := pillAt(img, image.Rect(LW/2-160-8, 482, LW/2+168, 528), "Use another computer…", false)
+		other := pillAt(img, image.Rect(LW/2-160-8, 482, LW/2+168, 528), "使用其他电脑…", false)
 		v.add(Target{R: other.Inset(-6), Show: other, Act: "serverpick"})
 	}
-	quit := pillAt(img, image.Rect(LW/2-120, 550, LW/2+120, 596), "Exit to Kindle", false)
+	quit := pillAt(img, image.Rect(LW/2-120, 550, LW/2+120, 596), "返回 Kindle", false)
 	v.add(Target{R: quit.Inset(-6), Show: quit, Act: "quitapp"})
 }
 

@@ -1243,10 +1243,11 @@ const LIST_NAME = { work: "Mac", home: "Windows" };
 const APP_CSS = `
 @font-face{font-family:Atkinson;src:url(/fonts/AtkinsonHyperlegible-Regular.ttf);font-weight:400}
 @font-face{font-family:Atkinson;src:url(/fonts/AtkinsonHyperlegible-Bold.ttf);font-weight:700}
+@font-face{font-family:SourceHanSC;src:url(/fonts/SourceHanSansSC-Regular.otf);font-weight:400;font-display:swap}
 :root{--ink:#000;--paper:#fff;--grey:#4d4d4d;--soft:#8b8b8b;--line:#c4c4c4}
 @media (prefers-color-scheme:dark){:root{--ink:#fff;--paper:#000;--grey:#b3b3b3;--soft:#777;--line:#3a3a3a;color-scheme:dark}}
 *{box-sizing:border-box}
-body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.35 Atkinson,system-ui,sans-serif;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.35 Atkinson,SourceHanSC,system-ui,sans-serif;-webkit-text-size-adjust:100%}
 .w{max-width:620px;margin:0 auto;padding:0 16px 56px}
 button,input,textarea{font:inherit;color:inherit}
 form{margin:0}.inline{display:inline}
@@ -1316,65 +1317,65 @@ async function phonePage(db, view = "") {
     `<form class="inline" method="post" action="${path}">${ret}<button class="${cls}"${label ? ` aria-label="${label}"` : ""}>${inner}</button></form>`;
   const icon = {
     check: '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-    pin: '<svg width="18" height="18" viewBox="0 0 18 18" aria-label="Pinned"><path d="M6 2h6l-1 5 3 3H4l3-3zM9 10v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
+    pin: '<svg width="18" height="18" viewBox="0 0 18 18" aria-label="已置顶"><path d="M6 2h6l-1 5 3 3H4l3-3zM9 10v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
     plus: '<svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M9 3v12M3 9h12" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>',
   };
   const tasks = s.tasks[list];
   const row = (x, sub) => {
     const kids = sub ? [] : tasks.filter((c) => c.parent_id === x.id);
     return `<details class="task${x.done ? " done" : ""}${sub ? " sub" : ""}"><summary>
-${post(`/do/toggle/${x.id}`, x.done ? icon.check : "", "tick", x.done ? "Mark not done" : "Mark done")}
+${post(`/do/toggle/${x.id}`, x.done ? icon.check : "", "tick", x.done ? "标记为未完成" : "标记为已完成")}
 <span class="t">${esc(x.text)}${x.notes ? `<span class="note">${esc(x.notes)}</span>` : ""}</span>${x.pinned ? `<span class="pinned">${icon.pin}</span>` : ""}</summary>
 <div class="more"><div class="acts">
-${sub ? "" : post(`/do/pin/${x.id}`, x.pinned ? "Unpin" : "Pin")}
-${post(`/do/move/${x.id}/-1`, "Up", "pill", "Move up")}${post(`/do/move/${x.id}/1`, "Down", "pill", "Move down")}
-${post(`/do/delete/${x.id}`, "Delete")}</div>
-<form method="post" action="/do/notes/${x.id}">${ret}<textarea name="notes" rows="2" maxlength="1000" placeholder="Add a description" aria-label="Description">${esc(x.notes)}</textarea>
-<button class="pill">Save description</button></form>
+${sub ? "" : post(`/do/pin/${x.id}`, x.pinned ? "取消置顶" : "置顶")}
+${post(`/do/move/${x.id}/-1`, "上移", "pill", "上移")}${post(`/do/move/${x.id}/1`, "下移", "pill", "下移")}
+${post(`/do/delete/${x.id}`, "删除")}</div>
+<form method="post" action="/do/notes/${x.id}">${ret}<textarea name="notes" rows="2" maxlength="1000" placeholder="添加说明" aria-label="说明">${esc(x.notes)}</textarea>
+<button class="pill">保存说明</button></form>
 ${sub ? "" : `<form class="add" method="post" action="/do/add">${ret}<input type="hidden" name="parent_id" value="${x.id}">
-<input type="text" name="text" placeholder="Add a subtask" required maxlength="120" aria-label="Subtask"><button class="plus" aria-label="Add subtask">${icon.plus}</button></form>`}
+<input type="text" name="text" placeholder="添加子任务" required maxlength="120" aria-label="子任务"><button class="plus" aria-label="添加子任务">${icon.plus}</button></form>`}
 </div></details>${kids.map((c) => row(c, true)).join("")}`;
   };
   const top = tasks.filter((x) => !x.parent_id);
   const done = top.filter((x) => x.done).length;
   const pcLabel = s.pc_label || "Windows";
   const listNames = { work: "Mac", home: pcLabel };
-  const name = single ? listNames[kindleList] : one ? "Tasks" : listNames[list];
+  const name = single ? listNames[kindleList] : one ? "任务" : listNames[list];
   const seen = Object.entries(s.heartbeats).filter(([m]) => m in MACHINES)
-    .map(([m, h]) => `${m === "pc" ? pcLabel : MACHINES[m][1]} seen ${ago(t - h.at)}`).join(" · ");
+    .map(([m, h]) => `${m === "pc" ? pcLabel : MACHINES[m][1]} 最近在线：${ago(t - h.at)}`).join(" · ");
   const listSwitch = one ? "" : `<div class="seg" role="tablist">${PROFILES.map((p) =>
     `<a href="/app?list=${p}" class="${p === list ? "on" : ""}" role="tab" aria-selected="${p === list}">${listNames[p]}</a>`).join("")}</div>`;
-  const kindleNow = s.profile === "night" ? "the night clock" : one ? "your tasks" : `the ${listNames[kindleList]} list`;
+  const kindleNow = s.profile === "night" ? "夜间时钟" : one ? "你的任务" : `${listNames[kindleList]} 列表`;
   const modes = `<div class="seg">${["work", "home", "auto"].map((m) =>
-    post(`/do/mode/${m}`, m === "auto" ? "Auto" : listNames[m], s.mode === m ? "on" : "")).join("")}</div>`;
+    post(`/do/mode/${m}`, m === "auto" ? "自动" : listNames[m], s.mode === m ? "on" : "")).join("")}</div>`;
   // calendar links (Google and others); the Mac's Calendar app syncs by itself
   const cals = (await db.get("calendars")) || [];
   const macCal = await db.get("cal_push_mac");
   const calCache = await db.calendarCache();
-  const calBox = `<details class="cal"><summary><div><b>Calendars</b><span>The Mac's calendar, and links to others</span></div></summary>
-${macCal ? `<div class="line"><div>Mac Calendar app<div class="h">${macCal.events.length} events · synced ${new Date(macCal.at * 1000).toLocaleTimeString("en-GB", { timeZone: db.tz, hour: "2-digit", minute: "2-digit" })}</div></div></div>` : ""}
-${cals.map((c, i) => `<div class="line"><div>${esc(c.name)}<div class="h">${c.profile === "both" ? "Both lists" : listNames[c.profile] || title(c.profile)}</div></div>${post(`/do/cal-del/${i}`, "Remove")}</div>`).join("")}
-${calCache.errors?.length ? `<p class="status">Couldn't load: ${esc(calCache.errors.join("; "))}</p>` : ""}
+  const calBox = `<details class="cal"><summary><div><b>日历</b><span>Mac 日历及其他日历链接</span></div></summary>
+${macCal ? `<div class="line"><div>Mac 日历应用<div class="h">${macCal.events.length} 个日程 · 同步于 ${new Date(macCal.at * 1000).toLocaleTimeString("en-GB", { timeZone: db.tz, hour: "2-digit", minute: "2-digit" })}</div></div></div>` : ""}
+${cals.map((c, i) => `<div class="line"><div>${esc(c.name)}<div class="h">${c.profile === "both" ? "两个列表" : listNames[c.profile] || title(c.profile)}</div></div>${post(`/do/cal-del/${i}`, "移除")}</div>`).join("")}
+${calCache.errors?.length ? `<p class="status">无法加载：${esc(calCache.errors.join("; "))}</p>` : ""}
 <form class="calform" method="post" action="/do/cal-add">${ret}
-<p class="status">Add a calendar by its private link (Google Calendar: Settings › your calendar › “Secret address in iCal format”).</p>
-<input type="text" name="name" placeholder="Name" maxlength="30" aria-label="Calendar name">
-<input type="url" name="url" placeholder="https://… .ics" required aria-label="Calendar link">
-<select name="profile" aria-label="Show on"><option value="both">Both lists</option><option value="work">Mac</option><option value="home">${esc(pcLabel)}</option></select>
-<div><button class="pill solid">Add calendar</button></div></form></details>`;
-  return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<p class="status">通过私密链接添加日历（Google 日历：设置 › 你的日历 › “iCal 格式的私密地址”）。</p>
+<input type="text" name="name" placeholder="名称" maxlength="30" aria-label="日历名称">
+<input type="url" name="url" placeholder="https://… .ics" required aria-label="日历链接">
+<select name="profile" aria-label="显示于"><option value="both">两个列表</option><option value="work">Mac</option><option value="home">${esc(pcLabel)}</option></select>
+<div><button class="pill solid">添加日历</button></div></form></details>`;
+  return `<!DOCTYPE html><html lang="zh-Hans"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <title>${esc(name)} · Desk Buddy</title><style>${APP_CSS}</style></head><body><div class="w">
 <header class="top"><div class="r"><h1>${esc(name)}</h1>${listSwitch}</div>
-<div class="status">${top.length ? `${done} of ${top.length} done` : "Nothing yet"}${list === kindleList && s.profile !== "night" ? " · on the Kindle now" : ""}</div></header>
-${msg ? `<div class="box"><b>Heart message on the Kindle</b><p>“${esc(msg.text)}” is showing instead of your tasks.</p>${post("/do/clear-message", "Back to tasks", "pill solid")}</div>` : ""}
+<div class="status">${top.length ? `已完成 ${done} / ${top.length}` : "暂无任务"}${list === kindleList && s.profile !== "night" ? " · Kindle 正在显示" : ""}</div></header>
+${msg ? `<div class="box"><b>Kindle 上的心形留言</b><p>“${esc(msg.text)}”正在显示，暂时替代任务列表。</p>${post("/do/clear-message", "返回任务", "pill solid")}</div>` : ""}
 <form class="add" method="post" action="/do/add">${ret}<input type="hidden" name="profile" value="${list}">
-<input type="text" name="text" placeholder="Add a task" required maxlength="120" aria-label="New task"><button class="plus" aria-label="Add task">${icon.plus}</button></form>
-<div>${top.map((x) => row(x, false)).join("") || '<p class="empty">No tasks. Add one above.</p>'}</div>
-${top.length ? `<div class="progress"><div class="bar"><i style="width:${Math.round((done / top.length) * 100)}%"></i></div>${done} / ${top.length} done</div>` : ""}
-<div class="label">On the Kindle</div>
-<div class="kindle"><div>Showing ${kindleNow}<div class="h">${single ? "" : esc(s.mode === "auto" ? "Auto: follows the computer you're using" : "Picked by hand, back to Auto at 4am")}${seen ? (single ? "" : " · ") + esc(seen) : ""}</div></div>${one ? "" : modes}</div>
-${single ? `<div class="line"><div>Searching for other devices…<div class="h">Install Desk Buddy on another computer to connect it.</div></div></div>` : ""}
-<div class="label">More</div>
+<input type="text" name="text" placeholder="添加任务" required maxlength="120" aria-label="新建任务"><button class="plus" aria-label="添加任务">${icon.plus}</button></form>
+<div>${top.map((x) => row(x, false)).join("") || '<p class="empty">暂无任务，请在上方添加。</p>'}</div>
+${top.length ? `<div class="progress"><div class="bar"><i style="width:${Math.round((done / top.length) * 100)}%"></i></div>已完成 ${done} / ${top.length}</div>` : ""}
+<div class="label">Kindle 上</div>
+<div class="kindle"><div>正在显示：${kindleNow}<div class="h">${single ? "" : esc(s.mode === "auto" ? "自动：跟随当前使用的电脑" : "手动选择，凌晨 4 点恢复自动")}${seen ? (single ? "" : " · ") + esc(seen) : ""}</div></div>${one ? "" : modes}</div>
+${single ? `<div class="line"><div>正在搜索其他设备…<div class="h">在另一台电脑上安装 Desk Buddy 以连接。</div></div></div>` : ""}
+<div class="label">更多</div>
 ${calBox}
 </div>
 <script>
@@ -1385,7 +1386,7 @@ if (sessionStorage.y) { scrollTo(0, +sessionStorage.y); delete sessionStorage.y;
 }
 
 // "2 min ago", for the phone page
-const ago = (sec) => (sec < 90 ? "just now" : sec < 3600 ? `${Math.round(sec / 60)} min ago` : sec < 86400 ? `${Math.round(sec / 3600)} h ago` : `${Math.round(sec / 86400)} days ago`);
+const ago = (sec) => (sec < 90 ? "刚刚" : sec < 3600 ? `${Math.round(sec / 60)} 分钟前` : sec < 86400 ? `${Math.round(sec / 3600)} 小时前` : `${Math.round(sec / 86400)} 天前`);
 
 // The music playing most recently on any computer (reported in the last 10 minutes).
 function musicNow(kv) {

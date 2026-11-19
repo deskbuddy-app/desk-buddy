@@ -43,7 +43,7 @@ func updateNotes(update []NoteEntry) []NoteEntry {
 	return out
 }
 
-const helperReminder = "Keep Desk Buddy on your computers up to date too, or some things may not work."
+const helperReminder = "请同时更新电脑上的 Desk Buddy，以免部分功能无法使用。"
 
 type noteLine struct {
 	text         string
@@ -58,7 +58,7 @@ func noteLines(entries []NoteEntry, w int, headSuffix func(i int) string) []note
 	for i, e := range entries {
 		head := e.Date
 		if t, err := time.Parse("2006-01-02", e.Date); err == nil {
-			head = t.Format("2 January")
+			head = displayDate(t, "2 January")
 		}
 		lines = append(lines, noteLine{text: head + headSuffix(i), head: true, h: 26})
 		for _, it := range e.Items {
@@ -135,9 +135,9 @@ func patchNotesPane(v *View, ui *UI, x0, x1, y int) {
 	}
 	ui.NotesPage = max(0, min(ui.NotesPage, len(pages)-1))
 	p := pages[ui.NotesPage]
-	title := "WHAT WAS NEW IN THIS VERSION"
+	title := "此版本的更新内容"
 	if p.entry > 0 {
-		title = "WHAT WAS NEW BEFORE"
+		title = "此前的更新内容"
 	}
 	label(img, x0, y, title, grey2)
 	if len(pages) > 1 {
@@ -148,7 +148,7 @@ func patchNotesPane(v *View, ui *UI, x0, x1, y int) {
 	}
 	lines := noteLines([]NoteEntry{patchNotes[p.entry]}, x1-x0, func(int) string {
 		if p.entry == 0 {
-			return " · this version"
+			return " · 当前版本"
 		}
 		return ""
 	})
@@ -167,11 +167,11 @@ func notesModal(v *View, ui *UI) {
 	fillRoundRect(img, box.Inset(-3), 16, paper)
 	strokeRoundRect(img, box, 14, 2, ink)
 	x0, x1 := box.Min.X+32, box.Max.X-32
-	drawText(img, face("serifB", 28), x0, box.Min.Y+56, "What's new in the update", ink)
+	drawText(img, face("serifB", 28), x0, box.Min.Y+56, "更新内容", ink)
 	entries := updateNotes(ui.UpdateNotes)
 	listTop, listBottom := box.Min.Y+80, box.Max.Y-130
 	if len(entries) == 0 {
-		drawText(img, face("ui", 16), x0, listTop+24, "Fixes and small improvements.", grey2)
+		drawText(img, face("ui", 16), x0, listTop+24, "修复与小幅改进。", grey2)
 	} else {
 		lines := noteLines(entries, x1-x0-60, func(int) string { return "" })
 		ui.NotesScroll = max(0, min(ui.NotesScroll, len(lines)-1))
@@ -189,8 +189,8 @@ func notesModal(v *View, ui *UI) {
 		drawText(img, face("ui", 15), x0, listBottom+40+i*20, l, grey2)
 	}
 	by := box.Max.Y - 70
-	inst := pillAt(img, image.Rect(x1-200, by, x1, by+46), "Install update", true)
+	inst := pillAt(img, image.Rect(x1-200, by, x1, by+46), "安装更新", true)
 	v.add(Target{R: inst.Inset(-4), Show: inst, Act: "update"})
-	cl := pillAt(img, image.Rect(inst.Min.X-132, by, inst.Min.X-12, by+46), "Close", false)
+	cl := pillAt(img, image.Rect(inst.Min.X-132, by, inst.Min.X-12, by+46), "关闭", false)
 	v.add(Target{R: cl.Inset(-4), Show: cl, Act: "notesmodal"})
 }

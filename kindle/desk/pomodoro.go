@@ -43,7 +43,7 @@ func minsLeft(sec int64) string {
 	if sec < 60 {
 		return "<1 min"
 	}
-	return fmt.Sprintf("%d min", (sec+59)/60)
+	return fmt.Sprintf("%d 分钟", (sec+59)/60)
 }
 
 // pomoCardLine is the label on the "Now working on" card while a timer is on.
@@ -52,11 +52,11 @@ func pomoCardLine(p *Pomo, now int64) string { return strings.ToUpper(pomoLine(p
 func pomoLine(p *Pomo, now int64) string {
 	switch {
 	case p.State == "paused":
-		return "Paused · " + minsLeft(p.Left) + " left"
+		return "已暂停 · " + minsLeft(p.Left) + " left"
 	case p.State == "break":
-		return "Break · " + minsLeft(p.remaining(now)) + " left"
+		return "休息 · " + minsLeft(p.remaining(now)) + " left"
 	}
-	return "Focus · " + minsLeft(p.remaining(now)) + " left"
+	return "专注 · " + minsLeft(p.remaining(now)) + " left"
 }
 
 // pomoBar draws how much of the session has gone.
@@ -96,9 +96,9 @@ func pomoHeader(v *View, p *Pomo, now int64, right int) int {
 	f := face("uiBold", 15)
 	s := minsLeft(p.remaining(now))
 	if p.State == "paused" {
-		s = "Paused"
+		s = "已暂停"
 	} else if p.State == "break" {
-		s = "Break " + s
+		s = "休息 " + s
 	}
 	w := textW(f, s) + 44
 	r := image.Rect(right-w, 18, right, 54)
@@ -117,18 +117,18 @@ func timesUp(v *View, p *Pomo) {
 	img := v.Img
 	fillRect(img, img.Rect, paper)
 	v.Targets = nil // only this screen's buttons
-	title, sub := "Time's up", "Nice focus. Take a breather?"
+	title, sub := "时间到", "专注得不错，休息一下？"
 	if p.Title != "" {
-		sub = fmt.Sprintf("%d minutes on %s", p.Length/60, p.Title)
+		sub = fmt.Sprintf("专注了 %d 分钟，任务：%s", p.Length/60, p.Title)
 	}
 	type btn struct{ label, arg string }
-	buttons := []btn{{"5-min break", "break"}, {"Another 25", "start"}, {"Stop", "stop"}}
+	buttons := []btn{{"休息 5 分钟", "break"}, {"再专注 25 分钟", "start"}, {"停止", "stop"}}
 	if p.State == "break" {
-		title, sub = "Break's over", "Ready for the next one?"
+		title, sub = "休息结束", "准备好下一轮了吗？"
 		if p.Title != "" {
-			sub = "Next up: " + p.Title
+			sub = "接下来：" + p.Title
 		}
-		buttons = []btn{{"Start 25 min", "start"}, {"5 more minutes", "break"}, {"Stop", "stop"}}
+		buttons = []btn{{"开始 25 分钟", "start"}, {"再休息 5 分钟", "break"}, {"停止", "stop"}}
 	}
 	drawCentered(img, face("display", 120), LW/2, 300, title, ink)
 	sf := face("serif", 28)
@@ -145,9 +145,9 @@ func timesUp(v *View, p *Pomo) {
 	sr := image.Rect(LW/2-110, 560, LW/2+110, 604)
 	strokeRoundRect(img, sr, 22, 2, ink)
 	speakerGlyph(img, float64(sr.Min.X+30), float64(sr.Min.Y+sr.Max.Y)/2, p.Sound, ink)
-	lbl := "Sound off"
+	lbl := "关闭提示音"
 	if p.Sound {
-		lbl = "Sound on"
+		lbl = "开启提示音"
 	}
 	f := face("uiBold", 16)
 	drawText(img, f, sr.Min.X+52, (sr.Min.Y+sr.Max.Y)/2+capHeight(f)/2, lbl+" (Mac)", ink)

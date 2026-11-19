@@ -39,7 +39,7 @@ func coverView(v *View, d *Desk, st Status, ui *UI) {
 	bf := face("uiBold", 17)
 	back := image.Rect(x0-8, cy-22, x0+90, cy+22)
 	chevron(img, float64(back.Min.X+18), float64(cy), 7, "left", ink)
-	drawText(img, bf, back.Min.X+34, cy+capHeight(bf)/2, "Back", ink)
+	drawText(img, bf, back.Min.X+34, cy+capHeight(bf)/2, "返回", ink)
 	v.add(Target{R: back.Inset(-6), Show: back, Act: "cover"})
 	ref := image.Rect(x1-44, cy-22, x1, cy+22)
 	refreshIcon(img, float64(ref.Min.X+ref.Max.X)/2, float64(cy), 10)
@@ -61,10 +61,10 @@ func coverView(v *View, d *Desk, st Status, ui *UI) {
 	if m == nil || !m.Running || m.Title == "" {
 		drawRecord(img, cr)
 		v.add(Target{R: cr, Act: "cover"})
-		drawText(img, face("serifB", 30), x0, cy+110, "Nothing playing", ink)
-		hint := "Open Spotify on your " + musicComputer(m)
+		drawText(img, face("serifB", 30), x0, cy+110, "暂无播放", ink)
+		hint := "请在以下电脑打开 Spotify：" + musicComputer(m)
 		if m != nil && m.Running {
-			hint = "Spotify is open, but not playing on this " + musicComputer(m)
+			hint = "Spotify 已打开，但未在此电脑播放：" + musicComputer(m)
 		}
 		for i, l := range wrap(face("ui", 17), hint, x1-x0, 3) {
 			drawText(img, face("ui", 17), x0, cy+142+i*24, l, grey2)
@@ -89,9 +89,9 @@ func coverView(v *View, d *Desk, st Status, ui *UI) {
 	}
 
 	// the song
-	state := "PAUSED"
+	state := "已暂停"
 	if m.Playing {
-		state = "PLAYING"
+		state = "播放中"
 	}
 	y := cy + 80
 	switch known := m.App == "Spotify" || m.App == "Music"; {
@@ -191,7 +191,7 @@ func outputPicker(v *View, m *Music, ui *UI, x0, x1, bottom int) {
 			right -= 28
 		case !o.Connected:
 			sf := face("ui", 13)
-			right = drawRight(img, sf, right, ry+capHeight(sf)/2, "Connect", grey2) - 10
+			right = drawRight(img, sf, right, ry+capHeight(sf)/2, "连接", grey2) - 10
 		}
 		drawText(img, f, lx+30, ry+capHeight(f)/2, ellipsize(f, o.Name, right-lx-30), c)
 		if !o.Current {
@@ -303,7 +303,7 @@ func volumePanel(v *View, m *Music, anchor image.Rectangle) {
 	fillRoundRect(img, box.Inset(-3), 12, paper)
 	strokeRoundRect(img, box, 10, 3, ink)
 	x0, x1 := box.Min.X+20, box.Max.X-20
-	label(img, x0, box.Min.Y+34, "VOLUME", grey2)
+	label(img, x0, box.Min.Y+34, "音量", grey2)
 	where := map[string]string{"Music": "Apple Music"}[m.App]
 	if where == "" {
 		where = m.App

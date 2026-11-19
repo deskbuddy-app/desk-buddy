@@ -45,30 +45,30 @@ type Weather struct {
 func weatherKind(code int) (kind, words string) {
 	switch {
 	case code == 0:
-		return "clear", "Clear"
+		return "clear", "晴"
 	case code == 1:
-		return "clear", "Mainly clear"
+		return "clear", "大部晴朗"
 	case code == 2:
-		return "partly", "Partly cloudy"
+		return "partly", "局部多云"
 	case code == 3:
-		return "cloudy", "Overcast"
+		return "cloudy", "阴"
 	case code == 45 || code == 48:
-		return "fog", "Fog"
+		return "fog", "雾"
 	case code >= 51 && code <= 57:
-		return "drizzle", "Drizzle"
+		return "drizzle", "毛毛雨"
 	case code >= 61 && code <= 67:
 		if code == 65 {
-			return "rain", "Heavy rain"
+			return "rain", "大雨"
 		}
-		return "rain", "Rain"
+		return "rain", "雨"
 	case code >= 71 && code <= 77, code == 85 || code == 86:
-		return "snow", "Snow"
+		return "snow", "雪"
 	case code >= 80 && code <= 82:
-		return "rain", "Showers"
+		return "rain", "阵雨"
 	case code >= 95:
-		return "thunder", "Thunderstorm"
+		return "thunder", "雷暴"
 	}
-	return "cloudy", "Cloudy"
+	return "cloudy", "多云"
 }
 
 // tempF: show temperatures in Fahrenheit (Settings › Temperature; Celsius by default).
@@ -205,11 +205,11 @@ func weatherView(v *View, st Status, ui *UI) {
 	v.add(Target{R: pr.Inset(-4), Show: pr, Act: "placenew"})
 	w := ui.Weather
 	if w == nil || w.Error != "" || len(w.Hours) == 0 {
-		msg := "Loading the weather…"
+		msg := "正在加载天气…"
 		if ui.WeatherErr != "" {
-			msg = "Weather: " + ui.WeatherErr
+			msg = "天气：" + ui.WeatherErr
 		} else if w != nil && w.Error != "" {
-			msg = "Weather: " + w.Error
+			msg = "天气：" + w.Error
 		}
 		drawText(img, face("serif", 22), x0, barH+80, msg, grey2)
 		return
@@ -223,7 +223,7 @@ func weatherView(v *View, st Status, ui *UI) {
 			return ""
 		}
 		d := w.Days[i]
-		return "Sunrise " + time.Unix(d.Sunrise, 0).In(loc).Format("15:04") + " · Sunset " + time.Unix(d.Sunset, 0).In(loc).Format("15:04")
+		return "日出 " + time.Unix(d.Sunrise, 0).In(loc).Format("15:04") + " · 日落 " + time.Unix(d.Sunset, 0).In(loc).Format("15:04")
 	}
 
 	type slot struct {
@@ -237,16 +237,16 @@ func weatherView(v *View, st Status, ui *UI) {
 	if ui.WeatherHidden {
 		cols = 18 // the wider strip shows more hours
 	}
-	stripTitle := fmt.Sprintf("NEXT %d HOURS", cols)
+	stripTitle := fmt.Sprintf("未来 %d 小时", cols)
 	if sel == 0 {
 		// Now: big picture, big temperature.
-		label(img, x0, barH+2+30, strings.ToUpper(w.Place)+" · UPDATED "+at.Format("15:04"), grey2)
+		label(img, x0, barH+2+30, strings.ToUpper(w.Place)+" · 更新于 "+at.Format("15:04"), grey2)
 		c := w.Current
 		drawWeather(img, c.Code, c.Day, 150, 230, 210)
 		drawText(img, face("display", 130), 280, 262, deg(c.Temp), ink)
 		_, words := weatherKind(c.Code)
 		drawText(img, face("serifB", 30), 284, 310, words, ink)
-		drawText(img, df, 286, 344, fmt.Sprintf("Feels %s · Wind %d mph · Humidity %d%%", deg(c.Feels), c.Wind, c.Humidity), grey2)
+		drawText(img, df, 286, 344, fmt.Sprintf("体感 %s · 风速 %d mph · 湿度 %d%%", deg(c.Feels), c.Wind, c.Humidity), grey2)
 		drawText(img, df, 286, 370, sun(0), grey2)
 		for i, hr := range w.Hours {
 			if i == cols {
@@ -254,7 +254,7 @@ func weatherView(v *View, st Status, ui *UI) {
 			}
 			l := time.Unix(hr.T, 0).In(loc).Format("15")
 			if i == 0 {
-				l = "Now"
+				l = "现在"
 			}
 			slots = append(slots, slot{l, hr.Temp, hr.Rain, hr.Code, hr.Day})
 		}
@@ -262,15 +262,15 @@ func weatherView(v *View, st Status, ui *UI) {
 		// A chosen day: its picture, high / low, and the day every two hours.
 		d := w.Days[sel]
 		date := time.Unix(d.T, 0).In(loc)
-		label(img, x0, barH+2+30, strings.ToUpper(w.Place+" · "+date.Format("Monday 2 January")), grey2)
+		label(img, x0, barH+2+30, strings.ToUpper(w.Place+" · "+displayDate(date, "Monday 2 January")), grey2)
 		drawWeather(img, d.Code, true, 150, 230, 210)
 		x := drawText(img, face("display", 130), 280, 262, deg(d.Max), ink)
 		drawText(img, face("serif", 40), x+10, 262, "/ "+deg(d.Min), grey2)
 		_, words := weatherKind(d.Code)
 		drawText(img, face("serifB", 30), 284, 310, words, ink)
-		drawText(img, df, 286, 344, fmt.Sprintf("%d%% chance of rain · high %s, low %s", d.Rain, deg(d.Max), deg(d.Min)), grey2)
+		drawText(img, df, 286, 344, fmt.Sprintf("降雨概率 %d%% · 最高 %s，最低 %s", d.Rain, deg(d.Max), deg(d.Min)), grey2)
 		drawText(img, df, 286, 370, sun(sel), grey2)
-		stripTitle = "THROUGH THE DAY"
+		stripTitle = "全天天气"
 		key := date.Format("2006-01-02")
 		for _, hr := range w.Hours {
 			t := time.Unix(hr.T, 0).In(loc)
@@ -304,9 +304,9 @@ func weatherView(v *View, st Status, ui *UI) {
 			drawCentered(img, rf, cx, y+272, fmt.Sprintf("%d%%", sl.rain), grey2)
 		}
 	}
-	hint := "Bars show the chance of rain · tap a day on the right to see it"
+	hint := "柱形表示降雨概率 · 点击右侧日期查看"
 	if ui.WeatherHidden {
-		hint = "Bars show the chance of rain · « shows the week"
+		hint = "柱形表示降雨概率 · « 查看本周"
 	}
 	drawText(img, face("ui", 13), x0, y+300, hint, grey3)
 	if ui.WeatherHidden {
@@ -315,7 +315,7 @@ func weatherView(v *View, st Status, ui *UI) {
 
 	// The week, with each day's range on a shared scale. Tap a day to see it.
 	sx0, sx1 := sideX+22, LW-22
-	label(img, sx0, barH+2+30, "THIS WEEK", grey2)
+	label(img, sx0, barH+2+30, "本周", grey2)
 	collapseButton(v, false, image.Rect(sx1-44, barH+2+12, sx1, barH+2+46), "weatherhide") // » hides the week
 	lo, hi := 99, -99
 	for _, d := range w.Days {
@@ -336,13 +336,13 @@ func weatherView(v *View, st Status, ui *UI) {
 		if i == sel {
 			fg, soft = paper, grey4
 		}
-		name := time.Unix(d.T, 0).In(loc).Format("Mon")
+		name := displayDate(time.Unix(d.T, 0).In(loc), "Mon")
 		if i == 0 {
-			name = "Today"
+			name = "今天"
 		}
 		drawText(img, df2, sx0, cy+2, name, fg)
 		if d.Rain >= 20 {
-			drawText(img, face("ui", 13), sx0, cy+20, fmt.Sprintf("%d%% rain", d.Rain), soft)
+			drawText(img, face("ui", 13), sx0, cy+20, fmt.Sprintf("降雨 %d%%", d.Rain), soft)
 		}
 		if i == sel {
 			// draw the picture on a white chip so it reads on the black row

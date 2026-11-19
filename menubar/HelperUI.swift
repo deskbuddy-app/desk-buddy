@@ -129,10 +129,17 @@ enum KD {
                 CTFontManagerRegisterFontsForURL(url as CFURL, .process, nil)
             }
         }
+        if let url = Bundle.main.url(forResource: "SourceHanSansSC-Regular", withExtension: "otf") {
+            CTFontManagerRegisterFontsForURL(url as CFURL, .process, nil)
+        }
     }
 
     static func font(_ size: CGFloat, bold: Bool = false) -> Font {
         let name = bold ? "AtkinsonHyperlegible-Bold" : "AtkinsonHyperlegible-Regular"
+        if let primary = NSFont(name: name, size: size), let chinese = NSFont(name: "SourceHanSansSC-Regular", size: size) {
+            let descriptor = primary.fontDescriptor.addingAttributes([.cascadeList: [chinese.fontDescriptor]])
+            return Font(NSFont(descriptor: descriptor, size: size) ?? primary)
+        }
         return NSFont(name: name, size: size) != nil ? .custom(name, size: size) : .system(size: size, weight: bold ? .bold : .regular)
     }
 }
@@ -254,8 +261,8 @@ struct CloudGuide: View {
                 HStack(alignment: .center, spacing: 10) {
                     Image(systemName: "cloud").font(.system(size: 15, weight: .medium)).foregroundColor(c.ink)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Your own cloud server").font(KD.font(14, bold: true)).foregroundColor(c.ink)
-                        Text("Optional · free on Cloudflare · about 10 minutes").font(KD.font(11)).foregroundColor(c.grey)
+                        Text("你自己的云服务器").font(KD.font(14, bold: true)).foregroundColor(c.ink)
+                        Text("可选 · Cloudflare 免费方案 · 约 10 分钟").font(KD.font(11)).foregroundColor(c.grey)
                     }
                     Spacer()
                     Image(systemName: folded ? "chevron.down" : "chevron.up").font(.system(size: 11, weight: .semibold)).foregroundColor(c.grey)
@@ -263,28 +270,28 @@ struct CloudGuide: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .help(folded ? "Show the steps" : "Hide the steps")
+            .help(folded ? "显示步骤" : "隐藏步骤")
             if !folded {
-                Text("Lets the Kindle and your phone work while this Mac sleeps, and from anywhere. It runs in your own Cloudflare account: nobody else's server is involved.")
+                Text("让 Kindle 和手机在本机休眠时也能随处使用。服务运行在你自己的 Cloudflare 账号中。")
                     .font(KD.font(12)).foregroundColor(c.grey).fixedSize(horizontal: false, vertical: true).padding(.top, 10)
-                step(1, "Make a free Cloudflare account", "An email and a password. The free plan is plenty.") {
-                    Pill(title: "Open Cloudflare") { NSWorkspace.shared.open(URL(string: "https://dash.cloudflare.com/sign-up")!) }
+                step(1, "创建免费 Cloudflare 账号", "使用邮箱和密码注册，免费方案即可。") {
+                    Pill(title: "打开 Cloudflare") { NSWorkspace.shared.open(URL(string: "https://dash.cloudflare.com/sign-up")!) }
                 }
-                step(2, "Install Node.js", "The setup needs it. Pick the LTS version.") {
-                    if model.nodeInstalled { Badge(text: "Installed", ok: true) }
-                    else { Pill(title: "Get Node.js") { NSWorkspace.shared.open(URL(string: "https://nodejs.org")!) } }
+                step(2, "安装 Node.js", "设置过程需要 Node.js，请选择 LTS 版本。") {
+                    if model.nodeInstalled { Badge(text: "已安装", ok: true) }
+                    else { Pill(title: "获取 Node.js") { NSWorkspace.shared.open(URL(string: "https://nodejs.org")!) } }
                 }
-                step(3, "Put your server online", "Terminal opens and does the rest; your browser opens once to log in to Cloudflare. At the end the address is copied.") {
-                    Pill(title: "Run in Terminal", solid: true) { model.onCloudSetup() }
+                step(3, "部署服务器", "终端会完成后续操作，浏览器会打开以登录 Cloudflare，完成后自动复制地址。") {
+                    Pill(title: "在终端中运行", solid: true) { model.onCloudSetup() }
                 }
                 codeBox(c)
-                step(4, "Paste the address", "It ends in .workers.dev. Your tasks are copied over, and the Kindle follows.") { EmptyView() }
+                step(4, "粘贴地址", "地址以 .workers.dev 结尾，任务会复制过去，Kindle 也会随之连接。") { EmptyView() }
                 HStack(spacing: 10) {
                     TextField("https://desk-buddy.….workers.dev", text: $address)
                         .textFieldStyle(.plain).font(KD.font(13)).foregroundColor(c.ink)
                         .padding(.vertical, 6).overlay(Rectangle().fill(c.ink).frame(height: 1), alignment: .bottom)
                         .onSubmit { model.onCloudConnect(address) }
-                    Pill(title: "Connect", solid: true) { model.onCloudConnect(address) }
+                    Pill(title: "连接", solid: true) { model.onCloudConnect(address) }
                 }
                 .padding(.leading, 34).padding(.top, 2)
                 if !model.cloudNote.isEmpty {
@@ -293,12 +300,12 @@ struct CloudGuide: View {
                 Rectangle().fill(c.line).frame(height: 1).padding(.top, 16)
                 HStack(alignment: .center, spacing: 14) {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Rather let an AI do it?").font(KD.font(13, bold: true)).foregroundColor(c.ink)
-                        Text("Paste the prompt into Claude Code or Codex: they can run every step for you. ChatGPT or Claude in the browser can walk you through it, but you run the commands. Your key is never in the prompt.")
+                        Text("想让 AI 帮忙？").font(KD.font(13, bold: true)).foregroundColor(c.ink)
+                        Text("将提示词粘贴到 Claude Code 或 Codex，可协助执行各个步骤。浏览器中的 ChatGPT 或 Claude 可逐步指导你运行命令。提示词不包含密钥。")
                             .font(KD.font(11)).foregroundColor(c.grey).fixedSize(horizontal: false, vertical: true)
                     }
                     Spacer(minLength: 8)
-                    Pill(title: "Copy prompt") { model.onCloudPrompt() }
+                    Pill(title: "复制提示词") { model.onCloudPrompt() }
                 }
                 .padding(.top, 10)
             }
@@ -314,16 +321,16 @@ struct CloudGuide: View {
     func codeBox(_ c: Ink) -> some View {
         let mono = Font.system(size: 11.5, design: .monospaced)
         return VStack(alignment: .leading, spacing: 6) {
-            Text("What runs in Terminal:").font(KD.font(11)).foregroundColor(c.grey)
+            Text("终端将运行：").font(KD.font(11)).foregroundColor(c.grey)
             Text(CloudGuide.command).font(mono).foregroundColor(c.ink).textSelection(.enabled)
-            Text("Inside, setup.sh gets Cloudflare's own tool (Wrangler) and runs:").font(KD.font(11)).foregroundColor(c.grey).padding(.top, 4)
+            Text("setup.sh 会获取 Cloudflare 的 Wrangler 工具并运行：").font(KD.font(11)).foregroundColor(c.grey).padding(.top, 4)
             Text(CloudGuide.inside).font(mono).foregroundColor(c.ink).textSelection(.enabled)
             HStack(spacing: 8) {
-                Pill(title: "Copy") {
+                Pill(title: "复制") {
                     NSPasteboard.general.clearContents()
                     NSPasteboard.general.setString(CloudGuide.command, forType: .string)
                 }
-                Pill(title: "Open the script") { model.onCloudScript() }
+                Pill(title: "打开脚本") { model.onCloudScript() }
             }
             .padding(.top, 4)
         }
@@ -377,15 +384,15 @@ struct KindleSetupCard: View {
         let st = model.kSetupState
         let (title, hint): (String, String) = {
             switch st {
-            case "found": return ("Kindle found", model.kSetupHas
-                ? "Desk Buddy is on it already. This puts the newest version on, set up to connect to this Mac."
-                : "Ready to put Desk Buddy on it, set up to connect to this Mac. It needs the jailbreak with the hotfix (kindlemodding.org).")
-            case "copying": return ("Copying onto the Kindle…", "Don't unplug it. About half a minute.")
-            case "checking": return ("Checking every file landed…", "USB with Kindles sometimes drops files, so it reads them back.")
-            case "ejecting": return ("Ejecting…", "Nearly there.")
-            case "done": return ("Done: unplug the Kindle", (model.kSetupNote.isEmpty ? "" : model.kSetupNote + " ") + "Then open Desk Buddy in the Kindle's library. With the Kindle on your Wi-Fi, it connects to this Mac by itself.")
-            case "failed": return ("That didn't work", model.kSetupNote)
-            default: return ("Put Desk Buddy on a Kindle", "Plug your jailbroken Kindle into this Mac with USB (jailbreak with the hotfix: kindlemodding.org). Desk Buddy copies itself onto it and sets it up to connect here.")
+            case "found": return ("已找到 Kindle", model.kSetupHas
+                ? "设备已装有 Desk Buddy，将安装新版并设置为连接本机。"
+                : "准备安装 Desk Buddy 并设置为连接本机。设备需已越狱并安装 hotfix（kindlemodding.org）。")
+            case "copying": return ("正在复制到 Kindle…", "请勿拔出设备，大约需要半分钟。")
+            case "checking": return ("正在核对复制的文件…", "Kindle 的 USB 传输有时会丢失文件，因此需要读回核验。")
+            case "ejecting": return ("正在推出设备…", "即将完成。")
+            case "done": return ("已完成，可以拔出 Kindle", (model.kSetupNote.isEmpty ? "" : model.kSetupNote + " ") + "然后在 Kindle 书库中打开 Desk Buddy。连接同一 Wi-Fi 后会自动连接本机。")
+            case "failed": return ("操作未成功", model.kSetupNote)
+            default: return ("将 Desk Buddy 安装到 Kindle", "用 USB 将已越狱并安装 hotfix 的 Kindle 连接到本机（kindlemodding.org），Desk Buddy 会复制程序并配置连接。")
             }
         }()
         VStack(alignment: .leading, spacing: 10) {
@@ -399,9 +406,9 @@ struct KindleSetupCard: View {
             }
             HStack(spacing: 8) {
                 Spacer().frame(width: 26)
-                if st == "found" { Pill(title: "Put Desk Buddy on it", solid: true) { model.onKindleInstall() } }
-                if st == "failed" { Pill(title: "Try again", solid: true) { model.onKindleInstall() } }
-                if ["waiting", "found", "failed"].contains(st) { Pill(title: "Save the files instead…") { model.onKindleSaveFiles() } }
+                if st == "found" { Pill(title: "安装到此设备", solid: true) { model.onKindleInstall() } }
+                if st == "failed" { Pill(title: "重试", solid: true) { model.onKindleInstall() } }
+                if ["waiting", "found", "failed"].contains(st) { Pill(title: "另存安装文件…") { model.onKindleSaveFiles() } }
             }
         }
         .padding(12)
@@ -497,10 +504,10 @@ struct Buddy: View {
 // What each permission sends, and where (shown under it)
 func permShares(_ title: String) -> String {
     switch title {
-    case "Calendar": return "Shares: your upcoming events (title, time, place, notes) with your Desk Buddy server."
-    case "Controlling Spotify", "Controlling Apple Music": return "Shares: the song playing and its cover, only while music shows on the Kindle."
-    case "Spotify note": return "macOS often can't check this one: the music app doesn't always answer it. If your song shows on the Kindle, it's allowed."
-    case "Bluetooth": return "Shares: the names of your speakers and headphones, so the Kindle can list them."
+    case "Calendar": return "共享到你的 Desk Buddy 服务器：即将发生的日程，包括标题、时间、地点与备注。"
+    case "Controlling Spotify", "Controlling Apple Music": return "仅在 Kindle 显示音乐时共享曲目和封面。"
+    case "Spotify note": return "音乐应用可能不响应 macOS 的权限查询。若 Kindle 能显示曲目，即已获得授权。"
+    case "Bluetooth": return "共享音箱与耳机名称，以便 Kindle 列出设备。"
     default: return ""
     }
 }
@@ -535,14 +542,14 @@ struct PrivacyCard: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
                 Image(systemName: "lock.shield").font(.system(size: 15, weight: .semibold)).foregroundColor(c.ink)
-                Text("Your data stays yours").font(KD.font(15, bold: true)).foregroundColor(c.ink)
+                Text("数据始终属于你").font(KD.font(15, bold: true)).foregroundColor(c.ink)
             }
             Text(local
-                 ? "Desk Buddy runs on this Mac. What the Kindle shows stays on this Mac and your Wi-Fi: nothing goes to the internet except the town for the weather."
-                 : "What the Kindle shows goes only to your own Desk Buddy server, wherever you run it: your Cloudflare account, this Mac or another computer of yours. There's no Desk Buddy company server, and only someone with your key can read it.")
+                 ? "Desk Buddy 运行在本机。Kindle 显示的数据保存在本机及你的 Wi-Fi 内；只有查询天气的城市名会发送到互联网。"
+                 : "Kindle 显示的数据只发送到你自己的 Desk Buddy 服务器，无论它运行在 Cloudflare、本机还是另一台电脑上。没有 Desk Buddy 官方数据服务器，持有密钥才能读取。")
                 .font(KD.font(12)).foregroundColor(c.grey).fixedSize(horizontal: false, vertical: true)
             HStack(spacing: 14) {
-                ForEach(["No ads", "No tracking", "No analytics", "Nothing sold or shared"], id: \.self) { t in
+                ForEach(["无广告", "不追踪", "无统计分析", "不出售或共享数据"], id: \.self) { t in
                     HStack(spacing: 4) {
                         Image(systemName: "checkmark").font(.system(size: 9, weight: .heavy)).foregroundColor(Badge.green)
                         Text(t).font(KD.font(11, bold: true)).foregroundColor(c.ink)
@@ -550,7 +557,7 @@ struct PrivacyCard: View {
                 }
             }
             .padding(.top, 2)
-            Text("Only what the Kindle needs to show is shared, and macOS asks you first. You can turn any of these off in System Settings at any time.")
+            Text("只共享 Kindle 显示所需的数据，并先经 macOS 询问授权。你随时可以在系统设置中撤销权限。")
                 .font(KD.font(11)).foregroundColor(c.grey).fixedSize(horizontal: false, vertical: true)
         }
         .padding(14)
@@ -566,13 +573,13 @@ struct HelperWindow: View {
     var scrolls = true // previews (ImageRenderer) can't draw a ScrollView
 
     static let sections: [(id: String, name: String, hint: String, icon: String)] = [
-        ("home", "Home", "Your tasks", "house"),
-        ("kindle", "Kindle", "Its settings", "slider.horizontal.3"),
-        ("status", "This Mac", "Helper, calendar", "laptopcomputer"),
-        ("server", "Server", "Cloud or this Mac", "cloud"),
-        ("permissions", "Permissions", "What macOS allows", "lock"),
-        ("performance", "Performance", "How much it uses", "gauge.with.dots.needle.33percent"),
-        ("about", "About", "Version, quit", "info.circle"),
+        ("home", "主页", "你的任务", "house"),
+        ("kindle", "Kindle", "设备设置", "slider.horizontal.3"),
+        ("status", "本机", "助手与日历", "laptopcomputer"),
+        ("server", "服务器", "云端或本机", "cloud"),
+        ("permissions", "权限", "macOS 授权", "lock"),
+        ("performance", "性能", "资源占用", "gauge.with.dots.needle.33percent"),
+        ("about", "关于", "版本与退出", "info.circle"),
     ]
 
     var body: some View {
@@ -596,8 +603,8 @@ struct HelperWindow: View {
                         Image(systemName: "sidebar.left").font(.system(size: 13, weight: .medium)).foregroundColor(c.grey)
                             .frame(width: 28, height: 24).contentShape(Rectangle())
                     }
-                    .buttonStyle(.plain).help(collapsed ? "Show the sidebar" : "Hide the sidebar")
-                    .accessibilityLabel(collapsed ? "Show the sidebar" : "Hide the sidebar")
+                    .buttonStyle(.plain).help(collapsed ? "显示侧栏" : "隐藏侧栏")
+                    .accessibilityLabel(collapsed ? "显示侧栏" : "隐藏侧栏")
                     Spacer()
                 }
                 .padding(.leading, 78) // clear of the window's close / minimise / zoom buttons
@@ -606,7 +613,7 @@ struct HelperWindow: View {
                     Button { model.onPause(!model.paused) } label: {
                         HStack(spacing: 5) {
                             Image(systemName: model.paused ? "play.fill" : "pause.fill").font(.system(size: 10, weight: .semibold))
-                            Text(model.paused ? "Resume" : "Pause").font(KD.font(12, bold: true))
+                            Text(model.paused ? "继续" : "暂停").font(KD.font(12, bold: true))
                         }
                         .foregroundColor(model.paused ? c.paper : c.ink)
                         .padding(.horizontal, 10).frame(height: 24)
@@ -615,8 +622,8 @@ struct HelperWindow: View {
                         .contentShape(Capsule())
                     }
                     .buttonStyle(.plain)
-                    .help(model.paused ? "Connect this Mac to the Kindle again" : "Stop this Mac talking to the Kindle: no Deck, music, calendar or \"in use\" until you resume")
-                    .accessibilityLabel(model.paused ? "Resume" : "Pause")
+                    .help(model.paused ? "重新连接本机与 Kindle" : "暂停本机与 Kindle 通信；恢复前不提供应用面板、音乐、日历或使用状态")
+                    .accessibilityLabel(model.paused ? "继续" : "暂停")
                 }
                 .padding(.trailing, 14)
             }
@@ -708,41 +715,41 @@ struct HelperWindow: View {
     @ViewBuilder var updatesSection: some View {
         let ready = !model.updVersion.isEmpty
         let status = model.updBusy || (!model.updStatus.isEmpty && !ready) ? model.updStatus
-            : ready ? (model.updCanInstall ? "Version \(model.updVersion) is ready. It installs when you click Install, then Desk Buddy restarts." + (model.updStatus.isEmpty ? "" : " " + model.updStatus)
-                                           : "Version \(model.updVersion) is out. Download it from github.com/deskbuddy-app/desk-buddy.")
-            : !model.updChecked.isEmpty ? "You're up to date (checked at \(model.updChecked))."
-            : "Checked every 6 hours from your Desk Buddy server. It installs only when you click."
-        SpacedLabel(text: "Updates").padding(.top, 8)
-        Row(title: "Version \(model.version)", hint: status) {
+            : ready ? (model.updCanInstall ? "版本 \(model.updVersion) 已就绪。点击安装后，Desk Buddy 将重新启动。" + (model.updStatus.isEmpty ? "" : " " + model.updStatus)
+                                           : "版本 \(model.updVersion) 已发布，可从 github.com/deskbuddy-app/desk-buddy 下载。")
+            : !model.updChecked.isEmpty ? "已是最新版本（检查于 \(model.updChecked)）。"
+            : "每 6 小时向你的 Desk Buddy 服务器检查一次，仅在点击后安装。"
+        SpacedLabel(text: "更新").padding(.top, 8)
+        Row(title: "版本 \(model.version)", hint: status) {
             if model.updBusy {
                 EmptyView()
             } else if ready {
                 HStack(spacing: 8) {
-                    Pill(title: "What's new?") { model.whatsNew.toggle() }
-                    if model.updCanInstall { Pill(title: "Install", solid: true) { model.onInstallUpdate() } }
+                    Pill(title: "更新内容") { model.whatsNew.toggle() }
+                    if model.updCanInstall { Pill(title: "安装", solid: true) { model.onInstallUpdate() } }
                 }
             } else {
-                Pill(title: model.updChecking ? "Checking…" : "Check for updates") { model.onCheckUpdate() }
+                Pill(title: model.updChecking ? "正在检查…" : "检查更新") { model.onCheckUpdate() }
             }
         }
         if model.notes.count > 1 && !model.updBusy {
             let prev = model.notes[1].version
-            Row(title: model.goBackAsk ? "Go back to version \(prev)?" : "Go back to version \(prev)",
-                hint: model.goBackAsk ? "Desk Buddy restarts, and the Kindle is offered the matching version. Your tasks and settings stay. You can update again any time."
-                                      : "If this version gives you trouble") {
+            Row(title: model.goBackAsk ? "退回版本 \(prev)？" : "退回版本 \(prev)",
+                hint: model.goBackAsk ? "Desk Buddy 将重新启动，并向 Kindle 提供配套版本。任务与设置会保留，之后可再次更新。"
+                                      : "当前版本出现问题时使用") {
                 if model.goBackAsk {
                     HStack(spacing: 8) {
-                        Pill(title: "Cancel") { model.goBackAsk = false }
-                        Pill(title: "Go back", solid: true) { model.goBackAsk = false; model.onGoBack() }
+                        Pill(title: "取消") { model.goBackAsk = false }
+                        Pill(title: "退回", solid: true) { model.goBackAsk = false; model.onGoBack() }
                     }
                 } else {
-                    Pill(title: "Go back…") { model.goBackAsk = true }
+                    Pill(title: "退回…") { model.goBackAsk = true }
                 }
             }
         }
         if ready && model.whatsNew && !model.updBusy {
             NoteBox {
-                ForEach(model.updNotes) { e in NoteBlock(title: "Version \(e.version)", date: e.date, items: e.items) }
+                ForEach(model.updNotes) { e in NoteBlock(title: "版本 \(e.version)", date: e.date, items: e.items) }
             }
         }
         if !model.notes.isEmpty {
@@ -750,7 +757,7 @@ struct HelperWindow: View {
             let e = model.notes[i]
             NoteBox {
                 HStack(spacing: 8) {
-                    NoteBlock(title: i == 0 ? "What's new in this version" : "What came in version \(e.version)", date: e.date, items: [])
+                    NoteBlock(title: i == 0 ? "此版本的更新内容" : "版本 \(e.version) 的更新内容", date: e.date, items: [])
                     Spacer()
                     Pill(title: "‹") { model.notesPage = i - 1 }.opacity(i > 0 ? 1 : 0.35).disabled(i == 0)
                     Pill(title: "›") { model.notesPage = i + 1 }.opacity(i < model.notes.count - 1 ? 1 : 0.35).disabled(i >= model.notes.count - 1)
@@ -766,22 +773,22 @@ struct HelperWindow: View {
         let warming = model.perfCPU == nil || model.perfWarming
         // the level from the CPU average over the last minute (ignoring the first 90 s after start)
         let level = cpu < 1 ? 0 : cpu < 5 ? 1 : cpu < 15 ? 2 : 3
-        let names = ["Very light", "Light", "Moderate", "Heavy"]
+        let names = ["极低", "低", "中等", "高"]
         let says = [
-            "You won't notice it: less than a clock in the menu bar.",
-            "Barely noticeable, like a small menu bar app.",
-            "Noticeable on battery. Pausing and resuming it in This Mac can settle it.",
-            "Heavier than it should be. Pausing and resuming it in This Mac usually settles it.",
+            "占用很低，低于菜单栏时钟。",
+            "占用较低，类似小型菜单栏应用。",
+            "使用电池时可能有影响，可在本机页面暂停并恢复。",
+            "占用偏高，可在本机页面尝试暂停并恢复。",
         ]
         let green = Color(red: 0.16, green: 0.62, blue: 0.32)
         let tint = [green, green, Color(red: 0.93, green: 0.6, blue: 0.13), Color(red: 0.85, green: 0.25, blue: 0.22)][level]
-        SpacedLabel(text: "Performance")
+        SpacedLabel(text: "性能")
         HStack(spacing: 10) {
-            Text(warming ? "Warming up…" : names[level]).font(KD.font(20, bold: true)).foregroundColor(c.ink)
-            if !warming && level <= 1 { Badge(text: "All good", ok: true) }
+            Text(warming ? "正在初始化…" : names[level]).font(KD.font(20, bold: true)).foregroundColor(c.ink)
+            if !warming && level <= 1 { Badge(text: "运行正常", ok: true) }
         }
         .padding(.top, 10)
-        Text(warming ? "It's busy for a minute after it starts (calendar, app icons and music sync). Measuring…" : says[level])
+        Text(warming ? "启动后约一分钟内会同步日历、应用图标和音乐，正在测量…" : says[level])
             .font(KD.font(13)).foregroundColor(c.grey).padding(.top, 2).fixedSize(horizontal: false, vertical: true)
         // one bar, light → heavy, always showing at least a sliver of colour
         GeometryReader { g in
@@ -793,9 +800,9 @@ struct HelperWindow: View {
         }
         .frame(height: 8).padding(.top, 14)
         HStack {
-            Text("Light").font(KD.font(10)).foregroundColor(c.grey)
+            Text("低").font(KD.font(10)).foregroundColor(c.grey)
             Spacer()
-            Text("Heavy").font(KD.font(10)).foregroundColor(c.grey)
+            Text("高").font(KD.font(10)).foregroundColor(c.grey)
         }
         .padding(.top, 4)
         // each number: Light (green) / Moderate (orange) / Heavy (red), with a bar in that colour
@@ -806,14 +813,14 @@ struct HelperWindow: View {
         let appMem = mem - model.perfServerMem
         let memLv = appMem < 200 ? 0 : appMem < 500 ? 1 : 2
         let memNote = model.perfServerMem > 0
-            ? String(format: "%.0f MB of it is the server on this Mac: normal when it runs here", model.perfServerMem)
-            : mem < 150 ? "about one browser tab's worth" : "more than a browser tab"
+            ? String(format: "其中 %.0f MB 来自本机服务器，属于正常占用", model.perfServerMem)
+            : mem < 150 ? "约等于一个浏览器标签页" : "超过一个浏览器标签页"
         HStack(alignment: .top, spacing: 12) {
-            tile("CPU", warming ? "…" : String(format: cpu < 0.1 ? "%.2f%%" : "%.1f%%", cpu), "of one core, over the last minute",
+            tile("CPU", warming ? "…" : String(format: cpu < 0.1 ? "%.2f%%" : "%.1f%%", cpu), "最近一分钟，单个核心的占比",
                  level: warming ? nil : cpuLv, fill: warming ? 0 : cpu / 25)
-            tile("Energy", String(format: "%.1f", energy), "Activity Monitor's Energy Impact, over the last minute",
+            tile("能耗", String(format: "%.1f", energy), "最近一分钟的活动监视器能耗影响",
                  level: warming ? nil : energyLv, fill: warming ? 0 : energy / 50)
-            tile("Memory", String(format: "%.0f MB", mem), memNote,
+            tile("内存", String(format: "%.0f MB", mem), memNote,
                  level: memLv, fill: mem / 2000) // against 2 GB: a light app shows a little
         }
         .fixedSize(horizontal: false, vertical: true) // all three as tall as the tallest
@@ -827,7 +834,7 @@ struct HelperWindow: View {
     func tile(_ title: String, _ value: String, _ note: String, level: Int?, fill: Double) -> some View {
         let c = Ink(scheme: scheme)
         let tints = [Color(red: 0.16, green: 0.62, blue: 0.32), Color(red: 0.93, green: 0.6, blue: 0.13), Color(red: 0.85, green: 0.25, blue: 0.22)]
-        let words = ["Light", "Moderate", "Heavy"]
+        let words = ["低", "中等", "高"]
         let tint = level.map { tints[$0] } ?? c.grey.opacity(0.4)
         return VStack(alignment: .leading, spacing: 6) {
             HStack {
@@ -866,50 +873,50 @@ struct HelperWindow: View {
             KindleSetupCard(model: model).padding(.bottom, 14)
         }
         if !ok {
-            Text("Update the Kindle app (Settings › Updates on the Kindle) to change its screen, clock and heads-up settings here. Music, focus and tasks work already.")
+            Text("更新 Kindle 应用（设置 › 更新）后，可在这里调整屏幕、时钟与会议提醒。音乐、专注和任务已可使用。")
                 .font(KD.font(13)).foregroundColor(c.grey).padding(.bottom, 8).fixedSize(horizontal: false, vertical: true)
         }
-        SpacedLabel(text: "Theme")
-        Row(title: "Theme", hint: "The look of every screen on the Kindle") {
+        SpacedLabel(text: "主题")
+        Row(title: "主题", hint: "Kindle 各个页面的外观") {
             Picker("", selection: Binding(get: { (k["style"] as? String) ?? "plain" }, set: { ks("style", $0) })) {
-                ForEach([("plain", "Plain"), ("garden", "Garden"), ("sketch", "Sketch"), ("classic", "Classic"), ("retro", "Retro"),
-                         ("notebook", "Notebook"), ("typewriter", "Typewriter"), ("gameboy", "Game Boy")], id: \.0) { Text($0.1).tag($0.0) }
+                ForEach([("plain", "简洁"), ("garden", "花园"), ("sketch", "手绘"), ("classic", "经典"), ("retro", "复古"),
+                         ("notebook", "笔记本"), ("typewriter", "打字机"), ("gameboy", "Game Boy")], id: \.0) { Text($0.1).tag($0.0) }
             }
             .labelsHidden().pickerStyle(.menu).frame(width: 150).disabled(!ok)
         }.opacity(ok ? 1 : 0.45)
-        SpacedLabel(text: "Screen").padding(.top, 18)
-        choice("Theme", (k["theme"] as? String) == "auto" ? "Dark when your Mac is, else sunset to sunrise" : "Light or dark", ["Light", "Dark", "Auto"], ["light", "dark", "auto"], k["theme"], enabled: ok) { ks("theme", $0) }
-        choice("Night brightness", "Front light while Auto is dark", ["Same", "Off", "Low", "Mid"], [-1, 0, 4, 10], k["night_light"], enabled: ok && (k["theme"] as? String) == "auto") { ks("night_light", $0) }
-        choice("Font", "For tasks and headings", ["Sans", "Serif", "Inter", "Bitter"], ["sans", "serif", "inter", "bitter"], k["font"], enabled: ok) { ks("font", $0) }
-        choice("Screen size", "Compact uses larger text and touch targets for 6″ Basic Kindles (2022, 2024 and older)", ["Standard", "Compact"], [false, true], (k["compact"] as? Bool) ?? false, enabled: ok) { ks("compact", $0) }
-        choice("Orientation", "Flip the landscape screen 180° (which side the Kindle's bottom bezel is on)", ["Left", "Right"], [90, 270], (k["rotation"] as? Int) ?? 90, enabled: ok) { ks("rotation", $0) }
-        choice("Temperature", "For the weather", ["°C", "°F"], [false, true], k["temp_f"], enabled: ok) { ks("temp_f", $0) }
-        choice("Screen refresh", ["Never flashes; faint ghosts may stay", "Big changes flash, only where they changed", "Every change flashes; sharpest"][min(2, max(0, (k["refresh"] as? Int) ?? 1))], ["Gentle", "Normal", "Clean"], [0, 1, 2], k["refresh"], enabled: ok) { ks("refresh", $0) }
-        SpacedLabel(text: "Standby clock").padding(.top, 22)
-        choice("Clock", "24-hour or 12-hour", ["24h", "12h"], [false, true], k["clock_12h"], enabled: ok) { ks("clock_12h", $0) }
-        choice("Quote", "A line under the clock", ["On", "Off"], [true, false], k["clock_quote"], enabled: ok) { ks("clock_quote", $0) }
-        choice("Next event", "What's on next, under the clock", ["On", "Off"], [true, false], k["clock_event"], enabled: ok) { ks("clock_event", $0) }
-        SpacedLabel(text: "Meeting heads-up").padding(.top, 22)
-        choice("Before meetings", "A card before each event, with Join for Zoom / Meet links", ["On", "Off"], [true, false], k["heads_up"], enabled: ok) { ks("heads_up", $0) }
-        choice("How early", "Minutes before it starts", ["2", "5", "10"], [2, 5, 10], k["heads_up_min"], enabled: ok && (k["heads_up"] as? Bool) != false) { ks("heads_up_min", $0) }
-        SpacedLabel(text: "Music").padding(.top, 22)
-        choice("Music sync", "Show what's playing on your computer", ["On", "Off"], [true, false], s["music_sync"]) { bs("music_sync", $0) }
-        choice("Music app", "Auto: whichever one is playing", ["Auto", "Spotify", "Apple Music"], ["auto", "spotify", "music"], s["music_app"], enabled: (s["music_sync"] as? Bool) != false) { bs("music_app", $0) }
-        choice("Music app logo", "Shows a small Spotify or Apple Music logo next to the song", ["On", "Off"], [true, false], k["music_logo"] ?? false, enabled: ok && (s["music_sync"] as? Bool) != false) { ks("music_logo", $0) }
-        choice("Album covers", "On the music screen", ["On", "Off"], [true, false], s["album_covers"], enabled: (s["music_sync"] as? Bool) != false) { bs("album_covers", $0) }
-        SpacedLabel(text: "Focus").padding(.top, 22)
-        choice("Focus length", "Minutes per Pomodoro", ["25", "45", "50"], [25, 45, 50], s["focus_min"]) { bs("focus_min", $0) }
-        choice("Break length", "Minutes between focuses", ["5", "10", "15"], [5, 10, 15], s["break_min"]) { bs("break_min", $0) }
-        choice("Chime on computer", "Plays when a focus or break ends", ["On", "Off"], [true, false], model.chime) { model.onChime(($0 as? Bool) ?? true) }
-        SpacedLabel(text: "Tasks").padding(.top, 22)
-        choice("Separate lists", (model.computers ?? []).count < 2 ? "Searching for other devices… connect another computer first" : "Your Mac and Windows PC each get their own tasks", ["On", "Off"], ["per_computer", "one"], s["task_lists"], enabled: (model.computers ?? []).count >= 2) { bs("task_lists", $0) }
-        choice("Auto-delete done tasks", "Ticked-off tasks go by themselves", ["On", "Off"], [true, false], s["auto_clear"]) { bs("auto_clear", $0) }
-        choice("Delete after", "How long after you tick them off", ["Instant", "1 min", "5 min", "10 min"], [0, 1, 5, 10], s["auto_clear_min"], enabled: (s["auto_clear"] as? Bool) == true) { bs("auto_clear_min", $0) }
-        SpacedLabel(text: "Updates").padding(.top, 22)
-        choice("Show on main screen", "An Update button at the top when a new version is ready", ["On", "Off"], [true, false], k["update_show"], enabled: ok) { ks("update_show", $0) }
-        choice("Check every", "Downloads over Wi-Fi; installs only when you tap", ["1 hour", "12 hours", "24 hours"], [1, 12, 24], k["update_every"], enabled: ok && (k["update_show"] as? Bool) != false) { ks("update_every", $0) }
+        SpacedLabel(text: "屏幕").padding(.top, 18)
+        choice("主题", (k["theme"] as? String) == "auto" ? "跟随 Mac 深色模式，否则日落后开启" : "浅色或深色", ["浅色", "深色", "自动"], ["light", "dark", "auto"], k["theme"], enabled: ok) { ks("theme", $0) }
+        choice("夜间亮度", "自动深色模式下的前光", ["相同", "关闭", "低", "中"], [-1, 0, 4, 10], k["night_light"], enabled: ok && (k["theme"] as? String) == "auto") { ks("night_light", $0) }
+        choice("字体", "用于任务与标题", ["无衬线", "衬线", "Inter", "Bitter"], ["sans", "serif", "inter", "bitter"], k["font"], enabled: ok) { ks("font", $0) }
+        choice("屏幕尺寸", "紧凑模式使用更大的文字和触摸区域，适用于 6 英寸入门款 Kindle（2022、2024 及更早型号）", ["标准", "紧凑"], [false, true], (k["compact"] as? Bool) ?? false, enabled: ok) { ks("compact", $0) }
+        choice("方向", "将横屏旋转 180°，选择 Kindle 底边所在的一侧", ["左侧", "右侧"], [90, 270], (k["rotation"] as? Int) ?? 90, enabled: ok) { ks("rotation", $0) }
+        choice("温度", "用于天气", ["°C", "°F"], [false, true], k["temp_f"], enabled: ok) { ks("temp_f", $0) }
+        choice("屏幕刷新", ["不闪屏，可能有轻微残影", "较大变化时，仅在变化区域闪屏", "每次变化都闪屏，显示最清晰"][min(2, max(0, (k["refresh"] as? Int) ?? 1))], ["柔和", "标准", "清晰"], [0, 1, 2], k["refresh"], enabled: ok) { ks("refresh", $0) }
+        SpacedLabel(text: "待机时钟").padding(.top, 22)
+        choice("时钟", "24 小时制或 12 小时制", ["24h", "12h"], [false, true], k["clock_12h"], enabled: ok) { ks("clock_12h", $0) }
+        choice("引言", "时钟下方的一行引言", ["开启", "关闭"], [true, false], k["clock_quote"], enabled: ok) { ks("clock_quote", $0) }
+        choice("下个日程", "在时钟下方显示下个日程", ["开启", "关闭"], [true, false], k["clock_event"], enabled: ok) { ks("clock_event", $0) }
+        SpacedLabel(text: "会议提醒").padding(.top, 22)
+        choice("会议前提醒", "会前显示提醒卡，可打开 Zoom / Meet 链接", ["开启", "关闭"], [true, false], k["heads_up"], enabled: ok) { ks("heads_up", $0) }
+        choice("提前多久", "会议开始前的分钟数", ["2", "5", "10"], [2, 5, 10], k["heads_up_min"], enabled: ok && (k["heads_up"] as? Bool) != false) { ks("heads_up_min", $0) }
+        SpacedLabel(text: "音乐").padding(.top, 22)
+        choice("音乐同步", "显示电脑正在播放的音乐", ["开启", "关闭"], [true, false], s["music_sync"]) { bs("music_sync", $0) }
+        choice("音乐应用", "自动：跟随正在播放的应用", ["自动", "Spotify", "Apple Music"], ["auto", "spotify", "music"], s["music_app"], enabled: (s["music_sync"] as? Bool) != false) { bs("music_app", $0) }
+        choice("音乐应用标志", "在曲目旁显示音乐应用标志", ["开启", "关闭"], [true, false], k["music_logo"] ?? false, enabled: ok && (s["music_sync"] as? Bool) != false) { ks("music_logo", $0) }
+        choice("专辑封面", "在音乐页面显示", ["开启", "关闭"], [true, false], s["album_covers"], enabled: (s["music_sync"] as? Bool) != false) { bs("album_covers", $0) }
+        SpacedLabel(text: "专注").padding(.top, 22)
+        choice("专注时长", "每次番茄钟的分钟数", ["25", "45", "50"], [25, 45, 50], s["focus_min"]) { bs("focus_min", $0) }
+        choice("休息时长", "两次专注间的休息分钟数", ["5", "10", "15"], [5, 10, 15], s["break_min"]) { bs("break_min", $0) }
+        choice("电脑提示音", "专注或休息结束时播放", ["开启", "关闭"], [true, false], model.chime) { model.onChime(($0 as? Bool) ?? true) }
+        SpacedLabel(text: "任务").padding(.top, 22)
+        choice("独立任务列表", (model.computers ?? []).count < 2 ? "正在搜索其他设备…请先连接另一台电脑" : "Mac 与 Windows 电脑分别使用独立任务列表", ["开启", "关闭"], ["per_computer", "one"], s["task_lists"], enabled: (model.computers ?? []).count >= 2) { bs("task_lists", $0) }
+        choice("自动删除已完成任务", "自动清理勾选完成的任务", ["开启", "关闭"], [true, false], s["auto_clear"]) { bs("auto_clear", $0) }
+        choice("删除延迟", "勾选完成后等待多久", ["立即", "1 min", "5 min", "10 min"], [0, 1, 5, 10], s["auto_clear_min"], enabled: (s["auto_clear"] as? Bool) == true) { bs("auto_clear_min", $0) }
+        SpacedLabel(text: "更新").padding(.top, 22)
+        choice("在主屏幕显示", "有新版时在顶部显示更新按钮", ["开启", "关闭"], [true, false], k["update_show"], enabled: ok) { ks("update_show", $0) }
+        choice("检查间隔", "通过 Wi-Fi 下载，点击后才安装", ["1 hour", "12 hours", "24 hours"], [1, 12, 24], k["update_every"], enabled: ok && (k["update_show"] as? Bool) != false) { ks("update_every", $0) }
         if !setupTop {
-            SpacedLabel(text: "Another Kindle").padding(.top, 22).padding(.bottom, 10)
+            SpacedLabel(text: "另一台 Kindle").padding(.top, 22).padding(.bottom, 10)
             KindleSetupCard(model: model)
         }
     }
@@ -927,29 +934,29 @@ struct HelperWindow: View {
             .padding(10).background(RoundedRectangle(cornerRadius: 6).fill(c.ink)).padding(.bottom, 8)
         }
         HStack(alignment: .firstTextBaseline) {
-            Text(model.showing.isEmpty ? "Tasks" : model.showing.prefix(1).uppercased() + model.showing.dropFirst())
+            Text(model.showing.isEmpty ? "任务" : model.showing.prefix(1).uppercased() + model.showing.dropFirst())
                 .font(KD.font(20, bold: true)).foregroundColor(c.ink)
             Spacer()
             Text(model.tasksLine).font(KD.font(12)).foregroundColor(c.grey)
         }
         HStack(spacing: 8) {
-            Text(model.kindleLine.isEmpty ? "On the Kindle now" : "On the Kindle now · " + model.kindleLine)
+            Text(model.kindleLine.isEmpty ? "Kindle 当前显示" : "Kindle 当前显示 · " + model.kindleLine)
                 .font(KD.font(11)).foregroundColor(c.grey)
             if !model.kindleLine.isEmpty { // green while the Kindle is in touch
-                Badge(text: model.kindleOnline ? "Kindle connected" : "Kindle offline", ok: model.kindleOnline)
+                Badge(text: model.kindleOnline ? "Kindle 已连接" : "Kindle 离线", ok: model.kindleOnline)
             }
         }
         .padding(.top, 2)
         HStack(spacing: 10) {
-            TextField("Add a task", text: $newTask)
+            TextField("添加任务", text: $newTask)
                 .textFieldStyle(.plain).font(KD.font(14)).foregroundColor(c.ink)
                 .padding(.vertical, 6).overlay(Rectangle().fill(c.ink).frame(height: 1), alignment: .bottom)
                 .onSubmit(addTask)
-            Pill(title: "Add", solid: true, action: addTask)
+            Pill(title: "添加", solid: true, action: addTask)
         }
         .padding(.top, 14).padding(.bottom, 6)
         if model.tasks.isEmpty {
-            Text("No tasks yet. Add one above.").font(KD.font(13)).foregroundColor(c.grey).padding(.top, 10)
+            Text("暂无任务，在上方添加。").font(KD.font(13)).foregroundColor(c.grey).padding(.top, 10)
         }
         ForEach(model.tasks) { t in
             taskRow(t, c)
@@ -966,7 +973,7 @@ struct HelperWindow: View {
                 return true
             }
         if !model.tasks.isEmpty {
-            Text("Click a task to edit it. To move one, drag the handle ≡ that shows on its left: onto another task to put it in that group, or between tasks. Right-click for more.")
+            Text("点击任务可编辑。拖动左侧的 ≡ 可排序，拖至另一任务可加入其分组。右键查看更多操作。")
                 .font(KD.font(11)).foregroundColor(c.grey)
         }
     }
@@ -1002,7 +1009,7 @@ struct HelperWindow: View {
     func subField(_ parent: Int, _ c: Ink) -> some View {
         HStack(spacing: 10) {
             Image(systemName: "plus").font(.system(size: 10, weight: .bold)).foregroundColor(c.grey).frame(width: 20)
-            TextField("Add a subtask", text: $subText)
+            TextField("添加子任务", text: $subText)
                 .textFieldStyle(.plain).font(KD.font(13)).foregroundColor(c.ink)
                 .focused($subFocus)
                 .onAppear { DispatchQueue.main.async { subFocus = true } }
@@ -1044,7 +1051,7 @@ struct HelperWindow: View {
             Image(systemName: "line.3.horizontal").font(.system(size: 11, weight: .medium)).foregroundColor(c.grey)
                 .frame(width: 24, height: 28).contentShape(Rectangle())
                 .opacity(show ? 1 : 0)
-                .help("Drag to move")
+                .help("拖动以移动")
                 .onDrag { NSItemProvider(object: String(t.id) as NSString) }
             VStack(spacing: 0) {
                 // where it would land: a line above (before this task)
@@ -1060,7 +1067,7 @@ struct HelperWindow: View {
                         }
                         .frame(width: 20, height: 20).contentShape(Rectangle())
                     }
-                    .buttonStyle(.plain).accessibilityLabel(t.done ? "Mark not done" : "Mark done")
+                    .buttonStyle(.plain).accessibilityLabel(t.done ? "标记为未完成" : "标记为已完成")
                     if editing == t.id {
                         TextField("", text: $editText)
                             .textFieldStyle(.plain).font(KD.font(t.sub ? 13 : 14)).foregroundColor(c.ink)
@@ -1074,15 +1081,15 @@ struct HelperWindow: View {
                             .strikethrough(t.done).lineLimit(1)
                             .frame(maxWidth: .infinity, alignment: .leading).contentShape(Rectangle())
                             .onTapGesture { editText = t.text; editing = t.id }
-                            .help("Click to edit")
+                            .help("点击编辑")
                     }
                     if t.pinned {
-                        Image(systemName: "pin.fill").font(.system(size: 10)).foregroundColor(c.ink).help("Pinned: “Now working on” on the Kindle")
+                        Image(systemName: "pin.fill").font(.system(size: 10)).foregroundColor(c.ink).help("已置顶为 Kindle 当前任务")
                     }
                     HStack(spacing: 0) {
-                        if !t.sub { iconButton("plus", "Add a subtask", c) { startSub(t.id) } }
-                        if !t.sub { iconButton(t.pinned ? "pin.slash" : "pin", t.pinned ? "Unpin" : "Pin to the Kindle", c) { model.onTask("pin", t.id, "") } }
-                        iconButton("trash", "Delete", c) { model.onTask("delete", t.id, "") }
+                        if !t.sub { iconButton("plus", "添加子任务", c) { startSub(t.id) } }
+                        if !t.sub { iconButton(t.pinned ? "pin.slash" : "pin", t.pinned ? "取消置顶" : "在 Kindle 置顶", c) { model.onTask("pin", t.id, "") } }
+                        iconButton("trash", "删除", c) { model.onTask("delete", t.id, "") }
                     }
                     .frame(width: 72, alignment: .trailing)
                     .opacity(show ? 1 : 0).allowsHitTesting(show)
@@ -1107,23 +1114,23 @@ struct HelperWindow: View {
                                                     take(items) { id in dropped(on: t, into: into, id: id) }
                                                 }))
         .contextMenu {
-            Button(t.done ? "Mark not done" : "Mark done") { model.onTask("toggle", t.id, "") }
-            Button("Rename") { editText = t.text; editing = t.id }
+            Button(t.done ? "标记为未完成" : "标记为已完成") { model.onTask("toggle", t.id, "") }
+            Button("重命名") { editText = t.text; editing = t.id }
             if !t.sub {
-                Button("Add a subtask") { startSub(t.id) }
-                Button(t.pinned ? "Unpin" : "Pin to the Kindle") { model.onTask("pin", t.id, "") }
+                Button("添加子任务") { startSub(t.id) }
+                Button(t.pinned ? "取消置顶" : "在 Kindle 置顶") { model.onTask("pin", t.id, "") }
             } else {
-                Button("Move out of the group") { // to just after its group, at the top level
+                Button("移出分组") { // to just after its group, at the top level
                     let tops = model.tasks.filter { !$0.sub }
                     let i = tops.firstIndex { $0.id == t.parent } ?? (tops.count - 1)
                     let next = i + 1 < tops.count ? String(tops[i + 1].id) : ""
                     model.onTask("place", t.id, "|" + next)
                 }
             }
-            Button("Move up") { model.onTask("up", t.id, "") }
-            Button("Move down") { model.onTask("down", t.id, "") }
+            Button("上移") { model.onTask("up", t.id, "") }
+            Button("下移") { model.onTask("down", t.id, "") }
             Divider()
-            Button("Delete") { model.onTask("delete", t.id, "") }
+            Button("删除") { model.onTask("delete", t.id, "") }
         }
     }
 
@@ -1158,22 +1165,22 @@ struct HelperWindow: View {
         case "kindle":
             kindlePane
         case "server":
-            SpacedLabel(text: "Server")
-            Row(title: "Where Desk Buddy runs", hint: model.local ? "On this Mac: works while it's awake and this app is open" : "In the cloud: works while this Mac sleeps") {
-                Segmented(labels: ["Cloud", "This Mac"], selected: model.local ? 1 : 0) { model.onMode($0 == 1 ? "local" : "cloud") }
+            SpacedLabel(text: "服务器")
+            Row(title: "Desk Buddy 运行位置", hint: model.local ? "本机：电脑唤醒且应用开启时可用" : "云端：本机休眠时仍可用") {
+                Segmented(labels: ["云端", "本机"], selected: model.local ? 1 : 0) { model.onMode($0 == 1 ? "local" : "cloud") }
             }
             // Only this switch moves Desk Buddy: the Kindle follows by itself (it has nothing to pick).
-            Row(title: "On the Kindle", hint: model.local
-                ? "It follows by itself when you switch here. A new Kindle finds this Mac on the Wi-Fi: click Allow when this app asks."
-                : "It follows by itself when you switch here.")
+            Row(title: "Kindle 上", hint: model.local
+                ? "在这里切换后 Kindle 会自动跟随。新设备会在 Wi-Fi 中查找本机，出现提示时点击允许。"
+                : "在这里切换后 Kindle 会自动跟随。")
             // Phone page: scan with the phone's camera; the page remembers the key after that
-            Row(title: "Phone page", hint: model.local
-                ? "Scan with your phone's camera to see and change your tasks there. Works on this Wi-Fi while this Mac is on. Your phone remembers it after that."
-                : "Scan with your phone's camera to see and change your tasks there, from anywhere. Your phone remembers it after that.") {
+            Row(title: "手机网页", hint: model.local
+                ? "用手机相机扫码查看和修改任务。本机开启且处于同一 Wi-Fi 时可用，手机会记住登录状态。"
+                : "用手机相机扫码，即可随处查看和修改任务，手机会记住登录状态。") {
                 if let qr = QR.image(model.phoneURL) {
                     Image(nsImage: qr).interpolation(.none).resizable().frame(width: 112, height: 112)
                         .padding(6).background(Color.white).cornerRadius(6)
-                        .help("Opens Desk Buddy on your phone, already signed in. Only show it to your own phone.")
+                        .help("在手机打开并登录 Desk Buddy，请只向你自己的手机展示。")
                 }
             }
             if !model.serverLine.isEmpty {
@@ -1183,86 +1190,86 @@ struct HelperWindow: View {
                 CloudGuide(model: model).padding(.top, 22)
             }
         case "permissions":
-            SpacedLabel(text: "Permissions")
+            SpacedLabel(text: "权限")
             PrivacyCard(local: model.local).padding(.top, 12)
-            Text("What Desk Buddy needs from macOS. Each one only adds what it says; everything else works without them. After an update, macOS may ask for them again.")
+            Text("Desk Buddy 所需的 macOS 权限。每项仅启用对应功能，其他功能不受影响。更新后 macOS 可能重新询问。")
                 .font(KD.font(13)).foregroundColor(c.grey).padding(.top, 14).padding(.bottom, 4).fixedSize(horizontal: false, vertical: true)
             ForEach(model.perms) { p in
                 let unsure = p.title.hasPrefix("Controlling") && p.status.hasPrefix("Couldn't")
                 HStack(alignment: .top, spacing: 12) {
                     PermIcon(title: p.title)
-                    Row(title: p.title, hint: p.detail + "\n" + permShares(p.title) + (unsure ? "\n" + permShares("Spotify note") : ""),
-                        badge: (unsure ? "Can't check (a music app quirk)" : p.status, p.ok)) {
-                        Pill(title: p.button, solid: p.button == "Allow…") { model.onPermission(p.id) }
+                    Row(title: ChineseUI.permission(p.title), hint: ChineseUI.permission(p.detail) + "\n" + permShares(p.title) + (unsure ? "\n" + permShares("Spotify note") : ""),
+                        badge: (unsure ? "无法确认（音乐应用的限制）" : ChineseUI.permission(p.status), p.ok)) {
+                        Pill(title: ChineseUI.permission(p.button), solid: p.button == "Allow…") { model.onPermission(p.id) }
                     }
                 }
             }
         case "performance":
             performancePane
         case "about":
-            SpacedLabel(text: "About")
+            SpacedLabel(text: "关于")
             HStack(spacing: 16) {
                 Buddy(height: 72)
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Desk Buddy").font(KD.font(18, bold: true)).foregroundColor(c.ink)
-                    Text("Your Kindle, on your desk, keeping you company.").font(KD.font(12)).foregroundColor(c.grey)
+                    Text("让桌上的 Kindle 陪伴你。").font(KD.font(12)).foregroundColor(c.grey)
                 }
             }
             .padding(.vertical, 14)
             updatesSection
             SpacedLabel(text: "Desk Buddy").padding(.top, 22)
-            Row(title: "Welcome", hint: "The first-open guide: what it does, permissions, connecting the Kindle") { Pill(title: "Show again") { model.afterUpdate = false; model.welcomeStep = 0 } }
-            Row(title: "Start at login", hint: "Opens by itself when you log in to this Mac, so the Kindle always has it") {
-                Segmented(labels: ["On", "Off"], selected: model.startAtLogin ? 0 : 1) { model.onStartAtLogin($0 == 0) }
+            Row(title: "欢迎", hint: "首次使用导览：功能、权限与连接 Kindle") { Pill(title: "再次显示") { model.afterUpdate = false; model.welcomeStep = 0 } }
+            Row(title: "登录时启动", hint: "登录本机后自动启动，方便 Kindle 随时连接") {
+                Segmented(labels: ["开启", "关闭"], selected: model.startAtLogin ? 0 : 1) { model.onStartAtLogin($0 == 0) }
             }
-            Row(title: "Quit", hint: model.startAtLogin ? "Stops until you open it again, or log in next time" : "Stops until you open it again") { Pill(title: "Quit") { model.onQuit() } }
-            Row(title: "Uninstall", hint: "Removes the helper from this Mac. Asks first.") { Pill(title: "Uninstall…") { model.onUninstall() } }
+            Row(title: "退出", hint: model.startAtLogin ? "停止运行，直到重新打开或下次登录" : "停止运行，直到重新打开") { Pill(title: "退出") { model.onQuit() } }
+            Row(title: "卸载", hint: "从本机移除助手，操作前会确认。") { Pill(title: "卸载…") { model.onUninstall() } }
         default:
-            SpacedLabel(text: "This Mac")
+            SpacedLabel(text: "本机")
             Text(model.status).font(KD.font(16, bold: true)).foregroundColor(c.ink)
                 .padding(.top, 12).padding(.bottom, 6).fixedSize(horizontal: false, vertical: true)
-            Row(title: "Helper", hint: "Tells the Kindle you're using this Mac, opens apps from the Deck, reads your music") {
-                Segmented(labels: ["On", "Paused"], selected: model.paused ? 1 : 0) { model.onPause($0 == 1) }
+            Row(title: "助手", hint: "报告本机使用状态、打开面板应用并读取音乐") {
+                Segmented(labels: ["开启", "已暂停"], selected: model.paused ? 1 : 0) { model.onPause($0 == 1) }
             }
-            Row(title: "Calendar", hint: model.calendar) { Pill(title: "Sync now") { model.onSyncCalendar() } }
+            Row(title: "日历", hint: model.calendar) { Pill(title: "立即同步") { model.onSyncCalendar() } }
                 .opacity(model.paused ? 0.35 : 1).disabled(model.paused)
             if !model.lastDeck.isEmpty {
-                Row(title: "Last from the Kindle", hint: model.lastDeck)
+                Row(title: "Kindle 最近操作", hint: model.lastDeck)
             }
             if let comps = model.computers {
-                Row(title: "Other computers", hint: comps.count < 2
-                    ? "Searching for other devices… Install Desk Buddy on another computer to connect it."
-                    : "Your Windows PC is connected too.") {
-                    Pill(title: "Connect a computer…") { model.onConnectComputer() }
+                Row(title: "其他电脑", hint: comps.count < 2
+                    ? "正在搜索其他设备…请在另一台电脑安装 Desk Buddy。"
+                    : "你的 Windows 电脑也已连接。") {
+                    Pill(title: "连接电脑…") { model.onConnectComputer() }
                 }
             }
             if !model.connectCode.isEmpty {
                 // what to type on the other computer (Desk Buddy for Windows asks for both)
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("On the other computer, open Desk Buddy and enter:").font(KD.font(12)).foregroundColor(Color.secondary)
+                    Text("在另一台电脑打开 Desk Buddy 并输入：").font(KD.font(12)).foregroundColor(Color.secondary)
                     HStack(spacing: 18) {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Server").font(KD.font(11)).foregroundColor(Color.secondary)
+                            Text("服务器").font(KD.font(11)).foregroundColor(Color.secondary)
                             Text(model.connectServer).font(.system(size: 14, weight: .semibold, design: .monospaced)).textSelection(.enabled)
                         }
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Code").font(KD.font(11)).foregroundColor(Color.secondary)
+                            Text("连接码").font(KD.font(11)).foregroundColor(Color.secondary)
                             Text(model.connectCode).font(.system(size: 20, weight: .bold, design: .monospaced)).textSelection(.enabled)
                         }
                     }
-                    Text("The code works once, for 10 minutes. The computer then connects by itself.").font(KD.font(11)).foregroundColor(Color.secondary)
+                    Text("连接码一次有效，有效期 10 分钟，输入后电脑会自动连接。").font(KD.font(11)).foregroundColor(Color.secondary)
                 }
                 .padding(12).frame(maxWidth: .infinity, alignment: .leading)
                 .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.secondary.opacity(0.4), lineWidth: 1))
                 .padding(.top, 8)
             }
-            Row(title: "Tasks page", hint: "Your tasks in a web browser, also on your phone") { Pill(title: "Open") { model.onOpenPage() } }
+            Row(title: "任务网页", hint: "在浏览器或手机中查看任务") { Pill(title: "打开") { model.onOpenPage() } }
             // Let Claude Code / Codex (running on this Mac) change the tasks: instructions to paste
             // into their instructions file. They read the address and key from Desk Buddy's own file.
-            Row(title: "AI assistants", hint: model.aiNote.isEmpty
-                ? "Let Claude Code or Codex add, tick and change your tasks when you ask. Copy these instructions into their instructions file (Claude Code: ~/.claude/CLAUDE.md, Codex: ~/.codex/AGENTS.md). Your key isn't in them."
+            Row(title: "AI 助手", hint: model.aiNote.isEmpty
+                ? "让 Claude Code 或 Codex 按你的要求添加、完成和修改任务。将说明复制到各自的指令文件（Claude Code：~/.claude/CLAUDE.md，Codex：~/.codex/AGENTS.md），其中不包含密钥。"
                 : model.aiNote) {
-                Pill(title: "Copy instructions") { model.onCopyAI() }
+                Pill(title: "复制说明") { model.onCopyAI() }
             }
         }
     }
@@ -1318,11 +1325,11 @@ struct WelcomeView: View {
                     }
                 }
                 Spacer()
-                if step > 0 { Pill(title: "Back") { model.welcomeStep = step - 1 } }
+                if step > 0 { Pill(title: "返回") { model.welcomeStep = step - 1 } }
                 if step < 2 {
-                    Pill(title: step == 1 ? "Continue" : "Get started", solid: true) { model.welcomeStep = step + 1 }
+                    Pill(title: step == 1 ? "继续" : "开始使用", solid: true) { model.welcomeStep = step + 1 }
                 } else {
-                    Pill(title: "Done", solid: true) { model.onWelcomeDone() }
+                    Pill(title: "完成", solid: true) { model.onWelcomeDone() }
                 }
             }
             .padding(.horizontal, 24).frame(height: 56)
@@ -1333,17 +1340,17 @@ struct WelcomeView: View {
     func intro(_ c: Ink) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             Buddy(height: 92).padding(.bottom, 14)
-            SpacedLabel(text: "Welcome")
-            Text("Desk Buddy connects your Mac to the Kindle on your desk.")
+            SpacedLabel(text: "欢迎")
+            Text("Desk Buddy 将 Mac 与桌上的 Kindle 连接起来。")
                 .font(KD.font(22, bold: true)).foregroundColor(c.ink).padding(.top, 10).fixedSize(horizontal: false, vertical: true)
             VStack(alignment: .leading, spacing: 14) {
-                point("calendar", "Your calendar on the Kindle", "Today's events, the month, a heads-up before meetings", c)
-                point("music.note", "What's playing", "Spotify or Apple Music, with play, skip and volume", c)
-                point("square.grid.2x2", "Open apps from the Kindle", "Tap a tile on the Deck and it opens here", c)
-                point("laptopcomputer", "It knows you're at this Mac", "So the Kindle shows the right things", c)
+                point("calendar", "在 Kindle 上查看日历", "今日安排、月历与会前提醒", c)
+                point("music.note", "正在播放", "Spotify 或 Apple Music，支持播放、切歌与音量控制", c)
+                point("square.grid.2x2", "从 Kindle 打开应用", "点击应用面板图块，即可在电脑打开", c)
+                point("laptopcomputer", "识别你正在使用本机", "让 Kindle 显示对应的信息", c)
             }
             .padding(.top, 22)
-            Text("It runs quietly in the menu bar (look for Desk Buddy up there). Next: a few permissions macOS asks for.")
+            Text("它会在菜单栏中运行。接下来需要处理几项 macOS 权限。")
                 .font(KD.font(12)).foregroundColor(c.grey).padding(.top, 22).fixedSize(horizontal: false, vertical: true)
         }
     }
@@ -1360,10 +1367,10 @@ struct WelcomeView: View {
 
     func permissions(_ c: Ink) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            SpacedLabel(text: model.afterUpdate ? "Updated" : "Permissions")
-            Text(model.afterUpdate ? "Desk Buddy was updated. Please allow these again." : "Please allow these so it can fully work")
+            SpacedLabel(text: model.afterUpdate ? "已更新" : "权限")
+            Text(model.afterUpdate ? "Desk Buddy 已更新，请重新允许以下权限。" : "请授予以下权限以启用完整功能")
                 .font(KD.font(22, bold: true)).foregroundColor(c.ink).padding(.top, 10).fixedSize(horizontal: false, vertical: true)
-            Text("Click Allow and macOS asks once. Each one only adds what it says; everything else works without it.")
+            Text("点击允许后 macOS 会询问授权。每项权限仅启用所述功能，其他功能不受影响。")
                 .font(KD.font(12)).foregroundColor(c.grey).padding(.top, 6).fixedSize(horizontal: false, vertical: true)
             PrivacyCard(local: model.local).padding(.top, 14)
             VStack(spacing: 0) {
@@ -1371,9 +1378,9 @@ struct WelcomeView: View {
                     let unsure = p.title.hasPrefix("Controlling") && p.status.hasPrefix("Couldn't")
                     HStack(alignment: .top, spacing: 12) {
                         PermIcon(title: p.title)
-                        Row(title: p.title, hint: p.detail + "\n" + permShares(p.title) + (unsure ? "\n" + permShares("Spotify note") : ""),
-                            badge: (unsure ? "Can't check (a music app quirk)" : p.status, p.ok)) {
-                            if !p.ok { Pill(title: p.button, solid: p.button == "Allow…") { model.onPermission(p.id) } }
+                        Row(title: ChineseUI.permission(p.title), hint: ChineseUI.permission(p.detail) + "\n" + permShares(p.title) + (unsure ? "\n" + permShares("Spotify note") : ""),
+                            badge: (unsure ? "无法确认（音乐应用的限制）" : ChineseUI.permission(p.status), p.ok)) {
+                            if !p.ok { Pill(title: ChineseUI.permission(p.button), solid: p.button == "Allow…") { model.onPermission(p.id) } }
                         }
                     }
                 }
@@ -1381,7 +1388,7 @@ struct WelcomeView: View {
             .padding(.top, 12)
             HStack(alignment: .top, spacing: 8) {
                 Image(systemName: "info.circle").font(.system(size: 12)).foregroundColor(c.grey)
-                Text("After each update of Desk Buddy, macOS may ask for these again: it sees the updated app as new. If something stops working after an update, come back here (Permissions in the sidebar).")
+                Text("应用更新后 macOS 可能重新询问权限。如有功能停止工作，请回到侧栏的权限页面检查。")
                     .font(KD.font(12)).foregroundColor(c.grey).fixedSize(horizontal: false, vertical: true)
             }
             .padding(12).background(RoundedRectangle(cornerRadius: 6).stroke(c.line, lineWidth: 1)).padding(.top, 16)
@@ -1392,34 +1399,34 @@ struct WelcomeView: View {
     func connect(_ c: Ink) -> some View {
         let connected = model.kindleSeen && !model.kindleLine.isEmpty
         return VStack(alignment: .leading, spacing: 0) {
-            SpacedLabel(text: "Your Kindle")
+            SpacedLabel(text: "你的 Kindle")
             HStack(spacing: 10) {
-                Text(connected ? "Your Kindle is connected" : "Let's connect your Kindle")
+                Text(connected ? "Kindle 已连接" : "连接你的 Kindle")
                     .font(KD.font(22, bold: true)).foregroundColor(c.ink).fixedSize(horizontal: false, vertical: true)
-                if connected { Badge(text: "Connected", ok: true) }
+                if connected { Badge(text: "已连接", ok: true) }
             }
             .padding(.top, 10)
             if connected {
-                Text("It checked in " + model.kindleLine.replacingOccurrences(of: "seen ", with: "") + ".")
+                Text("最近连接：" + model.kindleLine.replacingOccurrences(of: "seen ", with: "") + "。")
                     .font(KD.font(13)).foregroundColor(c.grey).padding(.top, 6)
                 VStack(alignment: .leading, spacing: 14) {
-                    point("arrow.triangle.2.circlepath", "Changes show within about 10 seconds", "Tasks, settings and themes, both ways", c)
-                    point("slider.horizontal.3", "Change the Kindle from here", "Its settings and theme are in the Kindle section", c)
+                    point("arrow.triangle.2.circlepath", "改动约 10 秒内显示", "任务、设置与主题双向同步", c)
+                    point("slider.horizontal.3", "在这里调整 Kindle", "设置和主题位于 Kindle 页面", c)
                 }
                 .padding(.top, 22)
             } else {
                 KindleSetupCard(model: model).padding(.top, 14)
-                Text("Desk Buddy already on your Kindle? With it running there:")
+                Text("Kindle 已有 Desk Buddy？请打开应用，然后：")
                     .font(KD.font(13)).foregroundColor(c.grey).padding(.top, 6).fixedSize(horizontal: false, vertical: true)
                 VStack(alignment: .leading, spacing: 14) {
                     if model.local {
-                        point("1.circle", "On the Kindle, tap Find it", "It finds this Mac on the Wi-Fi", c)
-                        point("2.circle", "Pick this Mac, then click Allow here", "The Kindle shows a code: check it matches", c)
-                        point("3.circle", "That's it", "This window shows it as connected", c)
+                        point("1.circle", "在 Kindle 上点击查找", "在 Wi-Fi 中查找本机", c)
+                        point("2.circle", "选中本机，然后在这里点击允许", "核对 Kindle 显示的连接码", c)
+                        point("3.circle", "连接完成", "本窗口将显示已连接", c)
                     } else {
-                        point("1.circle", "Connect the Kindle to the same Wi-Fi", "Its own Settings › Wi-Fi", c)
-                        point("2.circle", "Open Desk Buddy in the Kindle's library", "It connects to your Desk Buddy server by itself", c)
-                        point("3.circle", "Not connecting?", "Server in the sidebar: switch to This Mac and pair the Kindle there", c)
+                        point("1.circle", "将 Kindle 接入同一 Wi-Fi", "设备的设置 › Wi-Fi", c)
+                        point("2.circle", "在 Kindle 书库中打开 Desk Buddy", "设备会自动连接 Desk Buddy 服务器", c)
+                        point("3.circle", "无法连接？", "在侧栏服务器页面切换到本机，然后配对 Kindle", c)
                     }
                 }
                 .padding(.top, 22)
@@ -1427,13 +1434,13 @@ struct WelcomeView: View {
             HStack(alignment: .top, spacing: 10) {
                 Image(systemName: "pc").font(.system(size: 15)).foregroundColor(c.ink).frame(width: 20)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Got a Windows PC too?").font(KD.font(13, bold: true)).foregroundColor(c.ink)
-                    Text("Install Desk Buddy for Windows on it (from the same download page). It finds this Mac on the Wi-Fi by itself: click Allow here when it asks. Then the Kindle shows whichever computer you're using.")
+                    Text("还有 Windows 电脑？").font(KD.font(13, bold: true)).foregroundColor(c.ink)
+                    Text("从同一下载页面获取 Windows 版并安装。它会在 Wi-Fi 中找到本机，出现提示时点击允许；Kindle 随后会跟随你正在使用的电脑。")
                         .font(KD.font(12)).foregroundColor(c.grey).fixedSize(horizontal: false, vertical: true)
                 }
             }
             .padding(12).background(RoundedRectangle(cornerRadius: 6).stroke(c.line, lineWidth: 1)).padding(.top, 22)
-            Text("Everything else is in this window: your tasks on Home, the Kindle's settings, and more. Open it any time from Desk Buddy in the menu bar.")
+            Text("其他功能均在此窗口中，包括主页任务和 Kindle 设置，可随时从菜单栏的 Desk Buddy 打开。")
                 .font(KD.font(12)).foregroundColor(c.grey).padding(.top, 22).fixedSize(horizontal: false, vertical: true)
         }
     }

@@ -23,31 +23,31 @@ func sideColumn(v *View, d *Desk, st Status) {
 	}
 	switch {
 	case c == nil || c.State == "idle":
-		y = card(img, x0, y, w, "CLAUDE", "No sessions running", "", false)
+		y = card(img, x0, y, w, "CLAUDE", "暂无运行中的会话", "", false)
 	case c.State == "input":
-		y = card(img, x0, y, w, "CLAUDE · NEEDS YOU", "Waiting for your input", c.Text+" · "+ago, true)
+		y = card(img, x0, y, w, "CLAUDE · 等待你处理", "等待你的输入", c.Text+" · "+ago, true)
 	case c.State == "working":
-		y = card(img, x0, y, w, "CLAUDE", "Working: "+c.Text, "started "+ago, false)
+		y = card(img, x0, y, w, "CLAUDE", "正在处理："+c.Text, "开始于 "+ago, false)
 	default:
-		y = card(img, x0, y, w, "CLAUDE", "Finished: "+c.Text, ago, false)
+		y = card(img, x0, y, w, "CLAUDE", "已完成："+c.Text, ago, false)
 	}
 
-	open := "Nothing open in Work or Home"
+	open := "工作与家庭列表均无待办"
 	if d.OpenTotal == 1 {
-		open = "1 task open across Work and Home"
+		open = "工作与家庭列表共 1 项待办"
 	} else if d.OpenTotal > 1 {
-		open = fmt.Sprintf("%d tasks open across Work and Home", d.OpenTotal)
+		open = fmt.Sprintf("工作与家庭列表共 %d 项待办", d.OpenTotal)
 	}
 	if y < LH-140 {
-		card(img, x0, y, w, "TODAY", st.Now.Format("Monday 2 January"), open, false)
+		card(img, x0, y, w, "今天", displayDate(st.Now, "Monday 2 January"), open, false)
 	}
-	drawText(img, face("ui", 13), x0, LH-22, "Hold the clock 3 s, or press power, to leave", grey3)
+	drawText(img, face("ui", 13), x0, LH-22, "长按时钟 3 秒或按电源键退出", grey3)
 }
 
 // agendaCard: what's on now, what's next and when, then a couple more.
 func agendaCard(img *image.Gray, d *Desk, st Status, x, y, w int) int {
 	if d.Calendars == 0 && len(d.Agenda) == 0 {
-		return card(img, x, y, w, "CALENDAR", "No calendar yet", "Add one on your phone page", false)
+		return card(img, x, y, w, "日历", "暂无日历", "请在手机网页上添加", false)
 	}
 	now := st.Now.Unix()
 	today := st.Now.Format("2006-01-02")
@@ -58,7 +58,7 @@ func agendaCard(img *image.Gray, d *Desk, st Status, x, y, w int) int {
 		switch {
 		case e.AllDay:
 			if time.Unix(e.Start, 0).UTC().Format("2006-01-02") == today {
-				rows = append(rows, "All day · "+e.Title)
+				rows = append(rows, "全天 · "+e.Title)
 			}
 		case e.Start <= now && e.End > now && cur == nil:
 			cur = &d.Agenda[i]
@@ -67,14 +67,14 @@ func agendaCard(img *image.Gray, d *Desk, st Status, x, y, w int) int {
 		}
 	}
 	if cur != nil {
-		y = card(img, x, y, w, "NOW · UNTIL "+hm(cur.End, st), cur.Title, cur.Location, false)
+		y = card(img, x, y, w, "现在 · 至 "+hm(cur.End, st), cur.Title, cur.Location, false)
 	}
 	if len(next) == 0 {
-		big := "Nothing else today"
+		big := "今天没有其他安排"
 		if cur == nil && len(rows) == 0 {
-			big = "Nothing on today"
+			big = "今天没有安排"
 		}
-		return card(img, x, y, w, "CALENDAR", big, "", false, rows...)
+		return card(img, x, y, w, "日历", big, "", false, rows...)
 	}
 	e := next[0]
 	small := relative(e.Start, st)
@@ -84,7 +84,7 @@ func agendaCard(img *image.Gray, d *Desk, st Status, x, y, w int) int {
 	for _, n := range next[1:min(len(next), 3)] {
 		rows = append(rows, dayPrefix(n.Start, st)+hm(n.Start, st)+"  "+n.Title)
 	}
-	return card(img, x, y, w, "NEXT UP", dayPrefix(e.Start, st)+hm(e.Start, st)+" "+e.Title, small, false, rows...)
+	return card(img, x, y, w, "接下来", dayPrefix(e.Start, st)+hm(e.Start, st)+" "+e.Title, small, false, rows...)
 }
 
 func hm(t int64, st Status) string { return time.Unix(t, 0).In(st.Now.Location()).Format("15:04") }
@@ -93,22 +93,22 @@ func dayPrefix(t int64, st Status) string {
 	if time.Unix(t, 0).In(st.Now.Location()).Format("2006-01-02") == st.Now.Format("2006-01-02") {
 		return ""
 	}
-	return "Tomorrow "
+	return "明天 "
 }
 
 // relative: "in 25 min", "in 1 h 10 min", or "Tomorrow".
 func relative(t int64, st Status) string {
 	if dayPrefix(t, st) != "" {
-		return "Tomorrow"
+		return "明天"
 	}
 	m := int((t - st.Now.Unix() + 59) / 60)
 	switch {
 	case m < 60:
-		return fmt.Sprintf("in %d min", m)
+		return fmt.Sprintf("%d 分钟后", m)
 	case m%60 == 0:
-		return fmt.Sprintf("in %d h", m/60)
+		return fmt.Sprintf("%d 小时后", m/60)
 	default:
-		return fmt.Sprintf("in %d h %d min", m/60, m%60)
+		return fmt.Sprintf("%d 小时 %d 分钟后", m/60, m%60)
 	}
 }
 
@@ -116,11 +116,11 @@ func agoText(d time.Duration) string {
 	m := int(d.Minutes())
 	switch {
 	case m < 1:
-		return "just now"
+		return "刚刚"
 	case m < 60:
-		return fmt.Sprintf("%d min ago", m)
+		return fmt.Sprintf("%d 分钟前", m)
 	default:
-		return fmt.Sprintf("%d h %d min ago", m/60, m%60)
+		return fmt.Sprintf("%d 小时 %d 分钟前", m/60, m%60)
 	}
 }
 
